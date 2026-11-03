@@ -1,0 +1,369 @@
+{% extends 'attendance/base.html' %}
+{% load static %}
+
+{# Attendance Dashboard page: today's (or a chosen date's) attendance summary and batch overview #}
+
+{% block title %}
+Student Attendance - Dashboard
+{% endblock title %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/attendance_css/dashboard.css' %}">
+{% endblock extra_css %}
+
+{% block content %}
+<div class="st-main-content dashboard-page">
+
+    <!-- ================= Page Header ================= -->
+    <div class="dash-header">
+        <div class="dash-header-text">
+            <h1 class="dashboard-title">Attendance Dashboard</h1>
+            <p class="dashboard-subtitle-text" id="dashboardTitle">
+                Real-time overview of all batches and attendance status
+            </p>
+        </div>
+
+        <!-- ================= Date Picker Form + Custom Calendar ================= -->
+        <div class="dash-header-actions">
+            <form method="get" id="dateFilterForm" class="date-pill-form">
+                <div class="date-pill" id="datePillTrigger" onclick="toggleAttendanceCalendar(event)">
+                    <i class="fa-regular fa-calendar"></i>
+                    <span id="datePillText">{{ selected_date|date:"d M Y, l" }}</span>
+                    <input type="hidden" id="attendanceDatePicker" name="date" value="{{ selected_date|date:'Y-m-d' }}">
+                </div>
+
+                <div class="custom-calendar" id="customCalendarPanel">
+                    <div class="custom-calendar-header">
+                        <button type="button" onclick="changeCalendarMonth(-1)">
+                            <i class="fa-solid fa-chevron-left"></i>
+                        </button>
+                        <span id="calendarMonthLabel"></span>
+                        <button type="button" onclick="changeCalendarMonth(1)">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                    </div>
+
+                    <div class="custom-calendar-weekdays">
+                        <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+                    </div>
+
+                    <div class="custom-calendar-grid" id="calendarGrid"></div>
+
+                    <p class="custom-calendar-note">Only dates with attendance records can be selected.</p>
+                </div>
+            </form>
+
+            <!-- ================= Available Attendance Dates (JSON for JS calendar) ================= -->
+            <script id="availableDatesData" type="application/json">{{ available_dates_json|safe }}</script>
+        </div>
+    </div>
+
+    <!-- ================= Batch details panel populated by liveSearch() ================= -->
+    <div class="batch-detail-card" id="batchDetailCard" style="display:none;">
+        <h4>Batch Details</h4>
+        <div id="batchList"></div>
+    </div>
+
+    <!-- ================= Stat Cards ================= -->
+    <div class="stats-grid">
+
+        <div class="stat-card">
+            <div class="stat-top">
+                <!-- ================= Total Students Stat Card ================= -->
+                <div class="icon-circle icon-students">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+                <div>
+                    <p class="stat-label">Total Students</p>
+                    <h3 id="totalCount">{{ total }}</h3>
+                </div>
+            </div>
+            <p class="stat-change">
+                <span class="{% if total_percentage >= 0 %}trend-positive{% else %}trend-negative{% endif %}">
+                    {% if total_percentage >= 0 %}↑{% else %}↓{% endif %} {{ total_percentage|cut:"-" }}%
+                </span>
+                vs last month
+            </p>
+            <canvas class="sparkline" id="sparkTotal" width="120" height="40"></canvas>
+        </div>
+
+        <!-- ================= Present Today Stat Card ================= -->
+        <div class="stat-card">
+            <div class="stat-top">
+                <div class="icon-circle icon-marked">
+                    <i class="fa-solid fa-check"></i>
+                </div>
+                <div>
+                    <p class="stat-label">Present Today</p>
+                    <h3 id="presentCount">{{ present }}</h3>
+                </div>
+            </div>
+            <p class="stat-change">
+                Attendance Rate: {{ present_percentage }}%
+            </p>
+
+            {% if not last_attendance_date %}
+            <p class="stat-note">No previous attendance data</p>
+            {% else %}
+            <p class="stat-change">
+                {% if present_change > 0 %}
+                <span class="trend-positive">↑ {{ present_change }}%</span> higher than Last day
+                {% elif present_change < 0 %} <span class="trend-negative">↓ {{ present_change|cut:"-" }}%</span> lower
+                    than Last day
+                    {% else %}
+                    <span class="trend-warning">→ No change</span> from Last day
+                    {% endif %}
+            </p>
+            {% endif %}
+            <canvas class="sparkline" id="sparkPresent" width="120" height="40"></canvas>
+        </div>
+
+        <!-- ================= Absent Today Stat Card ================= -->
+        <div class="stat-card">
+            <div class="stat-top">
+                <div class="icon-circle icon-notmarked">
+                    <i class="fa-solid fa-xmark"></i>
+                </div>
+                <div>
+                    <p class="stat-label">Absent Today</p>
+                    <h3 id="absentCount">{{ absent }}</h3>
+                </div>
+            </div>
+            <p class="stat-change">
+                Absent Rate: {{ absent_percentage }}%
+            </p>
+
+            {% if not last_attendance_date %}
+            <p class="stat-note">No previous attendance data</p>
+            {% else %}
+            <p class="stat-change">
+                {% if absent_change > 0 %}
+                <span class="trend-negative">↑ {{ absent_change }}%</span> higher than Last day
+                {% elif absent_change < 0 %} <span class="trend-positive">↓ {{ absent_change|cut:"-" }}%</span> lower
+                    than Last day
+                    {% else %}
+                    <span class="trend-warning">→ No change</span> from Last day
+                    {% endif %}
+            </p>
+            {% endif %}
+            <canvas class="sparkline" id="sparkAbsent" width="120" height="40"></canvas>
+        </div>
+
+        <!-- ================= Late Today Stat Card ================= -->
+        <div class="stat-card">
+            <div class="stat-top">
+                <div class="icon-circle icon-late">
+                    <i class="fa-regular fa-clock"></i>
+                </div>
+                <div>
+                    <p class="stat-label">Late Today</p>
+                    <h3 id="lateCount">{{ late }}</h3>
+                </div>
+            </div>
+            <p class="stat-change">
+                Late Rate: {{ late_percentage }}%
+            </p>
+
+            {% if not last_attendance_date %}
+            <p class="stat-note">No previous attendance data</p>
+            {% else %}
+            <p class="stat-change">
+                {% if late_change > 0 %}
+                <span class="trend-warning">↑ {{ late_change }}%</span> higher than Last day
+                {% elif late_change < 0 %} <span class="trend-positive">↓ {{ late_change|cut:"-" }}%</span> lower than
+                    Last day
+                    {% else %}
+                    <span class="trend-warning">→ No change</span> from Last day
+                    {% endif %}
+            </p>
+            {% endif %}
+            <canvas class="sparkline" id="sparkLate" width="120" height="40"></canvas>
+        </div>
+
+    </div>
+
+    <!-- ================= All Batches Overview ================= -->
+    <div class="section-card batches-section">
+
+        <div class="section-header">
+            <!-- ================= Batches Section Header (Search + View Toggle) ================= -->
+            <div>
+                <h3 class="section-title">All Batches Overview</h3>
+                <p class="section-subtitle">Live status of all batches</p>
+            </div>
+
+            <div class="section-header-actions">
+                <div class="search-box small">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="batchSearchInput" placeholder="Search batch...">
+                </div>
+
+                <div class="view-toggle">
+                    <button type="button" class="active"><i class="fa-solid fa-table-cells-large"></i></button>
+                    <button type="button"><i class="fa-solid fa-list"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= Individual Batch Card (Looped Per Batch) ================= -->
+        <div class="batches-grid" id="batchesGrid">
+            {% for b in context_batches %}
+            <div class="batch-card {% cycle 'accent-purple' 'accent-green' 'accent-red' 'accent-blue' %}">
+                <div class="batch-card-top">
+                    <div class="batch-icon">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                    </div>
+                    <span class="batch-tag">{{ b.course }}</span>
+                </div>
+
+                <h4 class="batch-name">{{ b.batch }}</h4>
+
+                <p class="batch-meta">
+                    Trainer<br>
+                    <strong>{{ b.trainer }}</strong>
+                </p>
+
+                <div class="batch-stats-row">
+                    <div class="batch-stat">
+                        <span class="batch-stat-label">Students</span>
+                        <span class="batch-stat-value"><i class="fa-solid fa-users stat-icon-students"></i> {{ b.students }}</span>
+                    </div>
+                    <div class="batch-stat">
+                        <span class="batch-stat-label">Present</span>
+                        <span class="batch-stat-value"><i class="fa-solid fa-check-circle stat-icon-present"></i> {{ b.present }}</span>
+                    </div>
+                    <div class="batch-stat">
+                        <span class="batch-stat-label">Absent</span>
+                        <span class="batch-stat-value"><i class="fa-solid fa-times-circle stat-icon-absent"></i> {{ b.absent }}</span>
+                    </div>
+                    <div class="batch-stat">
+                        <span class="batch-stat-label">Late</span>
+                        <span class="batch-stat-value"><i class="fa-solid fa-clock stat-icon-late"></i> {{ b.late }}</span>
+                    </div>
+                </div>
+
+                <div class="batch-rate-row">
+                    <span>Attendance Rate</span>
+                    <strong>{{ b.attendance_rate }}%</strong>
+                </div>
+                <div class="batch-rate-bar">
+                    <div class="batch-rate-bar-fill" style="width: {{ b.attendance_rate }}%;"></div>
+                </div>
+
+                <div class="batch-card-footer-row">
+                    <a href="{% url 'batch_preview' b.id %}" class="view-details-link">
+                        View Details <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                
+                </div>
+            
+            </div>
+            {% empty %}
+            <p class="no-batches">No batches with enrolled students yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- ================= Summary + Quick Actions ================= -->
+    <div class="bottom-grid">
+
+        <div class="section-card summary-card">
+            <h3 class="section-title">Today's Attendance Summary</h3>
+
+            <div class="summary-body">
+                <!-- ================= Donut Chart + Legend (Present/Absent/Late) ================= -->
+                <div class="summary-body-left">
+                    <div class="donut-wrap">
+                        <div class="donut" id="attendanceDonut">
+                            <div class="donut-center">
+                                <span class="donut-pct">{{ present_percentage }}%</span>
+                                <span class="donut-label">Present</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="summary-legend">
+                        <div class="legend-row">
+                            <span class="legend-dot dot-present"></span>
+                            <span class="legend-name">Present</span>
+                            <span class="legend-value">{{ present }} ({{ present_percentage }}%)</span>
+                        </div>
+                        <div class="legend-row">
+                            <span class="legend-dot dot-absent"></span>
+                            <span class="legend-name">Absent</span>
+                            <span class="legend-value">{{ absent }} ({{ absent_percentage }}%)</span>
+                        </div>
+                        <div class="legend-row">
+                            <span class="legend-dot dot-late"></span>
+                            <span class="legend-name">Late</span>
+                            <span class="legend-value">{{ late }} ({{ late_percentage }}%)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ================= Decorative Whiteboard SVG Illustration ================= -->
+                <svg class="summary-illustration" viewBox="0 0 220 150" xmlns="http://www.w3.org/2000/svg">
+
+                    <!-- whiteboard -->
+                    <rect x="40" y="20" width="140" height="100" rx="8" fill="#EEF2FF" stroke="#C7D2FE"
+                        stroke-width="2" />
+
+                    <!-- pie chart on the board -->
+                    <circle cx="80" cy="60" r="20" fill="none" stroke="#E2E8F0" stroke-width="8" />
+                    <circle cx="80" cy="60" r="20" fill="none" stroke="#6366F1" stroke-width="8"
+                        stroke-dasharray="75 50" stroke-linecap="round" />
+
+                    <!-- bar chart on the board -->
+                    <rect x="120" y="80" width="10" height="25" fill="#22C55E" />
+                    <rect x="136" y="65" width="10" height="40" fill="#6366F1" />
+                    <rect x="152" y="50" width="10" height="55" fill="#F59E0B" />
+
+                </svg>
+            </div>
+        </div>
+
+        <div class="section-card quick-actions-card">
+            <h3 class="section-title">Quick Actions</h3>
+
+            <div class="quick-actions-grid">
+                <!-- ================= Quick Action Links (Batches / History / Reports) ================= -->
+                 {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" or request.user.staff_profile.role.role_name == "HR" %}
+                <a href="{% url 'batches_page' %}" class="quick-action">
+                    <span class="quick-icon icon-blue"><i class="fa-solid fa-layer-group"></i></span>
+                    Manage Batches
+                </a>
+                {% endif %}
+
+                <a href="{% url 'attendance_history' %}" class="quick-action">
+                    <span class="quick-icon icon-teal"><i class="fa-regular fa-clock"></i></span>
+                    Attendance History
+                </a>
+                <a href="{% url 'reports' %}" class="quick-action">
+                    <span class="quick-icon icon-amber"><i class="fa-solid fa-file-lines"></i></span>
+                    Reports
+                </a>
+
+                {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" or request.user.staff_profile.role.role_name == "HR"  %}
+                <a href="{% url 'schedule_page' %}" class="quick-action">
+                    <span class="quick-icon icon-shedule"><i class="fa-solid fa-calendar-plus"></i></span>
+                     Create Schedule
+                </a>
+                {% endif %}
+                {% if request.user.staff_profile.role.role_name == "Trainer"%}
+                <a href="{% url 'schedule_page' %}" class="quick-action">
+                    <span class="quick-icon icon-shedule"><i class="fa-solid fa-calendar-plus"></i></span>
+                        View Schedule
+                </a>
+                {% endif %}
+
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/attendance_js/dashboard.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends 'staff/base.html' %}
+{% load static %}
+{% block title %}Leads - {{ staff.full_name }}{% endblock %}
+{% block content %}
+
+<div class="over-box-recent">
+
+    <div class="over-box-head">
+        <h2>Leads assigned to {{ staff.full_name }}</h2>
+        <a href="{% url 'overview' staff.id %}" class="over-viewall-btn">Back to Staff Overview</a>
+    </div>
+
+    <p style="margin:0 0 12px; color:#6b7280;">
+        {{ staff.employee_id }} &bull; {{ staff.role.get_role_name_display }} &bull; {{ total_leads }} lead{{ total_leads|pluralize }}
+    </p>
+
+    <form method="get" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px;">
+        <input type="text" name="search" value="{{ search_query }}"
+               placeholder="Search name, email, phone or lead ID"
+               style="flex:1; min-width:200px; padding:8px 10px; border:1px solid #e9eaf2; border-radius:8px;">
+        <select name="status" style="padding:8px 10px; border:1px solid #e9eaf2; border-radius:8px;">
+            <option value="">All Status</option>
+            {% for value, label in status_choices %}
+            <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="over-viewall-btn">Filter</button>
+        {% if search_query or selected_status %}
+        <a href="{% url 'staff_assigned_leads' staff.id %}" class="over-viewall-btn">Clear</a>
+        {% endif %}
+    </form>
+
+    <table>
+        <tr>
+            <th>Lead ID</th>
+            <th>Name</th>
+            <th>Phone</th>
+            <th>Course</th>
+            <th>Status</th>
+            <th>Follow-Up</th>
+        </tr>
+        {% for lead in leads %}
+        <tr>
+            <td>{{ lead.lead_id }}</td>
+            <td>{{ lead.lead_name }}</td>
+            <td>{{ lead.phone_no }}</td>
+            <td>{{ lead.get_course_interested_display }}</td>
+            <td><span class="lead-status-pill lead-status-{{ lead.initial_status }}">{{ lead.get_initial_status_display }}</span></td>
+            <td>{{ lead.next_followup_date|date:"d M Y" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6" class="over-recent-no">No leads assigned to this staff member.</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    {% if page_obj.has_other_pages %}
+    <div style="display:flex; gap:12px; justify-content:center; padding:14px;">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}&search={{ search_query|urlencode }}&status={{ selected_status }}">&laquo; Previous</a>
+        {% endif %}
+        <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}&search={{ search_query|urlencode }}&status={{ selected_status }}">Next &raquo;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

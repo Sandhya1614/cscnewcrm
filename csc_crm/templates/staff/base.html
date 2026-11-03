@@ -1,0 +1,129 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>if (localStorage.getItem("sidebarCollapsed") === "true") { document.documentElement.classList.add("sidebar-collapsed");}</script>
+    <script src="{% static 'js/staff_js/phone_validation.js' %}"></script>
+    <!-- <title>{% block title %}CSC CRM{% endblock %}</title> -->
+    <link rel="stylesheet" href="{% static 'css/staff_css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+    <link rel="stylesheet" href="{% static 'css/responsive.css' %}">
+    <link rel="stylesheet" href="{% static 'css/staff_css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/staff_css/management.css' %}">
+    <link rel="stylesheet" href="{% static 'css/staff_css/add_staff.css' %}">
+    <link rel="stylesheet" href="{% static 'css/staff_css/attendance.css' %}">
+    <link rel="stylesheet" href="{% static 'css/staff_css/staff_profile.css' %}">
+    <link rel="stylesheet" href="{% static 'css/staff_css/confirm_delete.css' %}">
+    <link rel="stylesheet" href="{% static 'css/staff_css/edit_staff.css' %}">
+    <link rel="stylesheet" href="{% static 'css/staff_css/overview.css' %}">
+    <link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+</head>
+<body>
+
+   
+    <div class="sidebar-overlay"></div>
+    <!--======================================== Navigation ===============================-->
+    <nav class="top-navbar">
+
+    <div class="nav-left">
+
+        <button class="menu-btn" id="menuToggle">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+
+        <div class="brand">
+
+            <div class="logo-box">
+                CSC
+            </div>
+
+            <div class="brand-text">
+                <h3>CSC CRM</h3>
+                <small>Institute Operations Suite</small>
+            </div>
+
+        </div>
+        
+    </div>
+     
+   <!-- ==================== USER INFO ==================== -->
+
+            {% if request.user.is_authenticated and request.user.staff_profile %}
+<div class="sidebar-user-main">
+    <div class="sidebar-user">
+
+        {% if request.user.staff_profile.profile_photo %}
+        <div class="sidebar-user-avatar">
+            <img src="{{ request.user.staff_profile.profile_photo.url }}" alt="Profile" class="sidebar-user-avatar-img">
+        </div>
+        {% else %}
+        <div class="sidebar-user-avatar">
+            {{ request.user.staff_profile.get_initials }}
+        </div>
+        {% endif %}
+
+        <div class="sidebar-user-info">
+            <p class="sidebar-user-name">
+                {{ request.user.staff_profile.full_name }}
+            </p>
+
+            <p class="sidebar-user-role">
+                <small>{{ request.user.staff_profile.employee_id }}</small>
+                -
+                {{ request.user.staff_profile.role.get_role_name_display }}
+            </p>
+        </div>
+
+    </div>
+</div>
+{% endif %}
+</nav>
+<!--===================================== Tabs Section ===============================-->
+
+   <div class="top-tabs">
+
+   <a href="{% url 'staff_dashboard' %}"
+   class="{% if request.resolver_match.url_name == 'staff_dashboard' %}active{% endif %}">
+   Dashboard
+</a>
+
+
+{% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" or request.user.staff_profile.role.role_name == "HR" or request.user.staff_profile.role.role_name == "Sales Exec Lead" or request.user.staff_profile.role.role_name == "Marketing Lead" %}
+<a href="{% url 'staff_management' %}"
+   class="{% if request.resolver_match.url_name == 'staff_management' %}active{% endif %}">
+   Staff Management
+</a>
+{% endif %}
+
+{% if request.user.staff_profile and request.user.staff_profile.id %}
+<a href="{% url 'staff_profile' staff_id=request.user.staff_profile.id %}"
+   class="{% if request.resolver_match.url_name == 'staff_profile' %}active{% endif %}">
+   Staff Profile
+</a>
+{% endif %}
+
+
+
+</div>
+    
+     {% include "includes/sidebar.html" %}
+    <div class="main-wrapper">
+    <!-- Page Content -->
+    <main class="main-content">
+        {% block content %}
+        {% endblock %}
+    </main>
+    </div>
+
+   
+
+    {% block extra_js %}{% endblock %}
+
+</body>
+
+
+</html>

@@ -1,0 +1,41 @@
+
+{% extends 'staff/base.html' %}
+{% block content %}
+
+    <!--===================================== Delete Section ===============================-->
+
+    <div class="model-overlay">
+        <div class="model-content delete-model">
+            <div class="model-header">
+                <h2 class="model-title">Confirm Delete</h2>
+                <a href="{% url 'staff_management' %}" class="model-close">X</a>
+            </div>
+
+            <div class="model-body">
+                <div class="model-confirmation">
+                    <div class="confirmation-icon">⚠</div>
+                    <p class="confirmation-message">
+                        Are you sure you want to terminate
+                        <strong>{{ staff.first_name }} {{ staff.last_name }}</strong>
+                    </p>
+                    <p class="confirmation-subtext">
+                        Employee ID: {{ staff.employee_id }}
+                    </p>
+                    <p class="confirmation-info">
+                        This action will mark the staff member as terminated
+                    </p>
+                </div>
+            </div>
+
+            <div class="model-footer">
+                <a href="{% url 'staff_management' %}" class="btn btn-secondary">Cancel</a>
+                <form method="POST" class="delete-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ next_url }}">
+                    <button type="submit" class="btn btn-danger">Terminate</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

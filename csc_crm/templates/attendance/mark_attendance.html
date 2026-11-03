@@ -1,0 +1,323 @@
+{% extends 'attendance/base.html' %}
+{% load static %}
+{% load custom_tags %}
+
+{# Mark Attendance page: student list for one batch (status/remarks) plus the
+   confirm modal that also captures today's syllabus log before saving. #}
+
+{% block title %}
+Student Attendance - Mark Attendance
+{% endblock title %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/attendance_css/mark_attendance.css' %}">
+{% endblock extra_css %}
+
+{% block content %}
+
+<!-- ============ TOAST CONTAINER (SUCCESS/ERROR MESSAGES) ============ -->
+<div id="toastContainer" class="toast-wrapper"></div>
+
+<div class="main-content">
+
+    <!-- ============ PAGE HEADER (BREADCRUMB, TITLE, DATE, BACK/SUBMIT BUTTONS) ============ -->
+    <div class="page-header">
+
+        <div class="page-heading">
+            <div class="breadcrumb">
+
+                {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" or request.user.staff_profile.role.role_name == "HR" %}<a href="{% url 'batches_page' %}">Batches</a> <span>›</span>
+                {% endif %}
+                 Mark Attendance
+                 
+            </div>
+                 
+            <h2 class="page-title">Mark Attendance</h2>
+            <p class="page-subtitle">{{ batch.course.course_name }} — {{ batch.batch_name }}</p>
+        </div>
+
+        <div class="top-actions">
+
+            <div class="date-chip">
+                <i class="fas fa-calendar"></i>
+                <span>{% now "d M Y, l" %}</span>
+                <i class="fas fa-chevron-down chip-caret"></i>
+            </div>
+           
+            {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" or request.user.staff_profile.role.role_name == "HR" %}
+            <a href="{% url 'batches_page' %}" class="btn btn-back">
+                Back
+            </a>
+            {% endif %}
+
+            {% if request.user.staff_profile.role.role_name == "Trainer" %}
+            <a href="{% url 'dashboard' %}" class="btn btn-back">
+                Back
+            </a>
+            {% endif %}
+
+            <button class="btn btn-submit" onclick="openAttendanceModal()">
+                <i class="fas fa-check"></i> Submit Attendance
+            </button>
+
+        </div>
+    </div>
+
+    <!-- ============ TOP STAT CARDS (TOTAL, PRESENT, ABSENT, LATE) ============ -->
+    <div class="row mb-4">
+
+        <div class="col-md-3">
+            <div class="stats-card stat-total">
+                <div class="stat-icon"><i class="fas fa-users"></i></div>
+                <div class="stat-info">
+                    <p>Total Students</p>
+                    <h2 id="totalCount">0</h2>
+                </div>
+                <span class="stat-bar"></span>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="stats-card stat-present">
+                <div class="stat-icon"><span class="icon-badge"><i class="fas fa-check"></i></span></div>
+                <div class="stat-info">
+                    <p>Present</p>
+                    <h2 id="presentCount">0</h2>
+                </div>
+                <span class="stat-bar"></span>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="stats-card stat-absent">
+                <div class="stat-icon"><span class="icon-badge"><i class="fas fa-times"></i></span></div>
+                <div class="stat-info">
+                    <p>Absent</p>
+                    <h2 id="absentCount">0</h2>
+                </div>
+                <span class="stat-bar"></span>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="stats-card stat-late">
+                <div class="stat-icon"><span class="icon-badge"><i class="fas fa-clock"></i></span></div>
+                <div class="stat-info">
+                    <p>Late</p>
+                    <h2 id="lateCount">0</h2>
+                </div>
+                <span class="stat-bar"></span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ============ STUDENT ATTENDANCE PANEL (SEARCH + TABLE) ============ -->
+    <div class="attendance-panel">
+
+         <!-- ============ PANEL HEADER (TITLE + SEARCH BOX) ============ -->
+        <div class="panel-header">
+            <div>
+                <h3>Student Attendance</h3>
+                <p>Select status for each student and add remarks if needed.</p>
+            </div>
+
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" class="form-control"
+                    placeholder="Search student...">
+            </div>
+        </div>
+
+        <!-- ============ STUDENT ATTENDANCE TABLE (POPULATED VIA JS) ============ -->
+        <div class="attendance-table">
+
+            <table class="table">
+
+                <thead>
+                    <tr>
+                        <th class="col-num">#</th>
+                        <th>Student</th>
+                        <th>Student ID</th>
+                        <th>Status</th>
+                        <th>Remarks</th>
+                    </tr>
+                </thead>
+
+                <tbody id="studentBody"></tbody>
+
+            </table>
+
+        </div>
+
+        <!-- ============ INSTRUCTIONS BOX ============ -->
+        <div class="instructions-box">
+            <div class="instructions-icon"><i class="fas fa-info"></i></div>
+            <div class="instructions-text">
+                <h4>Instructions</h4>
+                <ul class="instructions-timeline">
+                    <li>Select the appropriate status for each student.</li>
+                    <li>You can add remarks for additional information (optional).</li>
+                    <li>Click "Submit Attendance" to save the records.</li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ============ CONFIRM ATTENDANCE SUBMISSION MODAL ============ -->
+<div class="modal fade" id="attendanceModal" tabindex="-1">
+
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content attendance-modal">
+
+            <div class="modal-header border-0">
+                <h4 class="modal-title">Confirm Attendance Submission</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body text-center">
+
+                <!-- ============ PRESENT/ABSENT/LATE SUMMARY CARDS ============ -->
+                <div class="summary-box">
+
+                    <div class="summary-card present-card">
+                        <h3 id="modalPresent">0</h3>
+                        <span>Present</span>
+                    </div>
+
+                    <div class="summary-card absent-card">
+                        <h3 id="modalAbsent">0</h3>
+                        <span>Absent</span>
+                    </div>
+
+                    <div class="summary-card late-card">
+                        <h3 id="modalLate">0</h3>
+                        <span>Late</span>
+                    </div>
+
+                </div><br>
+
+                <!-- ============ OVERALL ATTENDANCE PERCENTAGE DISPLAY ============ -->
+                <div class="attendance-overview">
+                    <h5>
+                        Attendance Status :
+                        <span id="attendancePercentage"></span>
+                    </h5>
+                </div>
+
+                <!-- ============ SYLLABUS LOG FIELDS (TOPIC, DURATION, NEXT TOPIC, NOTES) ============ -->
+                <div class="mt-4">
+
+                    <div class="mb-3">
+                        <label class="form-label">Topic Covered *</label>
+                        <input type="text" id="topicCovered" class="form-control" placeholder="Enter topic covered"
+                            value="{{ syllabus_log.topic_covered|default:'' }}">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Duration *</label>
+
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="form-floating">
+                                    <input type="number"
+                                           class="form-control"
+                                           id="durationHours"
+                                           name="duration_hours"
+                                           placeholder="Hours"
+                                           min="0"
+                                           value="{{ duration_hours }}">
+                                    <label for="durationHours">Hours</label>
+                                </div>
+                            </div>
+
+                            <div class="col-6">
+                                <div class="form-floating">
+                                    <input type="number"
+                                           class="form-control"
+                                           id="durationMinutes"
+                                           name="duration_minutes"
+                                           placeholder="Minutes"
+                                           min="0"
+                                           max="59"
+                                           value="{{ duration_minutes }}">
+                                    <label for="durationMinutes">Minutes</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="durationError"
+                         class="text-danger mt-1">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Next Topic</label>
+                        <input type="text" id="nextTopic" class="form-control" placeholder="Enter next topic"
+                            value="{{ syllabus_log.next_topic|default:'' }}">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Trainer Notes</label>
+                        <textarea id="trainerNotes" class="form-control"
+                            rows="3">{{ syllabus_log.trainer_notes|default:'' }}</textarea>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- ============ MODAL FOOTER (GO BACK / SUBMIT NOW BUTTONS) ============ -->
+            <div class="modal-footer border-0">
+
+                <button class="btn btn-back" data-bs-dismiss="modal">
+                    Go Back
+                </button>
+
+                <button class="btn btn-submit" onclick="submitAttendance()">
+                    Submit Now
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+
+// ============ CSRF TOKEN FOR AJAX REQUESTS ============
+const csrfToken = "{{ csrf_token }}";
+
+</script>
+
+<script>
+
+// ============ BATCH ID + STUDENT LIST DATA (FOR mark_attendance.js) ============
+const batchId = {{ batch.id }};
+const attendanceHistoryUrl = "{% url 'attendance_history' %}";
+
+const students = [
+{% for enrollment in enrollments %}
+{
+    enrollment: {{ enrollment.id }},
+    student_name: "{{ enrollment.student.first_name }} {{ enrollment.student.last_name }}",
+    student_id: "STU{{ enrollment.student.id }}",
+    photo: {% if enrollment.student.photo %}"{{ enrollment.student.photo.url }}"{% else %}null{% endif %},
+    status: "{{ attendance_map|get_item:enrollment.id|default:'Present' }}",
+    remarks: "{{ remarks_map|get_item:enrollment.id|default:''|escapejs }}"
+},
+{% endfor %}
+];
+</script>
+    <script src="{% static 'js/attendance_js/mark_attendance.js' %}"></script>
+{% endblock %}

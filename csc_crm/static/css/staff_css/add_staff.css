@@ -1,0 +1,503 @@
+/* ==========================================
+   ADD STAFF FORM STYLES
+   ==========================================*/
+
+:root {
+    --csc-navy: #1e1b4b;
+    --csc-navy-light: #2c2870;
+    --csc-yellow: #ffc82c;
+    --csc-yellow-dark: #f0b400;
+    --csc-indigo: #4338ca;
+    --csc-bg: #f4f5fa;
+    --csc-white: #ffffff;
+    --csc-border: #e9eaf2;
+    --csc-text: #1f2142;
+    --csc-text-muted: #8b8da3;
+    --csc-purple-bg: #ede9fe;
+    --csc-purple-text: #6d4fc4;
+    --csc-red: #dc2626;
+    --csc-red-bg: #fee2e2;
+    --csc-radius-lg: 16px;
+    --csc-radius-md: 12px;
+    --csc-radius-sm: 8px;
+    --csc-shadow: 0 2px 10px rgba(30, 27, 75, 0.06);
+}
+
+body{
+    margin: 0 !important;
+    padding: 0 !important;
+}
+.staff-mgmt-form-container {
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0;
+    background: var(--csc-bg);
+    padding: 12px 0px 0px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: var(--csc-text);
+}
+
+/* ====================================== BREADCRUMB / BACK LINK ====================================== */
+
+.staff-mgmt-breadcrumb {
+    margin-bottom: 16px;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--csc-text-muted);
+    text-decoration: none;
+}
+
+.back-link:hover {
+    color: var(--csc-indigo);
+}
+
+.back-arrow {
+    font-size: 15px;
+}
+
+/* ===================================== FORM CARD ===================================== */
+.staff-mgmt-form-card {
+    background: var(--csc-white);
+    border-radius: var(--csc-radius-lg);
+    box-shadow: var(--csc-shadow);
+    padding: 28px 32px 32px;
+}
+
+.staff-mgmt-form-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    margin-bottom: 22px;
+    border-bottom: 1px solid var(--csc-border);
+}
+
+.form-header-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: var(--csc-purple-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.form-header-icon i{
+    margin-top: 12px;
+    margin-left: 8px;
+    width: 26px;
+    height: 26px;
+    color: var(--csc-purple-text);
+}
+
+.staff-mgmt-form-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--csc-navy);
+    margin: 0;
+    line-height: 1.3;
+}
+
+.staff-mgmt-form-subtitle {
+    font-size: 13.5px;
+    color: var(--csc-text-muted);
+    margin: 6px 0 0;
+}
+
+textarea.form-control {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 14px;
+    border: 1px solid #d9dbe3;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    color: #1a1a1a;
+    background: #fff;
+    resize: vertical;
+    min-height: 44px;
+    line-height: 1.4;
+    transition: border-color 0.2s ease;
+}
+
+textarea.form-control::placeholder {
+    color: #9a9da8;
+}
+
+textarea.form-control:focus {
+    outline: none;
+    border-color: #6c5ce7;
+    box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
+}
+
+#skillsTypedInput {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.skills-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+    max-width: 100%;
+}
+
+.skill-chip {
+    display: inline-block;
+    background: #f1f3f6;
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 13px;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    box-sizing: border-box;
+}
+
+/* =========================== SECTIONS ================================ */
+.staff-mgmt-form-section {
+    border: none;
+    padding: 0;
+    margin: 0 0 28px;
+}
+
+.staff-mgmt-form-section:last-of-type {
+    margin-bottom: 0;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--csc-navy);
+    padding: 0;
+    margin-bottom: 18px;
+}
+
+.section-bar {
+    width: 4px;
+    height: 18px;
+    border-radius: 4px;
+    background: var(--csc-indigo);
+}
+
+.section-icon {
+    width: 18px;
+    height: 18px;
+    color: var(--csc-indigo);
+}
+
+/* ================================ FORM ROWS & FIELDS ================================ */
+.form-row {
+    display: grid;
+    gap: 18px;
+    margin-bottom: 18px;
+}
+
+.form-row.three-columns {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.form-row.two-columns {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--csc-text);
+    margin-bottom: 8px;
+}
+
+.required {
+    color: var(--csc-red);
+}
+
+.form-error {
+    font-size: 11.5px;
+    color: var(--csc-red);
+    margin-top: 4px;
+    display: block;
+    min-height: 14px;
+}
+
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-wrapper{
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-wrapper i{
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--csc-text-muted);
+    font-size: 15px;
+    pointer-events: none;
+}
+
+/* ===================== SPECIAL CSS FOR DATE FIELD =================== */
+input[type="date"]::-webkit-calendar-picker-indicator {
+    opacity: 0;
+    position: absolute;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    
+}
+
+/* ============================== /* Django-rendered inputs / selects ================================= */
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="tel"],
+.form-group input[type="date"],
+.form-group input[type="password"],
+.form-group input[type="number"],
+.form-group input:not([type]),
+.form-group select {
+    width: 100%;
+    border: 1px solid var(--csc-border);
+    border-radius: var(--csc-radius-sm);
+    padding: 11px 40px 11px 16px;
+    font-size: 13.5px;
+    color: var(--csc-text);
+    background: var(--csc-white);
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+.form-group-select {
+    appearance: none;
+     -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M0 0l5 6 5-6z' fill='%238b8da3'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    cursor: pointer;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--csc-indigo);
+    box-shadow: 0 0 0 3px rgba(67, 56, 202, 0.12);
+}
+
+.form-group input[readonly] {
+    background: var(--csc-bg);
+    color: var(--csc-text-muted);
+    
+}
+
+/* =================================== FILE UPLOAD =================================== */
+
+.file-upload-wrapper {
+    position: relative;
+}
+
+.upload-dropzone {
+    position: relative;
+    border: 1.5px dashed #c7c9f5; 
+    border-radius: var(--csc-radius-md);
+    background: #fbfaff;
+    padding: 26px 20px;
+    text-align: center;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.upload-dropzone:hover {
+    border-color: var(--csc-indigo);
+    background: var(--csc-purple-bg);
+}
+
+.upload-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--csc-purple-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 12px;
+    color: var(--csc-indigo);
+}
+
+.upload-icon i {
+    width: 20px;
+    height: 20px;
+}
+
+.upload-text {
+    font-size: 13.5px;
+    color: var(--csc-text);
+    margin: 0;
+}
+
+.upload-link {
+    color: var(--csc-indigo);
+    font-size: 600;
+}
+
+.upload-hint {
+    font-size: 12px;
+    color: var(--csc-text-muted);
+    margin: 4px 0 0;
+}
+
+.upload-dropzone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.remove-file-btn {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: none;
+    background: var(--csc-red);
+    color: var(--csc-white);
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+.upload-progress {
+    height: 5px;
+    border-radius: 4px;
+    background: var(--csc-border);
+    margin-top: 10px;
+    overflow: hidden;
+    display: none;
+}
+
+.progress-bar {
+    height: 100%;
+    width: 0%;
+    background: var(--csc-indigo);
+    transition: width 0.2s ease;
+}
+
+.upload-status {
+    display: block;
+    font-size: 12px;
+    color: var(--csc-text-muted);
+    margin-top: 6px;
+}
+
+/*================================== FORM ACTIONS ================================== */
+
+.form-actions {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 16px;
+    margin-top: 30px;
+    padding: 22px;
+    border-top: 1px solid var(--csc-border);
+    
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-radius: var(--csc-radius-sm);
+    padding: 13px 20px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    text-decoration: none;
+    transition: opacity 0.15s ease, background 0.15s ease;
+}
+
+.btn-cancel {
+    background: var(--csc-bg);
+    color: var(--csc-text);
+    border: 1px solid var(--csc-border);
+}
+
+.btn-cancel:hover {
+    background: var(--csc-border);
+}
+
+.btn-primary {
+    background: var(--csc-yellow);
+    color: var(--csc-navy);
+}
+
+.btn-primary:hover {
+    background: var(--csc-yellow-dark);
+}
+
+.btn-icon i {
+    width: 16px;
+    height: 16px;
+}
+
+/* ================================= RESPONSIVE ================================= */
+
+@media (max-width: 1000px) {
+    .form-row.three-columns {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+ 
+@media (max-width: 700px) {
+    .staff-mgmt-form-container {
+        padding: 16px;
+    }
+ 
+    .staff-mgmt-form-card {
+        padding: 20px;
+    }
+ 
+    .form-row.three-columns,
+    .form-row.two-columns {
+        grid-template-columns: 1fr;
+    }
+ 
+    .form-actions {
+        grid-template-columns: 1fr;
+    }
+ 
+    .staff-mgmt-form-header {
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: left;
+    }
+}

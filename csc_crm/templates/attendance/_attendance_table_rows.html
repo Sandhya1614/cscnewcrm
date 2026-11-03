@@ -1,0 +1,73 @@
+{% for record in records %}
+<tr class="attendance-row"
+    data-record-id="{{ record.id }}"
+    data-name="{{ record.enrollment.student.first_name|lower }} {{ record.enrollment.student.last_name|lower }}"
+    data-id="stu{{ record.enrollment.student.id }}"
+    data-course="{{ record.enrollment.course.course_name|lower }}"
+    data-batch="{{ record.batch.id }}"
+    data-status="{{ record.status|lower }}"
+    data-date="{{ record.attendance_date|date:'Y-m-d' }}">
+
+    <td class="col-check"><input type="checkbox" class="row-check" value="{{ record.id }}"></td>
+
+    <td>{{ record.attendance_date|date:"F j, Y" }}</td>
+
+    <td>
+        <div class="student-info">
+
+            {% if record.enrollment.student.photo %}
+            <img src="{{ record.enrollment.student.photo.url }}" class="student-avatar-img" alt="Student">
+            {% else %}
+            <div class="student-avatar">
+                {{ record.enrollment.student.first_name|slice:":1" }}{{ record.enrollment.student.last_name|slice:":1" }}
+            </div>
+            {% endif %}
+
+            <span>
+                <a href="#" class="student-detail-btn" data-id="{{ record.enrollment.student.id }}">
+                    {{ record.enrollment.student.first_name }} {{ record.enrollment.student.last_name }}
+                </a>
+            </span>
+
+        </div>
+    </td>
+
+    <td>STU{{ record.enrollment.student.id }}</td>
+
+    <td>{{ record.enrollment.course.course_name }}</td>
+
+    <td>{{ record.batch.batch_name }}</td>
+
+    <td>
+        {% if record.status == "Present" %}
+        <span class="badge-present">Present</span>
+        {% elif record.status == "Absent" %}
+        <span class="badge-absent">Absent</span>
+        {% else %}
+        <span class="badge-late">Late</span>
+        {% endif %}
+    </td>
+
+    <td>{{ record.trainer }}</td>
+
+    <td class="col-actions">
+        <div class="row-menu">
+            <button type="button" class="row-menu-btn" data-id="{{ record.enrollment.student.id }}">
+                <i class="fa-solid fa-ellipsis-vertical"></i>
+            </button>
+            <div class="row-menu-dropdown">
+                <a href="{% url 'view_student' record.enrollment.student.id %}" class="row-menu-item row-view-btn">
+                    <i class="fa-regular fa-eye"></i> View
+                </a>
+            </div>
+        </div>
+    </td>
+
+</tr>
+{% empty %}
+<tr>
+    <td colspan="9" class="empty-row">
+        No attendance records found
+    </td>
+</tr>
+{% endfor %}

@@ -1,0 +1,54 @@
+/* Lead autofill dropdown (Student Register -> First Name) */
+
+.lead-autofill-wrapper{
+    position:relative;
+}
+
+.lead-autofill-wrapper .lead-suggestions{
+    display:none;
+    position:absolute;
+    top:calc(100% + 6px);
+    left:0;
+    width:100%;
+    background:#fff;
+    border:1px solid #d9dfe8;
+    border-radius:10px;
+    box-shadow:0 8px 20px rgba(17, 12, 60, 0.12);
+    max-height:220px;
+    overflow-y:auto;
+    z-index:50;
+}
+
+.lead-autofill-wrapper .lead-suggestion-item{
+    padding:9px 15px;
+    cursor:pointer;
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+    border-bottom:1px solid #f0f1f6;
+}
+
+.lead-autofill-wrapper .lead-suggestion-item:last-child{
+    border-bottom:none;
+}
+
+.lead-autofill-wrapper .lead-suggestion-item:hover{
+    background:#f4f2ff;
+}
+
+.lead-autofill-wrapper .lead-suggestion-name{
+    font-size:13px;
+    font-weight:600;
+    color:rgb(11, 11, 149);
+}
+
+.lead-autofill-wrapper .lead-suggestion-meta{
+    font-size:11px;
+    color:#888;
+}
+
+.lead-autofill-wrapper .lead-suggestion-empty{
+    padding:10px 15px;
+    font-size:12px;
+    color:#888;
+}

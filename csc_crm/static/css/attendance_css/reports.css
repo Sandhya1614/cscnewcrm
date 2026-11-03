@@ -1,0 +1,1459 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+
+    --primary: #262170;
+    --primary-dark: #1c1852;
+    --secondary: #FEF200;
+
+    --white: #ffffff;
+    --light: #f8f9fc;
+    --page-bg: #f4f5fa;
+
+    --border: #e5e7eb;
+
+    --text: #111827;
+    --muted: #6b7280;
+
+    --success: #16a34a;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+
+    --shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
+
+}
+
+
+/* =========================================================
+   GLOBAL
+========================================================= */
+
+.reports-page * {
+
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+
+}
+
+.reports-page {
+
+    background: var(--page-bg);
+
+}
+
+
+/* =========================================================
+   TOPBAR
+========================================================= */
+
+.reports-topbar {
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    margin-bottom: 20px;
+
+    flex-wrap: wrap;
+    gap: 14px;
+
+}
+
+.reports-topbar h5 {
+
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text);
+
+    margin: 0;
+
+    letter-spacing: -0.3px;
+
+}
+
+.topbar-actions {
+
+    display: flex;
+    gap: 10px;
+
+    flex-wrap: wrap;
+
+}
+
+
+/* =========================================================
+   EXPORT BUTTON
+========================================================= */
+
+.export-btn {
+
+    border: none;
+
+    border-radius: 12px;
+
+    padding: 10px 16px;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    display: flex;
+    align-items: center;
+
+    gap: 8px;
+
+    transition: 0.3s;
+
+    cursor: pointer;
+
+    color: white;
+
+    text-decoration: none !important;
+
+}
+
+.export-btn:hover {
+
+    text-decoration: none !important;
+
+    transform: translateY(-2px);
+
+}
+
+
+/* PDF */
+
+.pdf-btn {
+
+    background: var(--danger);
+
+}
+
+.pdf-btn:hover {
+
+    background: var(--danger);
+
+    box-shadow: 0 6px 16px rgba(220, 38, 38, 0.25);
+
+}
+
+
+/* EXCEL */
+
+.excel-btn {
+
+    background: var(--success);
+
+}
+
+.excel-btn:hover {
+
+    background: var(--success);
+
+    box-shadow: 0 6px 16px rgba(22, 163, 74, 0.25);
+
+}
+
+
+/* =========================================================
+   FILTER CARD
+========================================================= */
+
+.filter-card {
+
+    background: var(--white);
+
+    border-radius: 18px;
+
+    padding: 20px 20px 8px;
+
+    margin: 0 0 24px;
+
+    box-shadow: var(--shadow);
+
+    border: 1px solid var(--border);
+
+}
+
+.filter-container {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(auto-fit, minmax(170px, 1fr));
+
+    gap: 14px;
+
+    margin-bottom: 16px;
+
+}
+
+.filter-field {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 6px;
+
+}
+
+.filter-label {
+
+    font-size: 11.5px;
+
+    font-weight: 700;
+
+    color: var(--muted);
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.4px;
+
+}
+
+.filter-input-icon {
+
+    position: relative;
+
+    display: flex;
+
+    align-items: center;
+
+}
+
+.filter-input-icon i {
+
+    position: absolute;
+
+    left: 12px;
+
+    font-size: 12px;
+
+    color: var(--muted);
+
+    pointer-events: none;
+
+}
+
+.filter-input-icon .filter-input {
+
+    padding-left: 32px;
+
+}
+
+.date-range-group {
+
+    grid-column: span 2;
+
+    min-width: 280px;
+
+}
+
+.date-range-inputs {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+}
+
+.date-range-inputs .filter-input-icon {
+
+    flex: 1 1 0;
+
+    min-width: 0;
+
+}
+
+.date-range-sep {
+
+    color: var(--muted);
+
+    font-weight: 600;
+
+}
+
+.filter-input,
+.filter-select {
+
+    width: 100%;
+
+    height: 42px;
+
+    border: 1px solid var(--border);
+
+    border-radius: 10px;
+
+    padding: 0 12px;
+
+    font-size: 12px;
+
+    color: var(--text);
+
+    background: var(--white);
+
+    transition: .3s;
+
+}
+
+.filter-input:focus,
+.filter-select:focus {
+
+    outline: none;
+
+    border: 2px solid var(--primary);
+
+    box-shadow: none;
+
+}
+
+.filter-actions-row {
+
+    display: flex;
+
+    gap: 10px;
+
+    padding-bottom: 18px;
+
+}
+
+.clear-btn,
+.apply-btn {
+
+    height: 42px;
+
+    border: none;
+
+    border-radius: 10px;
+
+    color: var(--white);
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    padding: 0 18px;
+
+    transition: .3s;
+
+}
+
+.clear-btn {
+
+    background: #4b4a6b;
+
+}
+
+.clear-btn:hover {
+
+    background: #3d3c58;
+
+}
+
+.apply-btn {
+
+    background: var(--primary);
+
+}
+
+.apply-btn:hover {
+
+    background: var(--primary-dark);
+
+    box-shadow: 0 6px 16px rgba(38, 33, 112, 0.25);
+
+}
+
+.apply-btn:disabled,
+.clear-btn:disabled {
+
+    cursor: not-allowed;
+
+}
+
+.filter-message {
+
+    width: 100%;
+
+}
+
+
+/* =========================================================
+   COMMON CHART CARD
+========================================================= */
+
+.chart-card {
+
+    background: var(--white);
+
+    border-radius: 18px;
+
+    padding: 16px;
+
+    box-shadow: var(--shadow);
+
+    border: 1px solid var(--border);
+
+    height: 100%;
+
+    min-width: 0;
+
+}
+
+.chart-header {
+
+    margin-bottom: 18px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    flex-wrap: wrap;
+
+    gap: 10px;
+
+}
+
+.chart-header h4 {
+
+    font-size: 16px;
+
+    font-weight: 700;
+
+    color: var(--text);
+
+}
+
+.batch-wise-header {
+
+    align-items: flex-start;
+
+}
+
+.batch-wise-header-actions {
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: flex-end;
+
+    gap: 6px;
+
+}
+
+.chart-container {
+
+    position: relative;
+
+    width: 100%;
+
+    height: 250px;
+
+}
+
+.pie-chart-container {
+
+    position: relative;
+
+    width: 100%;
+
+    height: 250px;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+}
+
+canvas {
+
+    max-width: 100% !important;
+
+    max-height: 100% !important;
+
+}
+
+
+/* =========================================================
+   CHART EMPTY STATE
+========================================================= */
+
+.chart-empty-state {
+
+    display: none;
+
+    position: absolute;
+
+    inset: 0;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 8px;
+
+    text-align: center;
+
+    padding: 20px;
+
+    background: var(--white);
+
+    z-index: 2;
+
+}
+
+.chart-empty-state.show {
+
+    display: flex;
+
+}
+
+.chart-empty-state i {
+
+    font-size: 30px;
+
+    color: #cbd5e1;
+
+}
+
+.chart-empty-state p {
+
+    margin: 0;
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    color: var(--muted);
+
+}
+
+
+/* =========================================================
+   TABLE RESPONSIVE
+========================================================= */
+
+.table-responsive {
+
+    overflow-x: auto;
+
+    -webkit-overflow-scrolling: touch;
+
+}
+
+
+/* =========================================================
+   ATTENDANCE INFO BANNER
+========================================================= */
+
+.attendance-info-banner {
+
+    background: #e0f2fe;
+
+    border-left: 4px solid #0284c7;
+
+    color: #0f172a;
+
+    padding: 14px 18px;
+
+    border-radius: 8px;
+
+    margin-bottom: 20px;
+
+    font-size: 14px;
+
+    font-weight: 500;
+
+}
+
+.attendance-info-banner i {
+
+    margin-right: 8px;
+
+}
+
+.attendance-info-banner.success {
+
+    background: #dcfce7;
+
+    border-left: 4px solid var(--success);
+
+    color: var(--success);
+
+}
+
+
+/* =========================================================
+   CHARTS LAYOUT
+========================================================= */
+
+/*
+   ROW 1
+   Monthly Attendance Chart
+*/
+
+.charts-row {
+
+    display: flex;
+
+    gap: 20px;
+
+    width: 100%;
+
+    margin-bottom: 24px;
+
+}
+
+.charts-row .chart-card {
+
+    flex: 1;
+
+    min-width: 0;
+
+    min-height: 400px;
+
+}
+
+
+/*
+   ROW 2
+   Attendance Distribution + Batch-wise Attendance
+*/
+
+.charts-top-row {
+
+    display: flex;
+
+    align-items: stretch;
+
+    gap: 20px;
+
+    width: 100%;
+
+    margin-bottom: 24px;
+
+}
+
+
+/*
+   IMPORTANT:
+   Both cards will always have equal height.
+*/
+
+.charts-top-row>.chart-card {
+
+    flex: 1 1 0;
+
+    min-width: 0;
+
+    height: auto;
+
+    min-height: 400px;
+
+    display: flex;
+
+    flex-direction: column;
+
+}
+
+
+/*
+   Distribution card
+*/
+
+.charts-top-row .distribution-chart-card {
+
+    flex: 1 1 0;
+
+}
+
+
+/*
+   Batch-wise card
+*/
+
+.charts-top-row>.chart-card:not(.distribution-chart-card) {
+
+    flex: 1 1 0;
+
+}
+
+
+/*
+   Chart area inside both cards
+   expands equally.
+*/
+
+.charts-top-row .pie-chart-container {
+
+    flex: 1;
+
+    min-height: 250px;
+
+    height: auto;
+
+}
+
+
+/*
+   Batch warning also fills the same height.
+*/
+
+.charts-top-row .chart-warning {
+
+    flex: 1;
+
+    min-height: 250px;
+
+    height: auto;
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+    align-items: center;
+
+    text-align: center;
+
+    color: #6b7280;
+
+}
+
+
+/* =========================================================
+   CHART WARNING
+========================================================= */
+
+.chart-warning i {
+
+    font-size: 40px;
+
+    color: #f59e0b;
+
+    margin-bottom: 10px;
+
+}
+
+.chart-warning h5 {
+
+    margin-bottom: 8px;
+
+    font-weight: 600;
+
+}
+
+.chart-warning p {
+
+    margin: 0;
+
+}
+
+
+/* =========================================================
+   REPORT TABLE CARD
+========================================================= */
+
+.report-table-card {
+
+    background: var(--white);
+
+    border-radius: 18px;
+
+    padding: 16px;
+
+    margin-top: 24px;
+
+    box-shadow: var(--shadow);
+
+    border: 1px solid var(--border);
+
+    width: 100%;
+
+}
+
+.report-table-header {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    margin-bottom: 20px;
+
+    flex-wrap: wrap;
+
+    gap: 14px;
+
+}
+
+.report-table-header h4 {
+
+    font-size: 18px;
+
+    font-weight: 700;
+
+    color: var(--text);
+
+    margin: 0;
+
+}
+
+.table-actions {
+
+    display: flex;
+
+    gap: 10px;
+
+    flex-wrap: wrap;
+
+}
+
+
+/* =========================================================
+   TABLE
+========================================================= */
+
+.table {
+
+    margin: 0;
+
+    width: 100%;
+
+}
+
+.table thead th {
+
+    color: var(--muted);
+
+    font-size: 11.5px;
+
+    font-weight: 700;
+
+    padding: 14px 12px;
+
+    border-bottom: 1px solid var(--border);
+
+    white-space: nowrap;
+
+    letter-spacing: 0.5px;
+
+    background: var(--light);
+
+}
+
+.table thead th:first-child {
+
+    border-top-left-radius: 10px;
+
+    border-bottom-left-radius: 10px;
+
+}
+
+.table thead th:last-child {
+
+    border-top-right-radius: 10px;
+
+    border-bottom-right-radius: 10px;
+
+}
+
+.table tbody td {
+
+    padding: 14px 12px;
+
+    vertical-align: middle;
+
+    font-size: 12.5px;
+
+    color: var(--text);
+
+    border-bottom: 1px solid var(--border);
+
+}
+
+.table tbody tr:hover {
+
+    background: var(--light);
+
+}
+
+
+/* =========================================================
+   STUDENT CELL
+========================================================= */
+
+.student-cell {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+}
+
+.student-avatar {
+
+    width: 34px;
+
+    height: 34px;
+
+    border-radius: 50%;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    font-size: 11px;
+
+    font-weight: 700;
+
+    color: var(--white);
+
+    background: var(--primary);
+
+    flex-shrink: 0;
+
+}
+
+.student-cell span {
+
+    font-size: 12.5px;
+
+    font-weight: 600;
+
+    color: var(--primary);
+
+}
+
+
+/* =========================================================
+   TEXT COLORS
+========================================================= */
+
+.present-text {
+
+    color: var(--success) !important;
+
+    font-weight: 700;
+
+}
+
+.absent-text {
+
+    color: var(--danger) !important;
+
+    font-weight: 700;
+
+}
+
+.late-text {
+
+    color: var(--warning) !important;
+
+    font-weight: 700;
+
+}
+
+.rate-text {
+
+    color: var(--success) !important;
+
+    font-weight: 700;
+
+}
+
+
+/* =========================================================
+   STATUS BADGES
+========================================================= */
+
+.status-badge {
+
+    padding: 6px 16px;
+
+    border-radius: 999px;
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    min-width: 78px;
+
+}
+
+.excellent-badge {
+
+    background: #dcfce7;
+
+    color: var(--success);
+
+}
+
+.good-badge {
+
+    background: #e0e7ff;
+
+    color: var(--primary);
+
+}
+
+.warning-badge {
+
+    background: #fef3c7;
+
+    color: var(--warning);
+
+}
+
+.critical-badge {
+
+    background: #fee2e2;
+
+    color: var(--danger);
+
+}
+
+.report-table-footer {
+
+    padding: 12px 16px;
+
+    font-size: 13px;
+
+    color: var(--text);
+
+    text-align: right;
+
+}
+
+
+/* =========================================================
+   TOAST
+========================================================= */
+
+.attendance-toast {
+
+    width: 100%;
+
+    margin: 0 0 4px;
+
+    padding: 10px;
+
+    text-align: center;
+
+    border-radius: 8px;
+
+    font-size: 14px;
+
+    overflow: hidden;
+
+    max-height: 200px;
+
+    transition:
+        opacity 0.4s ease,
+        max-height 0.4s ease 0.15s,
+        padding 0.4s ease 0.15s,
+        margin 0.4s ease 0.15s;
+
+}
+
+.attendance-toast.fade-out {
+
+    opacity: 0;
+
+    visibility: hidden;
+
+    max-height: 0;
+
+    padding: 0;
+
+    margin: 0;
+
+    border: 0;
+
+}
+
+
+/* =========================================================
+   RESPONSIVE - 992px
+========================================================= */
+
+@media(max-width:992px) {
+
+    .charts-top-row {
+
+        flex-direction: column;
+
+    }
+
+    /*
+       On tablet/mobile, cards are stacked.
+       Equal height is no longer forced because
+       each card can have its own content height.
+    */
+
+    .charts-top-row>.chart-card {
+
+        width: 100%;
+
+        min-height: 300px;
+
+    }
+
+    .charts-top-row .pie-chart-container {
+
+        min-height: 250px;
+
+    }
+
+    .charts-top-row .chart-warning {
+
+        min-height: 250px;
+
+    }
+
+}
+
+
+/* =========================================================
+   RESPONSIVE - 768px
+========================================================= */
+
+@media(max-width:768px) {
+
+    .reports-topbar {
+
+        flex-direction: column;
+
+        align-items: flex-start;
+
+    }
+
+    .report-table-header {
+
+        flex-direction: column;
+
+        align-items: flex-start;
+
+    }
+
+    .table {
+
+        min-width: 900px;
+
+    }
+
+    .table-actions {
+
+        width: 100%;
+
+        display: flex;
+
+        gap: 10px;
+
+    }
+
+
+    /* EXPORT BUTTON */
+
+    .export-btn {
+
+        width: auto;
+
+        min-width: 140px;
+
+        justify-content: center;
+
+        padding: 10px 16px;
+
+        font-size: 12px;
+
+        border-radius: 10px;
+
+    }
+
+
+    .date-range-group {
+
+        grid-column: span 1;
+
+    }
+
+    .filter-actions-row {
+
+        flex-wrap: wrap;
+
+    }
+
+
+    /* MAIN CONTENT */
+
+    .main-content {
+
+        margin-left: 0;
+
+        width: 100%;
+
+        padding: 15px;
+
+    }
+
+
+    /* CHART ROW */
+
+    .charts-row {
+
+        flex-direction: column;
+
+    }
+
+    .charts-row .chart-card {
+
+        width: 100%;
+
+        min-height: 300px;
+
+    }
+
+
+    /*
+       Row 2 also becomes vertical.
+    */
+
+    .charts-top-row {
+
+        flex-direction: column;
+
+        gap: 20px;
+
+    }
+
+    .charts-top-row>.chart-card {
+
+        width: 100%;
+
+        min-height: 300px;
+
+    }
+
+}
+
+
+/* =========================================================
+   RESPONSIVE - 480px
+========================================================= */
+
+@media(max-width:480px) {
+
+    .reports-topbar h5 {
+
+        font-size: 19px;
+
+    }
+
+    .chart-card {
+
+        padding: 14px;
+
+        border-radius: 14px;
+
+    }
+
+    .report-table-card {
+
+        padding: 14px;
+
+        border-radius: 14px;
+
+    }
+
+    .topbar-actions {
+
+        width: 100%;
+
+    }
+
+    .topbar-actions .export-btn {
+
+        flex: 1;
+
+    }
+
+    .table-actions .export-btn {
+
+        flex: 1;
+
+    }
+
+}
+
+/* ============ CHART SIZE REDUCTION (override) ============ */
+
+/* Monthly bar chart */
+.reports-page .chart-container {
+    position: relative;
+    height: 260px;
+    /* was too tall */
+    min-height: 0;
+    width: 100%;
+}
+
+/* Distribution + Batch-wise doughnut charts */
+.reports-page .pie-chart-container {
+    position: relative;
+    height: 220px;
+    min-height: 0;
+    width: 100%;
+}
+
+/* Reduce extra padding / empty gap inside chart cards */
+.reports-page .chart-card {
+    padding: 14px 18px;
+    min-height: 0;
+    height: auto;
+}
+
+.reports-page .chart-header {
+    margin-bottom: 8px;
+}
+
+/* Gap between chart rows */
+.reports-page .charts-row,
+.reports-page .charts-top-row {
+    margin-bottom: 16px;
+    gap: 16px;
+}
+
+/* Warning card (when batch chart is not available) */
+.reports-page .chart-warning {
+    min-height: 0;
+    padding: 24px 16px;
+}
+
+/* ============ PIE / DONUT CHART SIZE (override) ============ */
+.reports-page .pie-chart-container {
+    position: relative;
+    height: 200px;
+    max-height: 200px;
+    min-height: 0;
+    width: 100%;
+    overflow: hidden;
+}
+
+.reports-page .pie-chart-container canvas {
+    max-height: 200px !important;
+}
+
+/* Cards la extra height irundha remove panna */
+.reports-page .distribution-chart-card,
+.reports-page .charts-top-row .chart-card {
+    height: auto;
+    min-height: 0;
+}
+
+/* ================= TABLE PAGINATION ================= */
+
+.report-table-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+    padding: 16px 20px;
+    border-top: 1px solid #e5e7eb;
+    font-size: 14px;
+    color: #475569;
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.pagination-numbers {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.pagination-btn {
+    min-width: 36px;
+    height: 36px;
+    padding: 0 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #334155;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background: #eff6ff;
+    border-color: #2563eb;
+    color: #2563eb;
+}
+
+.pagination-btn.active {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.pagination-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+@media (max-width: 576px) {
+    .report-table-footer {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .pagination-controls {
+        gap: 4px;
+    }
+
+    .pagination-btn {
+        min-width: 30px;
+        height: 32px;
+        padding: 0 7px;
+        font-size: 12px;
+    }
+}

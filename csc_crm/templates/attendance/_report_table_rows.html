@@ -1,0 +1,49 @@
+{% for student in report_students %}
+
+<tr class="report-row" data-name="{{ student.student.first_name|lower }}"
+    data-course="{{ student.course.course_name|lower }}" data-batch="{{ student.batch.id }}"
+    data-attendance="{{ student.attendance_rate }}" data-status="{{ student.status|lower }}">
+
+    <td>
+        <div class="student-cell">
+            <div class="student-avatar">
+                {{ student.student.first_name|slice:":2"|upper }}
+            </div>
+            <span>
+                {{ student.student.first_name }}
+                {{ student.student.last_name }}
+            </span>
+        </div>
+    </td>
+
+    <td>{{ student.course }}</td>
+    <td>{{ student.batch.batch_name }}</td>
+    <td>{{ student.total_days }}</td>
+    <td class="present-text">{{ student.present_count }}</td>
+    <td class="absent-text">{{ student.absent_count }}</td>
+    <td class="late-text">{{ student.late_count }}</td>
+    <td class="rate-text">{{ student.attendance_rate }}%</td>
+
+    <td>
+        {% if student.status == "Critical" %}
+        <span class="status-badge critical-badge">Critical</span>
+        {% elif student.status == "Warning" %}
+        <span class="status-badge warning-badge">Warning</span>
+        {% elif student.status == "Excellent" %}
+        <span class="status-badge excellent-badge">Excellent</span>
+        {% else %}
+        <span class="status-badge good-badge">Good</span>
+        {% endif %}
+    </td>
+
+</tr>
+
+{% empty %}
+
+<tr>
+    <td colspan="9" style="text-align:center;">
+        No records found
+    </td>
+</tr>
+
+{% endfor %}

@@ -1,0 +1,255 @@
+{% extends 'attendance/base.html' %}
+{% load static %}
+
+{# Batch View / Preview page: single batch's details plus today's attendance summary #}
+
+{% block title %}Batch Preview{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/attendance_css/batch_preview.css' %}">
+{% endblock extra_css %}
+
+{% block content %}
+<div class="bp-wrapper">
+
+    <!-- ============ BREADCRUMB NAVIGATION ============ -->
+    <div class="bp-breadcrumb">
+        <a href="{% url 'dashboard' %}">Attendance Module</a>
+        <span>&gt;</span>
+
+        {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" or request.user.staff_profile.role.role_name == "HR" %}
+        <a href="{% url 'batches_page' %}">Batches</a>
+        <span>&gt;</span>
+        {% endif %}
+        
+        <span class="bp-breadcrumb-current">Batch Preview</span>
+    </div>
+
+    <!-- ============ PAGE TITLE + BACK BUTTON ============ -->
+    <div class="bp-header-row">
+        <h1 class="bp-title">Batch Preview</h1>
+
+        <div class="bp-header-actions">
+
+            {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" or request.user.staff_profile.role.role_name == "HR" %}
+            <a href="{% url 'batches_page' %}" class="bp-btn bp-btn-outline">
+                <i class="fa-solid fa-arrow-left"></i> Back to Batches
+            </a>
+            {% endif %}
+
+            {% if request.user.staff_profile.role.role_name == "Trainer" %}
+            <a href="{% url 'dashboard' %}" class="bp-btn bp-btn-outline">
+                <i class="fa-solid fa-arrow-left"></i> Back to Batches
+            </a>
+            {% endif%}
+        </div>
+    </div>
+
+    <!-- ============ BATCH SUMMARY BANNER (COURSE, STATUS, DURATION) ============ -->
+    <div class="bp-banner">
+        <div class="bp-banner-icon">
+            <i class="fa-solid fa-users"></i>
+        </div>
+
+        <div class="bp-banner-info">
+            <div class="bp-banner-title-row">
+                <h2>{{ batch.course.course_name }}</h2>
+                <span class="bp-status-badge bp-status-{{ batch_status|lower }}">
+                    {{ batch_status }}
+                </span>
+                {% if batch_status == 'Upcoming' %}
+                <span class="bp-status-badge bp-status-upcoming">
+                    <i class="fa-regular fa-calendar-plus"></i> Starts {{ batch.start_date|date:"d M Y" }}
+                </span>
+                {% endif %}
+            </div>
+
+            <div class="bp-banner-tags">
+                <span class="bp-tag">Batch ID: {{ batch_code }}</span>
+                <span class="bp-tag">Course: {{ batch.course.course_name }}</span>
+            </div>
+
+            {% if batch.description %}
+            <p class="bp-banner-desc">{{ batch.description }}</p>
+            {% endif %}
+        </div>
+
+        <div class="bp-banner-duration">
+            <div class="bp-duration-icon">
+                <i class="fa-regular fa-calendar"></i>
+            </div>
+            <div>
+                <span class="bp-duration-label">Batch Duration</span>
+                <p class="bp-duration-value">
+                    {{ batch.start_date|date:"F Y" }} - {{ batch.end_date|date:"F Y" }}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ STAT CARDS (STUDENTS, TRAINER, TIMING, ATTENDANCE STATUS) ============ -->
+    <div class="bp-stats-grid">
+
+        <div class="bp-stat-card">
+            <div class="bp-stat-icon bp-icon-purple">
+                <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+            <div>
+                <span class="bp-stat-label">Total Students</span>
+                <p class="bp-stat-value">{{ total_students }}</p>
+                <span class="bp-stat-sub">Enrolled Students</span>
+            </div>
+        </div>
+
+        <div class="bp-stat-card">
+            <div class="bp-stat-icon bp-icon-orange">
+                <i class="fa-solid fa-chalkboard-user"></i>
+            </div>
+            <div>
+                <span class="bp-stat-label">Trainer</span>
+                <p class="bp-stat-value bp-stat-value-sm">
+                    {% if batch.trainer %}
+                    {{ batch.trainer.first_name }} {{ batch.trainer.last_name }}
+                    {% else %}
+                    Not Assigned
+                    {% endif %}
+                </p>
+                {% if batch.trainer %}
+                <span class="bp-stat-sub bp-emp-id">{{ batch.trainer.employee_id }}</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="bp-stat-card">
+            <div class="bp-stat-icon bp-icon-green">
+                <i class="fa-regular fa-clock"></i>
+            </div>
+            <div>
+                <span class="bp-stat-label">Class Timing</span>
+                <p class="bp-stat-value bp-stat-value-sm">
+                    {{ batch.start_time|time:"h:i A" }} - {{ batch.end_time|time:"h:i A" }}
+                </p>
+                <span class="bp-stat-sub">{{ batch.timing }}</span>
+            </div>
+        </div>
+
+        <div class="bp-stat-card">
+            <div class="bp-stat-icon bp-icon-blue">
+                <i class="fa-regular fa-calendar-check"></i>
+            </div>
+            <div>
+                <span class="bp-stat-label">Attendance Status</span>
+                {% if attendance_marked %}
+                <p class="bp-stat-value bp-stat-value-sm bp-text-green">Marked</p>
+                {% else %}
+                <p class="bp-stat-value bp-stat-value-sm bp-text-red">Not Marked</p>
+                {% endif %}
+                <span class="bp-stat-sub">Today ({{ today|date:"F d, Y" }})</span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ============ BATCH DETAILS + TODAY'S OVERVIEW PANELS ============ -->
+    <div class="bp-details-grid">
+
+        <!-- ============ BATCH DETAILS PANEL ============ -->
+        <div class="bp-panel">
+            <h3 class="bp-panel-title">Batch Details</h3>
+
+            <div class="bp-detail-row">
+                <span class="bp-detail-label"><i class="fa-regular fa-rectangle-list bp-icon"></i>Batch ID</span>
+                <span class="bp-detail-value">{{ batch_code }}</span>
+            </div>
+            <div class="bp-detail-row">
+                <span class="bp-detail-label"><i class="fa-solid fa-book bp-icon"></i>Course</span>
+                <span class="bp-detail-value">{{ batch.course.course_name }}</span>
+            </div>
+            <div class="bp-detail-row">
+                <span class="bp-detail-label"><i class="fa-regular fa-calendar bp-icon"></i>Batch Duration</span>
+                <span class="bp-detail-value">
+                    {{ batch.start_date|date:"F Y" }} - {{ batch.end_date|date:"F Y" }}
+                </span>
+            </div>
+            <div class="bp-detail-row">
+                <span class="bp-detail-label"><i class="fa-solid fa-users bp-icon"></i>Total Students</span>
+                <span class="bp-detail-value">{{ total_students }}</span>
+            </div>
+            <div class="bp-detail-row">
+                <span class="bp-detail-label"><i class="fa-solid fa-user bp-icon"></i>Trainer</span>
+                <span class="bp-detail-value">
+                    {% if batch.trainer %}
+                    {{ batch.trainer.first_name }} {{ batch.trainer.last_name }} ({{ batch.trainer.employee_id }})
+                    {% else %}
+                    Not Assigned
+                    {% endif %}
+                </span>
+            </div>
+            <div class="bp-detail-row">
+                <span class="bp-detail-label"><i class="fa-regular fa-clock bp-icon"></i>Class Timing</span>
+                <span class="bp-detail-value">
+                    {{ batch.start_time|time:"h:i A" }} - {{ batch.end_time|time:"h:i A" }}
+                </span>
+            </div>
+            <div class="bp-detail-row">
+                <span class="bp-detail-label"><i class="fa-solid fa-calendar-week bp-icon"></i>Days</span>
+                <span class="bp-detail-value">{{ batch.timing }}</span>
+            </div>
+            <div class="bp-detail-row">
+                <span class="bp-detail-label"><i class="fa-solid fa-circle-check bp-icon"></i>Status</span>
+                <span class="bp-status-badge bp-status-{{ batch_status|lower }}">
+                    {{ batch_status }}
+                </span>
+            </div>
+        </div>
+
+        <!-- ============ TODAY'S ATTENDANCE OVERVIEW PANEL ============ -->
+        <div class="bp-panel">
+            <h3 class="bp-panel-title">Today's Overview</h3>
+
+            <div class="bp-overview-row">
+                <span class="bp-detail-label"><i class="fa-regular fa-calendar-check bp-icon"></i>Attendance
+                    Marked</span>
+                {% if attendance_marked %}
+                <span class="bp-overview-value bp-text-green">Yes</span>
+                {% else %}
+                <span class="bp-overview-value bp-text-red">No</span>
+                {% endif %}
+            </div>
+            <div class="bp-overview-row">
+                <span class="bp-detail-label"><i class="fa-solid fa-user-check bp-icon"></i>Present</span>
+                <span class="bp-overview-value">{{ present_count }}</span>
+            </div>
+            <div class="bp-overview-row">
+                <span class="bp-detail-label"><i class="fa-solid fa-user-xmark bp-icon"></i>Absent</span>
+                <span class="bp-overview-value">{{ absent_count }}</span>
+            </div>
+            <div class="bp-overview-row">
+                <span class="bp-detail-label"><i class="fa-regular fa-clock bp-icon"></i>Late</span>
+                <span class="bp-overview-value">{{ late_count }}</span>
+            </div>
+            <div class="bp-overview-row">
+                <span class="bp-detail-label"><i class="fa-solid fa-chart-pie bp-icon"></i>Attendance Percentage</span>
+                <span class="bp-overview-value bp-text-green">{{ attendance_percentage }}%</span>
+            </div>
+
+            {% if batch_status == 'Upcoming' %}
+            <button type="button" class="bp-btn bp-btn-view-attendance bp-btn-disabled" disabled>
+                <i class="fa-regular fa-clock"></i>
+                Batch Not Started — Starts {{ batch.start_date|date:"d M Y" }}
+            </button>
+            {% elif batch_status == 'Completed' or batch_status == 'Cancelled' %}
+            <button type="button" class="bp-btn bp-btn-view-attendance bp-btn-disabled" disabled>
+                <i class="fa-solid fa-ban"></i> Batch {{ batch_status }}
+            </button>
+            {% else %}
+            <a href="{% url 'mark_attendance_page' batch.id %}" class="bp-btn bp-btn-view-attendance">
+                <i class="fa-regular fa-eye"></i> View Attendance
+            </a>
+            {% endif %}
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

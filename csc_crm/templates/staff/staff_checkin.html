@@ -1,0 +1,237 @@
+{% include 'partials/toast_messages.html' %}
+
+<!--========================= Staff-Container ========================-->
+
+<div class="staff-container">
+
+   <div class="checkin-header">
+
+    <div class="checkin-icon">
+        <i class="fa-regular fa-calendar-check"></i>
+    </div>
+
+    <h1 class="title">Staff Check-In</h1>
+
+    <p class="sub-title">
+        Mark your attendance for today
+    </p>
+
+</div>
+
+{% if staff %}
+    <form method="POST"  action="{% url 'staff_checkin' staff.id %}">
+
+        {% csrf_token %}
+<div class="info-card">
+
+    <div class="info-icon purple">
+        <i class="fa-regular fa-id-card"></i>
+    </div>
+
+    <div class="info-text">
+        <small>Employee ID</small>
+        <strong>{{ staff.employee_id }}</strong>
+    </div>
+
+</div>
+
+<div class="info-card">
+
+    <div class="info-icon blue">
+        <i class="fa-regular fa-user"></i>
+    </div>
+
+    <div class="info-text">
+        <small>Staff Name</small>
+        <strong>{{ staff.first_name }} {{ staff.last_name }}</strong>
+    </div>
+
+</div>
+
+<div class="info-card">
+
+    <div class="info-icon yellow">
+        <i class="fa-regular fa-calendar-days"></i>
+    </div>
+
+    <div class="info-text">
+        <small>Today's Date & Time</small>
+        <strong id="currentDateTimeText"></strong>
+    </div>
+
+</div>
+<div class="info-card">
+
+    <div class="info-icon green">
+        <i class="fa-regular fa-clock"></i>
+    </div>
+
+    <div class="info-text">
+        <small>Working Timer</small>
+        <strong id="liveTimerText">00:00:00</strong>
+    </div>
+
+</div>
+
+        <div class="btn-group" disabled class="disabled-btn">
+
+            <button
+                type="submit"
+                name="action"
+                value="checkin"
+                class="checkin-btn"
+                {% if is_checkin_done %}disabled{% endif %}>
+
+                <i class="fa-solid fa-right-to-bracket"></i>
+                <span>Check-In</span>
+
+            </button>
+
+            <button
+                type="submit"
+                name="action"
+                value="checkout"
+                class="checkout-btn"
+                {% if not is_checkin_done or is_checkout_done %}disabled{% endif %} >
+                
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span>Check-Out</span>
+
+            </button>
+
+            <button
+                type="submit"
+                name="action"
+                value="leave"
+                class="leave-btn"
+                
+                onclick="return confirmLeave();">
+
+                <i class="fa-regular fa-calendar-minus"></i>
+                <span>Leave</span>
+
+            </button>
+
+            <button
+                type="submit"
+                name="action"
+                value="absent"
+                class="absent-btn"
+                
+                onclick="return confirmAbsent();">
+
+                <i class="fa-solid fa-user-xmark"></i>
+                <span>Absent</span>
+
+            </button>
+
+        </div>
+
+    </form>
+    {% endif %}
+
+</div>
+
+<!--================================ Script ============================-->
+
+<script>
+
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    // CURRENT DATE & TIME
+    function updateDateTime() {
+        const now = new Date();
+        const dateTime = document.getElementById("currentDateTimeText");
+
+        if (dateTime) {
+            dateTime.textContent = now.toLocaleString();
+        }
+    }
+
+    updateDateTime();
+    setInterval(updateDateTime, 1000);
+
+
+    // LIVE WORKING TIMER
+    {% if active_attendance %}
+
+    const loginTime = new Date(
+        "{{ active_attendance.log_in|date:'Y-m-d H:i:s' }}"
+    );
+
+    const timer = document.getElementById("liveTimerText");
+
+    function updateTimer() {
+
+        const now = new Date();
+
+        const sevenPM = new Date();
+        sevenPM.setHours(19, 0, 0, 0);
+
+        const endTime = now >= sevenPM ? sevenPM : now;
+
+        let diff = Math.floor(
+            (endTime - loginTime) / 1000
+        );
+
+        if (diff < 0) {
+            diff = 0;
+        }
+
+        const hrs = Math.floor(diff / 3600);
+        const mins = Math.floor((diff % 3600) / 60);
+        const secs = diff % 60;
+
+        if (timer) {
+            timer.textContent =
+                String(hrs).padStart(2, "0") + ":" +
+                String(mins).padStart(2, "0") + ":" +
+                String(secs).padStart(2, "0");
+        }
+
+        // STOP TIMER AT 7 PM
+        if (now >= sevenPM) {
+            clearInterval(timerInterval);
+        }
+    }
+
+    updateTimer();
+
+    const timerInterval = setInterval(
+        updateTimer,
+        1000
+    );
+
+    {% endif %}
+
+
+    // AUTO HIDE ALERT MESSAGES
+    setTimeout(function () {
+
+        document.querySelectorAll(".alert-message")
+            .forEach(function (alertBox) {
+
+                alertBox.style.opacity = "0";
+
+                setTimeout(function () {
+                    alertBox.style.display = "none";
+                }, 500);
+
+            });
+
+    }, 3000);
+
+});
+
+
+// CONFIRM DIALOGS
+function confirmLeave() {
+    return confirm("Do you want to take Leave?");
+}
+
+function confirmAbsent() {
+    return confirm("Do you want to mark Absent?");
+}
+
+</script>

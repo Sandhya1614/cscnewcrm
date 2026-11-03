@@ -1,0 +1,591 @@
+{% extends 'leads/base.html' %}
+{% load static %}
+{% block content %}
+{% include 'partials/toast_messages.html' %}
+
+<div class="follow-container">
+
+    <header class="follow-header">
+        <div class="follow-header-content">
+
+            <h1 class="follow-page-title"> Follow-Up Management</h1>
+
+            <p class="follow-page-subtitle"> Track and manage all lead follow-ups in one place </p>
+
+        </div>
+    </header>
+
+
+    <!--  SUMMARY CARD-->
+    <section class="status-summary">
+
+        <!-- Due Today -->
+        <div class="summary-card card-due">
+
+            <div class="summary-icon"> 📅 </div>
+
+            <div class="summary-content">
+
+                <div class="summary-label"> Due Today</div>
+
+                <div class="summary-count"> {{ due_today }}</div>
+
+                <div class="summary-description">  Follow-ups due today</div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Overdue -->
+        <div class="summary-card card-overdue">
+
+            <div class="summary-icon"> 🕐 </div>
+
+            <div class="summary-content">
+
+                <div class="summary-label"> Overdue</div>
+
+                <div class="summary-count">
+                    {{ overdue_count }}
+                </div>
+
+                <div class="summary-description"> Pending follow-ups</div>
+
+            </div>
+
+        </div>
+
+
+        <!-- This Week -->
+        <div class="summary-card card-week">
+
+            <div class="summary-icon">📆 </div>
+
+            <div class="summary-content">
+
+                <div class="summary-label"> This Week </div>
+
+                <div class="summary-count">
+                    {{ this_week }}
+                </div>
+
+                <div class="summary-description">Scheduled this week</div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Completed Today -->
+        <div class="summary-card card-completed">
+
+            <div class="summary-icon">  ✓ </div>
+
+            <div class="summary-content">
+
+                <div class="summary-label">  Completed Today  </div>
+
+                <div class="summary-count">
+                    {{ completed_today }}
+                </div>
+
+                <div class="summary-description">  Completed follow-ups </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!--  FILTER + SEARCH -->
+    <section class="follow-toolbar">
+
+        <!-- Filter Tabs -->
+        <div class="filter-tabs">
+
+            <a href="?filter=all" class="filter-tab {% if current_filter == 'all' %}active{% endif %}"> All</a>
+
+            <a href="?filter=overdue" class="filter-tab {% if current_filter == 'overdue' %}active{% endif %}"> Overdue</a>
+
+            <a href="?filter=today"  class="filter-tab {% if current_filter == 'today' %}active{% endif %}">  Today </a>
+
+            <a href="?filter=week"class="filter-tab {% if current_filter == 'week' %}active{% endif %}"> This Week </a>
+
+            <a href="?filter=upcoming" class="filter-tab {% if current_filter == 'upcoming' %}active{% endif %}"> Upcoming</a>
+
+            <a href="?filter=completed" class="filter-tab {% if current_filter == 'completed' %}active{% endif %}">  Completed  </a>
+
+        </div>
+
+
+        <!-- Search -->
+        <form method="GET" class="follow-search">
+
+            <input type="hidden" name="filter" value="{{ current_filter }}">
+
+            <input type="text" name="search" value="{{ search_query }}" placeholder="Search lead, course, staff..." >
+
+            <button type="submit">
+                🔍
+            </button>
+
+        </form>
+
+
+        <!-- Filter Button -->
+        <button type="button" class="filter-button" onclick="toggleFilterMenu()">
+
+            ⚱ Filters
+
+        </button>
+
+
+        <!-- Filter Dropdown -->
+        <div class="filter-menu" id="filterMenu">
+
+            <div class="filter-menu-title"> Filter Follow-Ups </div>
+
+            <a href="?filter=all"> All Follow-Up </a>
+
+            <a href="?filter=overdue"> Overdue </a>
+
+            <a href="?filter=today">   Due Today </a>
+
+            <a href="?filter=week">  This Week  </a>
+
+            <a href="?filter=upcoming"> Upcoming </a>
+
+            <a href="?filter=completed"> Completed  </a>
+
+        </div>
+
+    </section>
+
+
+    <!-- -- TABLE SECTION -->
+    <main class="follow-table-card">
+
+        <div class="table-top">
+
+            <div>
+
+                <h2>
+                    {% if current_filter == 'overdue' %}
+                        Overdue Follow-Ups
+
+                    {% elif current_filter == 'today' %}
+                        Today's Follow-Ups
+
+                    {% elif current_filter == 'week' %}
+                        This Week's Follow-Ups
+
+                    {% elif current_filter == 'upcoming' %}
+                        Upcoming Follow-Ups
+
+                    {% elif current_filter == 'completed' %}
+                        Completed Follow-Ups
+
+                    {% else %}
+                        All Follow-Ups
+                    {% endif %}
+                </h2>
+
+                <span class="table-count">
+                     {{ followups|length }} Follow-Ups
+                </span>
+
+            </div>
+
+        </div>
+
+
+        {% if followups %}
+
+        <div class="table-wrapper">
+
+            <table class="followup-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th> LEAD & COURSE </th>
+                        <th> STAGE </th>
+                        <th> SCHEDULED FOR </th>
+                        <th>  ASSIGNED TO</th>
+                        <th>  NOTES</th>
+                        <th> STATUS </th>
+                        <th> ACTION </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                {% for lead in followups %}
+
+                    <tr>
+
+                        <!-- LEAD + COURSE -->
+                            
+                        <td>
+
+                            <div class="lead-course-info">
+
+                                <div class="lead-info">
+
+                                    <span class="lead-initials">
+                                        {{ lead.lead_name|slice:":2"|upper }}
+                                    </span>
+
+                                    <div class="lead-details">
+
+                                        <div class="lead-name">
+                                            {{ lead.lead_name }}
+                                        </div>
+
+                                        <div class="lead-id">
+                                            {{ lead.lead_id }}
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+
+                                <div class="course-name">
+
+                                    {{ lead.get_course_interested_display }}
+
+                                </div>
+
+                            </div>
+
+                        </td>
+
+
+                        <!-- STAGE -->
+                            
+                        <td>
+
+                            <span class="status-badge
+                                status-{{ lead.initial_status }}">
+
+                                {{ lead.get_initial_status_display }}
+
+                            </span>
+
+                        </td>
+
+
+                        <!-- SCHEDULED DATE -->
+                        <td>
+
+                            <div class="scheduled-date">
+
+                                <span class="calendar-icon"> 📅</span>
+
+                                <div>
+
+                                    <div class="
+                                        {% if lead.followup_completed %}
+                                            completed-date
+                                        {% elif lead.next_followup_date < today %}
+                                            overdue-date
+                                        {% else %}
+                                            normal-date
+                                        {% endif %}
+                                    ">
+
+                                        {{ lead.next_followup_date|date:"d M Y" }}
+
+                                    </div>
+
+                                    {% if lead.followup_completed %}
+
+                                        <small> Completed </small>
+
+                                    {% elif lead.next_followup_date < today %}
+
+                                        <small> Overdue  </small>
+
+                                    {% elif lead.next_followup_date == today %}
+
+                                        <small>  Today  </small>
+
+                                    {% endif %}
+
+                                </div>
+
+                            </div>
+
+                        </td>
+
+
+                        <!--  ASSIGNED STAFF-->
+                            
+                         
+                        <td>
+
+                            {% if lead.assigned_to %}
+
+                                <div class="assigned-info">
+
+                                    <span class="staff-initials">
+
+                                        {{ lead.assigned_to.first_name|slice:":1"|upper }}{{ lead.assigned_to.last_name|slice:":1"|upper }}
+
+                                    </span>
+
+                                    <div class="staff-details">
+
+                                        <div class="staff-name">
+
+                                            {{ lead.assigned_to }}
+
+                                        </div>
+
+                                        <div class="staff-id">
+
+                                            {{ lead.assigned_to.employee_id }}
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            {% else %}
+
+                                <span class="unassigned">
+                                    Unassigned
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- NOTES-->
+                         
+                        <td>
+
+                            <div class="notes-wrapper">
+
+                                <span class="notes-text">
+
+                                    {{ lead.initial_notes|default:"No notes"|truncatewords:6 }}
+
+                                </span>
+
+                                {% if lead.initial_notes %}
+
+                                    <span class="notes-count">
+                                        💬 1
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+                        </td>
+
+
+                        <!--  STATUS -->
+                        <td>
+
+                            {% if lead.followup_completed %}
+
+                                <span class="follow-status completed">
+                                    Completed
+                                </span>
+
+                            {% elif lead.next_followup_date < today %}
+
+                                <span class="follow-status overdue">
+                                    Overdue
+                                </span>
+
+                            {% elif lead.next_followup_date == today %}
+
+                                <span class="follow-status today">
+                                    Today
+                                </span>
+
+                            {% else %}
+
+                                <span class="follow-status upcoming">
+                                    Upcoming
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- 
+                             ACTION
+                         -->
+                        <td>
+
+                            <div class="action-buttons">
+
+                                <!-- Log Call -->
+                                 {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" or request.user.staff_profile.role.role_name == "Sales Exec Lead" or request.user.staff_profile.role.role_name == "Sales Exec" %}
+                                <a href="{% url 'leads:call_logs' %}" class="log-call-btn">  📞 Log Call </a>
+                                {% endif %}
+
+
+                                <!-- Three Dot -->
+                                <div class="action-menu-wrapper">
+
+                                    <button type="button" class="more-btn" onclick="toggleActionMenu(this)">
+
+                                      ⋮
+
+                                    </button>
+
+
+                                    <div class="action-menu">
+
+                                        <!-- View Lead -->
+                                        <a href="{% url 'leads:lead_capture_details' lead.id %}">
+
+                                            👁 View
+
+                                        </a>
+
+                                        {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" or request.user.staff_profile.role.role_name == "Sales Exec Lead" or request.user.staff_profile.role.role_name == "Sales Exec" %}
+                                        {% if not lead.followup_completed %}
+
+                                            <!-- Mark Completed -->
+                                            <form method="POST"
+                                                  action="{% url 'leads:mark_followup_completed' lead.id %}">
+
+                                                {% csrf_token %}
+                                                     
+                                                <button type="submit">
+
+                                                    ✓ Mark Completed
+
+                                                </button>
+
+                                            </form>
+
+                                        {% else %}
+
+                                            <span class="already-completed">
+
+                                                ✓ Completed
+
+                                            </span>
+
+                                        {% endif %}
+                                        {% endif %}
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+ <!-- PAGINATION -->
+
+<div class="pagination-wrapper">
+
+    <div class="pagination-controls">
+
+        <!-- Previous -->
+        {% if page_obj.has_previous %}
+
+            <a href="?filter={{ current_filter }}{% if search_query %}&search={{ search_query|urlencode }}{% endif %}&page={{ page_obj.previous_page_number }}" class="page-arrow">
+                ‹
+            </a>
+
+        {% else %}
+
+            <span class="page-arrow disabled">
+                ‹
+            </span>
+
+        {% endif %}
+
+
+        <!-- Page Numbers -->
+        {% for num in page_obj.paginator.page_range %}
+
+            {% if page_obj.number == num %}
+
+                <span class="page-number active">
+                    {{ num }}
+                </span>
+
+            {% else %}
+
+                <a href="?filter={{ current_filter }}{% if search_query %}&search={{ search_query|urlencode }}{% endif %}&page={{ num }}"
+                   class="page-number">
+                    {{ num }}
+                </a>
+
+            {% endif %}
+
+        {% endfor %}
+
+
+        <!-- Next -->
+        {% if page_obj.has_next %}
+
+            <a href="?filter={{ current_filter }}{% if search_query %}&search={{ search_query|urlencode }}{% endif %}&page={{ page_obj.next_page_number }}"
+               class="page-arrow">
+                ›
+            </a>
+
+        {% else %}
+
+            <span class="page-arrow disabled">
+                ›
+            </span>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+        {% else %}
+
+            <div class="no-data">
+
+                <div class="no-data-icon">
+                    📋
+                </div>
+
+                <h3>No Follow-Ups Found </h3>
+
+                <p> There are no follow-ups available for this filter. </p>
+
+            </div>
+
+        {% endif %}
+
+    </main>
+
+</div>
+
+<script src="{% static 'js/followup.js' %}"></script>
+{% endblock %}

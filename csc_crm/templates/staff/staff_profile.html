@@ -1,0 +1,376 @@
+{% extends 'staff/base.html' %}
+{% load static %}
+{% block content %}
+
+{% if messages %}
+<div id="sp-msgs">
+  {% for message in messages %}
+  <div class="sp-alert {% if message.tags == 'success' %}sp-alert-ok{% else %}sp-alert-err{% endif %}">
+    <i class="fa {% if message.tags == 'success' %}fa-circle-check{% else %}fa-circle-exclamation{% endif %}"></i>
+    {{ message }}
+  </div>
+  {% endfor %}
+</div>
+<script>setTimeout(()=>{let el=document.getElementById('sp-msgs');if(el){el.style.transition='opacity .4s';el.style.opacity='0';setTimeout(()=>el.remove(),400);}},3000);</script>
+{% endif %}
+
+<!-- ======================================== PAGE HEADER =========================================== -->
+ 
+<div class="sp-header">
+  <div>
+    <div class="sp-back-row">
+
+      {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" or request.user.staff_profile.role.role_name == "HR" or request.user.staff_profile.role.role_name == "Sales Exec Lead" or request.user.staff_profile.role.role_name == "Marketing Lead" %}
+      <a href="{% url 'staff_management' %}" class="sp-back-btn"><i class="fa fa-arrow-left"></i> Back to Staff Management</a>
+      {% endif %}
+
+
+    </div>
+    <h1 class="sp-title">Staff Profile</h1>
+    <p class="sp-subtitle">Complete employee information</p>
+  </div>
+
+  {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" %}
+  <button class="sp-edit-btn" onclick="openEditModal()"><i class="fa fa-pencil"></i> Edit Profile</button>
+  {% endif %}
+</div>
+
+<!-- ========================================== TOP PROFILE CARD ==================================== -->
+ 
+<div class="sp-top-card">
+
+  <!-- Avatar col -->
+  <div class="sp-avatar-col">
+    <div class="sp-avatar-wrap">
+      {% if staff.profile_photo and staff.profile_photo.url %}
+      <img src="{{ staff.profile_photo.url }}" alt="{{ staff.full_name }}">
+      {% else %}
+      <img src="https://ui-avatars.com/api/?name={{ staff.first_name }}+{{ staff.last_name }}&background=262170&color=fff&size=120" alt="Avatar">
+      {% endif %}
+      <span class="sp-dot sp-dot-{{ staff.status }}"></span>
+    </div>
+    <div class="sp-av-name">{{ staff.first_name }} {{ staff.last_name }}</div>
+    <div class="sp-av-role">{{ staff.role }}</div>
+    <div class="sp-av-empid">{{ staff.employee_id }}</div>
+    <span class="sp-badge sp-badge-{{ staff.status }}">● {{ staff.get_status_display }}</span>
+  </div>
+
+  <!-- Info grid col -->
+  <div class="sp-info-grid">
+    <div class="sp-info-cell">
+      <div class="sp-cell-lbl"><i class="fa fa-building"></i> Department</div>
+      <div class="sp-cell-val">{{ staff.department }}</div>
+    </div>
+    <div class="sp-info-cell">
+      <div class="sp-cell-lbl"><i class="fa fa-calendar-days"></i> Date of Joining</div>
+      <div class="sp-cell-val">{{ staff.date_of_joining|date:"d M Y" }}</div>
+    </div>
+    <div class="sp-info-cell">
+      <div class="sp-cell-lbl"><i class="fa fa-envelope"></i> Email</div>
+      <div class="sp-cell-val">{{ staff.email }}</div>
+    </div>
+    <div class="sp-info-cell">
+      <div class="sp-cell-lbl"><i class="fa fa-briefcase"></i> Employment Type</div>
+      <div class="sp-cell-val">{{ staff.employment_type|default:"Full-time" }}</div>
+    </div>
+    <div class="sp-info-cell">
+      <div class="sp-cell-lbl"><i class="fa fa-phone"></i> Phone</div>
+      <div class="sp-cell-val">{{ staff.phone }}</div>
+    </div>
+    <div class="sp-info-cell">
+      <div class="sp-cell-lbl"><i class="fa fa-circle-check"></i> Status</div>
+      <div class="sp-cell-val sp-val-active">{{ staff.get_status_display }}</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ==================================== KPI CARDS ======================================= -->
+
+<div class="sp-kpi-row">
+  <div class="sp-kpi-card">
+    <div class="sp-kpi-icon" style="background:#3b82f6"><i class="fa fa-calendar-check"></i></div>
+    <div>
+      <div class="sp-kpi-lbl">Attendance (This Month)</div>
+      <div class="sp-kpi-val">{{ days_present }} <small>/ {{ working_days }}</small></div>
+      <div class="sp-kpi-sub">Days</div>
+    </div>
+  </div>
+  <div class="sp-kpi-card">
+    <div class="sp-kpi-icon" style="background:#f59e0b"><i class="fa fa-file-lines"></i></div>
+    <div>
+      <div class="sp-kpi-lbl">Leave Balance</div>
+      <div class="sp-kpi-val">{{ leave_balance }}</div>
+      <div class="sp-kpi-sub">Days</div>
+    </div>
+  </div>
+  <div class="sp-kpi-card">
+    <div class="sp-kpi-icon" style="background:#a855f7"><i class="fa fa-star"></i></div>
+    <div>
+      <div class="sp-kpi-lbl">Performance Rating</div>
+      <div class="sp-kpi-val">{{ staff.performance_rating|default:"—" }} <small>/ 5</small></div>
+      <div class="sp-kpi-stars">
+        {% with r=staff.performance_rating|default:0 %}
+          {% for i in "12345" %}
+            {% if forloop.counter <= r %}<i class="fa fa-star" style="color:#f59e0b"></i>
+            {% else %}<i class="fa fa-star" style="color:#e5e7eb"></i>{% endif %}
+          {% endfor %}
+        {% endwith %}
+      </div>
+    </div>
+  </div>
+  <div class="sp-kpi-card">
+    <div class="sp-kpi-icon" style="background:#22c55e"><i class="fa fa-circle-check"></i></div>
+    <div>
+      <div class="sp-kpi-lbl">Tasks Completed</div>
+      <div class="sp-kpi-val">{{ tasks_completed }} <small>/ {{ tasks_total }}</small></div>
+      <div class="sp-kpi-sub">Total Tasks</div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================ MIDDLE: Professional + Personal ============================= -->
+
+<div class="sp-mid-grid">
+
+  <!-- Professional Information -->
+  <div class="sp-section">
+    <div class="sp-sec-head"><i class="fa fa-briefcase"></i> Professional Information</div>
+    <div class="sp-row"><span class="sp-row-k">Department</span><span class="sp-row-v">{{ staff.department }}</span></div>
+    <div class="sp-row"><span class="sp-row-k">Role</span><span class="sp-row-v">{{ staff.role }}</span></div>
+    <div class="sp-row"><span class="sp-row-k">Reporting Manager</span><span class="sp-row-v">{{ staff.reporting_manager.full_name|default:"N/A" }}</span></div>
+    {% comment %} <div class="sp-row"><span class="sp-row-k">Shift</span><span class="sp-row-v">{{ staff.shift|default:"General Shift" }}</span></div> {% endcomment %}
+    <div class="sp-row"><span class="sp-row-k">Date of Joining</span><span class="sp-row-v">{{ staff.date_of_joining|date:"d M Y" }}</span></div>
+  </div>
+
+  <!-- Personal Information -->
+  <div class="sp-section">
+    <div class="sp-sec-head"><i class="fa fa-user"></i> Personal Information</div>
+    <div class="sp-row"><span class="sp-row-k">Phone</span><span class="sp-row-v">{{ staff.phone }}</span></div>
+    <div class="sp-row"><span class="sp-row-k">Address</span><span class="sp-row-v">{{ staff.address|default:"N/A" }}</span></div>
+    <div class="sp-row"><span class="sp-row-k">Emergency Contact</span><span class="sp-row-v">{{ staff.emergency_contact_name|default:"N/A" }}</span></div>
+    <div class="sp-row"><span class="sp-row-k">Email</span><span class="sp-row-v">{{ staff.email }}</span></div>
+    <div class="sp-row"><span class="sp-row-k">Date of Birth</span><span class="sp-row-v">{{ staff.date_of_birth|date:"d M Y"|default:"N/A" }}</span></div>
+    <div class="sp-row"><span class="sp-row-k">Blood Group</span><span class="sp-row-v">{{ staff.blood_group|default:"N/A" }}</span></div>
+  </div>
+
+</div>
+
+<!--============================== BOTTOM: Documents + Recent Activity ======================== -->
+<!-- {% if request.user.staff_profile.role.role_name != "Marketing Lead" %} -->
+<div class="sp-bot-grid">
+
+  <!-- Documents -->
+  <div class="sp-section">
+    <div class="sp-sec-head">
+      <i class="fa fa-file"></i> Documents
+      <a href="{% url 'staff_documents' staff.id %}" class="sp-view-all-link">View All Documents</a>
+    </div>
+    {% if documents %}
+      <div class="sp-docs-grid">
+        {% for doc in documents|slice:":4" %}
+        <div class="sp-doc-card">
+          <div class="sp-doc-icon sp-doc-{{ doc.get_file_extension|lower }}">
+            <i class="fa fa-file-{% if doc.get_file_extension == 'PDF' %}pdf{% elif doc.get_file_extension == 'DOCX' or doc.get_file_extension == 'DOC' %}word{% else %}image{% endif %}"></i>
+          </div>
+          <div class="sp-doc-info">
+            <div class="sp-doc-name">{{ doc.document_type|default:"Document"|truncatechars:18 }}</div>
+            <div class="sp-doc-date">Uploaded on {{ doc.uploaded_at|date:"d M Y" }}</div>
+          </div>
+          <div class="sp-doc-actions">
+            <a href="{{ doc.file.url }}" target="_blank" class="sp-doc-btn">View</a>
+            <a href="{{ doc.file.url }}" download class="sp-doc-btn">Download</a>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="sp-empty">No documents uploaded yet.</div>
+    {% endif %}
+  </div>
+
+  <!--================================== Recent Activity ===================================-->
+
+  <div class="sp-section">
+    <div class="sp-sec-head">
+      <i class="fa fa-clock-rotate-left"></i> Recent Activity
+      {% comment %} <a href="#" class="sp-view-all-link">View All Activity</a> {% endcomment %}
+    </div>
+    <div class="sp-activity-list">
+      {% for item in activity_feed %}
+      <div class="sp-activity-item sp-act-{{ item.color }}">
+        <div class="sp-act-icon"><i class="fa {{ item.icon }}"></i></div>
+        <div class="sp-act-body">
+          <div class="sp-act-title">{{ item.title }}</div>
+          <div class="sp-act-sub">{{ item.detail }}</div>
+        </div>
+        <div class="sp-act-when">{{ item.when }}</div>
+      </div>
+      {% empty %}
+      <div class="sp-empty"><i class="fa fa-clock" style="margin-right:6px;color:#d1d5db;"></i>No recent activity found.</div>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+<!-- {% endif %} -->
+<!-- ============================= EDIT MODAL ================================= -->
+
+<div class="sp-modal-overlay" id="editModal">
+  <div class="sp-modal">
+    <button class="sp-modal-close" onclick="closeEditModal()">&times;</button>
+    <h2><i class="fa fa-user-pen"></i> Edit Profile</h2>
+    <form method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="sp-photo-upload" id="spPhotoUpload" onclick="document.getElementById('profilePhotoInput').click()">
+        <i class="fa fa-camera" id="spPhotoIcon"></i>
+        <img id="spPhotoPreview" class="sp-photo-preview" alt="Selected photo preview" style="display:none;">
+        <p id="spPhotoText">Click to change profile photo</p>
+      </div>
+      <div class="sp-err" id="spPhotoError"></div>
+      {{ form.profile_photo }}
+      {% if form.profile_photo.errors %}{% for e in form.profile_photo.errors %}<div class="sp-err">{{ e }}</div>{% endfor %}{% endif %}
+      <div class="sp-form-grid">
+        <div class="sp-form-group">
+          <label>First Name</label>{{ form.first_name }}
+          {% if form.first_name.errors %}{% for e in form.first_name.errors %}<div class="sp-err">{{ e }}</div>{% endfor %}{% endif %}
+        </div>
+        <div class="sp-form-group">
+          <label>Last Name</label>{{ form.last_name }}
+          {% if form.last_name.errors %}{% for e in form.last_name.errors %}<div class="sp-err">{{ e }}</div>{% endfor %}{% endif %}
+        </div>
+        <div class="sp-form-group">
+          <label>Email</label>{{ form.email }}
+          {% if form.email.errors %}{% for e in form.email.errors %}<div class="sp-err">{{ e }}</div>{% endfor %}{% endif %}
+        </div>
+        <div class="sp-form-group">
+          <label>Phone</label>{{ form.phone }}
+          {% if form.phone.errors %}{% for e in form.phone.errors %}<div class="sp-err">{{ e }}</div>{% endfor %}{% endif %}
+        </div>
+      </div>
+      <button type="submit" class="sp-btn-save"><i class="fa fa-floppy-disk"></i> Save Changes</button>
+    </form>
+  </div>
+</div>
+
+<!-- ===================================== Script ======================================== -->
+
+{% block extra_js %}
+<script>
+function openEditModal()  { document.getElementById('editModal').classList.add('open'); }
+function closeEditModal() { document.getElementById('editModal').classList.remove('open'); }
+document.getElementById('editModal').addEventListener('click', function(e){ if(e.target===this) closeEditModal(); });
+{% if form.errors %}openEditModal();{% endif %}
+
+// Profile photo: show the selected image (instead of the camera icon) before saving
+document.addEventListener('DOMContentLoaded', function() {
+    const input   = document.getElementById('profilePhotoInput');
+    const icon    = document.getElementById('spPhotoIcon');
+    const preview = document.getElementById('spPhotoPreview');
+    const text    = document.getElementById('spPhotoText');
+    const error   = document.getElementById('spPhotoError');
+    if (!input || !preview) return;
+
+    let objectUrl = null;
+
+    function resetPreview() {
+        if (objectUrl) { URL.revokeObjectURL(objectUrl); objectUrl = null; }
+        preview.removeAttribute('src');
+        preview.style.display = 'none';
+        if (icon) icon.style.display = '';
+        if (text) text.textContent = 'Click to change profile photo';
+    }
+
+    input.addEventListener('change', function() {
+        const file = input.files && input.files[0];
+        if (error) error.textContent = '';
+
+        if (!file) { resetPreview(); return; }
+
+        if (!file.type || file.type.indexOf('image/') !== 0) {
+            if (error) error.textContent = 'Please select a valid image file.';
+            input.value = '';
+            resetPreview();
+            return;
+        }
+
+        if (file.size > 2 * 1024 * 1024) {
+            if (error) error.textContent = 'Photo must be less than 2 MB.';
+            input.value = '';
+            resetPreview();
+            return;
+        }
+
+        if (objectUrl) URL.revokeObjectURL(objectUrl);
+        objectUrl = URL.createObjectURL(file);
+
+        preview.onerror = function() {
+            if (error) error.textContent = 'This image could not be displayed. Please choose a JPG or PNG file.';
+            input.value = '';
+            resetPreview();
+        };
+        preview.onload = function() {
+            if (icon) icon.style.display = 'none';
+            preview.style.display = 'block';
+            if (text) text.textContent = file.name + ' - click to change';
+        };
+        preview.src = objectUrl;
+    });
+
+    // Clear the preview whenever the modal is closed without saving
+    const closeBtn = document.querySelector('.sp-modal-close');
+    if (closeBtn) closeBtn.addEventListener('click', function() { input.value = ''; resetPreview(); if (error) error.textContent = ''; });
+});
+
+// Real-time validation
+document.addEventListener('DOMContentLoaded', function() {
+    const phoneInput = document.querySelector('input[name="phone"]');
+    const emailInput = document.querySelector('input[name="email"]');
+
+    if (phoneInput) {
+        phoneInput.addEventListener('input', function() {
+            // digits only, max 10 (no +91)
+            phoneInput.value = CSCPhone.sanitize(phoneInput.value);
+            const value = phoneInput.value;
+            let errorDiv = document.getElementById('phone-error');
+
+            if (!errorDiv) {
+                errorDiv = document.createElement('div');
+                errorDiv.id = 'phone-error';
+                errorDiv.style.color = 'red';
+                errorDiv.style.fontSize = '12px';
+                phoneInput.parentNode.appendChild(errorDiv);
+            }
+
+            if (value && CSCPhone.error(value)) {
+                errorDiv.textContent = CSCPhone.error(value);
+            } else {
+                errorDiv.textContent = '';
+            }
+        });
+    }
+
+    if (emailInput) {
+        emailInput.addEventListener('input', function() { const value = emailInput.value;
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            let errorDiv = document.getElementById('email-error');
+
+            if (!errorDiv) {
+                errorDiv = document.createElement('div');
+                errorDiv.id = 'email-error';
+                errorDiv.style.color = 'red';
+                errorDiv.style.fontSize = '12px';
+                emailInput.parentNode.appendChild(errorDiv);
+            }
+
+            if (value && !emailRegex.test(value)) {
+                errorDiv.textContent = 'Enter a valid email address.';
+            } else {
+                errorDiv.textContent = '';
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
+{% endblock %}

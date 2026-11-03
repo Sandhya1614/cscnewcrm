@@ -1,0 +1,408 @@
+{% extends 'attendance/base.html' %}
+
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/attendance_css/low_attendance.css' %}">
+{% endblock extra_css %}
+
+{% block content %}
+<!-- ================ TOAST CONTAINER ================ -->
+<div id="toastContainer" class="toast-container"></div>
+
+<div class="low-attendance-page">
+
+     <!-- ================ PAGE HEADER (TITLE + LAST UPDATED + REFRESH) ================ -->
+    <div class="topbar-section">
+        <div>
+            <h2 class="page-title">Low Attendance Alerts</h2>
+            <p class="page-subtitle">Monitor students with low attendance and take necessary actions</p>
+        </div>
+        <div class="topbar-right">
+            <span class="last-updated">
+                <i class="bi bi-clock-history"></i>
+                Last updated: <span id="lastUpdatedTime"></span>
+            </span>
+            
+        </div>
+    </div>
+
+     <!-- ================ FILTER FORM (NAME, COURSE, BATCH, ATTENDANCE %) ================ -->
+    <form class="filter-card" method="get" id="filterForm">
+
+        <div class="filter-grid">
+
+            <div class="field">
+                <label><i class="bi bi-person"></i> Student Name</label>
+                <input type="text" name="name" id="studentNameFilter" placeholder="Search by name or ID.."
+                    class="filter-input" value="{{ filters.name }}">
+            </div>
+
+            {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" or request.user.staff_profile.role.role_name == "HR" %}
+            <div class="field">
+                <label><i class="bi bi-mortarboard"></i> Courses</label>
+                <select name="course" id="courseFilter" class="filter-select">
+                    <option value="">All Courses</option>
+                    {% for course in courses %}
+                    <option value="{{ course.course_name }}" {% if filters.course == course.course_name %}selected{% endif %}>
+                        {{ course.course_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+
+            <div class="field">
+                <label><i class="bi bi-people"></i> Batches</label>
+                <select name="batch" id="batchFilter" class="filter-select">
+                    <option value="">All Batches</option>
+                    {% for batch in batches %}
+                    <option value="{{ batch.id }}" {% if filters.batch == batch.id|stringformat:"s" %}selected{% endif %}>
+                        {{ batch.batch_name }} ({{ batch.course.course_name }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="field">
+                <label><i class="bi bi-percent"></i> Attendance %</label>
+                <input type="text" name="attendance" id="percentageFilter" placeholder="All Attendance"
+                    class="filter-input" value="{{ filters.attendance }}">
+            </div>
+
+        </div>
+
+        <small id="filterGeneralError" class="field-error" style="color:red; display:none; margin-top:6px;"></small>
+
+        <div class="filter-actions">
+
+            <button type="button" id="clearFilters" class="clear-btn">
+                <i class="bi bi-arrow-counterclockwise"></i>
+                Clear
+            </button>
+
+            <button type="submit" class="search-all-btn">
+                <i class="bi bi-search"></i>
+                Search
+            </button>
+
+        </div>
+
+    </form>
+
+    <!-- ================ STAT CARDS (CRITICAL, WARNING, TOTAL) ================ -->
+    <div class="stats-row">
+
+        <div class="stat-card">
+            <div class="stat-icon icon-critical"><i class="bi bi-exclamation-triangle-fill"></i></div>
+            <div>
+                <p class="stat-label">Critical Alerts</p>
+                <p class="stat-value critical">{{ critical_students|length }}</p>
+                <p class="stat-caption">Below 60%</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon icon-warning"><i class="bi bi-exclamation-circle-fill"></i></div>
+            <div>
+                <p class="stat-label">Warning Alerts</p>
+                <p class="stat-value warning">{{ warning_students|length }}</p>
+                <p class="stat-caption">60% - 75%</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon icon-blue"><i class="bi bi-people-fill"></i></div>
+            <div>
+                <p class="stat-label">Total Students</p>
+                <p class="stat-value blue">{{ total_students }}</p>
+                <p class="stat-caption">Low Attendance</p>
+            </div>
+        </div>
+
+
+
+    </div>
+
+    <!-- ================ CRITICAL ALERTS SECTION (BELOW 60%) ================ -->
+    <div class="alert-section critical-section" id="criticalSection">
+
+        <!-- ================ CRITICAL SECTION HEADER (SMS/EMAIL/EXPORT ACTIONS) ================ -->
+        <div class="alert-section-header">
+
+            <div class="alert-title-group critical-text">
+                <h3><i class="bi bi-exclamation-triangle-fill"></i> Critical Alerts ({{ critical_students|length }})
+                </h3>
+                <span class="range-pill critical">Below 60%</span>
+            </div>
+
+            <div class="alert-section-actions">
+
+                <button type="button" class="action-pill-btn btn-critical"
+                    onclick="sendSectionNotification('criticalSection', 'sms')">
+                    <i class="bi bi-chat-left-text-fill"></i> Send SMS
+                </button>
+
+                <button type="button" class="action-pill-btn btn-critical"
+                    onclick="sendSectionNotification('criticalSection', 'email')">
+                    <i class="bi bi-envelope-fill"></i> Send Email
+                </button>
+
+                <button type="button" class="export-btn" onclick="toggleExportMenu(this)">
+                    <i class="bi bi-download"></i> Export <i class="bi bi-caret-down-fill"></i>
+                </button>
+
+                <div class="export-menu">
+                    <a href="{% url 'low_attendance_export' %}?type=critical" class="dropdown-item">
+                        <i class="bi bi-file-earmark-excel"></i>
+                        Export Excel
+                    </a>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ================ CRITICAL - SELECT ALL ROW ================ -->
+        <div class="select-all-row critical">
+            <input type="checkbox" class="select-all-checkbox" data-target="criticalSection">
+            <span>Select All ({{ critical_students|length }} students)</span>
+        </div>
+
+        <!-- ================ CRITICAL STUDENTS TABLE ================ -->
+        <div class="table-scroll">
+            <table class="alert-table">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Student</th>
+                        <th>Course</th>
+                        <th>Batch</th>
+                        <th>% Attendance</th>
+                        <th>Consecutive Absences</th>
+                        <th>Total Absences</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    <!-- ================ CRITICAL - TABLE ROW PER STUDENT ================ -->
+                    {% for student in critical_students %}
+                    <tr class="data-row">
+                        <td><input type="checkbox" class="row-checkbox" data-id="{{ student.id }}"></td>
+                        <td>
+                            <div class="student-cell">
+                                <div class="avatar-circle">{{ student.student.first_name|first|upper }}{{ student.student.last_name|first|upper }}</div>
+                                <div>
+                                    <div class="student-name">{{ student.student.first_name }} {{ student.student.last_name }}</div>
+                                    <div class="student-id">STU{{ student.student.id }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ student.course.course_name }}</td>
+                        <td>{{ student.batch.batch_name }}</td>
+                        <td>
+                            <div class="attendance-cell">
+                                <span class="attendance-pct critical">{{ student.attendance_percentage }}%</span>
+                                <span class="level-badge critical">Critical</span>
+                            </div>
+                        </td>
+                        <td><span class="days-value critical">{{ student.consecutive_absences }} Days</span></td>
+                        <td><span class="days-value">{{ student.total_absences }}</span></td>
+                        <td>
+                            <div class="row-actions">
+                                <a href="{% url 'send_sms_notification' student.id %}"
+                                    class="icon-btn critical ajax-action-btn" data-type="sms">
+                                    <i class="bi bi-chat-left-text-fill"></i>
+                                </a>
+                                <a href="{% url 'send_low_attendance_email' student.id %}"
+                                    class="icon-btn critical ajax-action-btn" data-type="email">
+                                    <i class="bi bi-envelope-fill"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr class="empty-row">
+                        <td colspan="8">No Critical Alerts Found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ================ CRITICAL - TABLE FOOTER (COUNT + PAGER) ================ -->
+        <div class="table-footer">
+            <span class="footer-count"></span>
+            <div class="pager"></div>
+        </div>
+
+    </div>
+
+    <!-- ================ WARNING ALERTS SECTION (60% - 75%) ================ -->
+    <div class="alert-section warning-section" id="warningSection">
+
+         <!-- ================ WARNING SECTION HEADER (SMS/EMAIL/EXPORT ACTIONS) ================ -->
+        <div class="alert-section-header">
+
+            <div class="alert-title-group warning-text">
+                <h3><i class="bi bi-exclamation-circle-fill"></i> Warning Alerts ({{ warning_students|length }})</h3>
+                <span class="range-pill warning">60% - 75%</span>
+            </div>
+
+            <div class="alert-section-actions">
+
+                <button type="button" class="action-pill-btn btn-warning"
+                    onclick="sendSectionNotification('warningSection', 'sms')">
+                    <i class="bi bi-chat-left-text-fill"></i> Send SMS
+                </button>
+
+                <button type="button" class="action-pill-btn btn-warning"
+                    onclick="sendSectionNotification('warningSection', 'email')">
+                    <i class="bi bi-envelope-fill"></i> Send Email
+                </button>
+
+                <button type="button" class="export-btn" onclick="toggleExportMenu(this)">
+                    <i class="bi bi-download"></i> Export <i class="bi bi-caret-down-fill"></i>
+                </button>
+
+                <div class="export-menu">
+                    <a href="{% url 'low_attendance_export' %}?type=warning" class="dropdown-item">
+                        <i class="bi bi-file-earmark-excel"></i>
+                        Export Excel
+                    </a>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ================ WARNING - SELECT ALL ROW ================ -->
+        <div class="select-all-row warning">
+            <input type="checkbox" class="select-all-checkbox" data-target="warningSection">
+            <span>Select All ({{ warning_students|length }} students)</span>
+        </div>
+
+        <!-- ================ WARNING STUDENTS TABLE ================ -->
+        <div class="table-scroll">
+            <table class="alert-table">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Student</th>
+                        <th>Course</th>
+                        <th>Batch</th>
+                        <th>% Attendance</th>
+                        <th>Consecutive Absences</th>
+                        <th>Total Absences</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    <!-- ================ WARNING - TABLE ROW PER STUDENT ================ -->
+                    {% for student in warning_students %}
+                    <tr class="data-row">
+                        <td><input type="checkbox" class="row-checkbox" data-id="{{ student.id }}"></td>
+                        <td>
+                            <div class="student-cell">
+                                <div class="avatar-circle">{{ student.student.first_name|first|upper }}{{ student.student.last_name|first|upper }}</div>
+                                <div>
+                                    <div class="student-name">{{ student.student.first_name }} {{ student.student.last_name }}</div>
+                                    <div class="student-id">STU{{ student.student.id}}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ student.course.course_name }}</td>
+                        <td>{{ student.batch.batch_name }}</td>
+                        <td>
+                            <div class="attendance-cell">
+                                <span class="attendance-pct warning">{{ student.attendance_percentage }}%</span>
+                                <span class="level-badge warning">Warning</span>
+                            </div>
+                        </td>
+                        <td><span class="days-value warning">{{ student.consecutive_absences }} Days</span></td>
+                        <td><span class="days-value">{{ student.total_absences }}</span></td>
+                        <td>
+                            <div class="row-actions">
+                                <a href="{% url 'send_sms_notification' student.id %}"
+                                    class="icon-btn warning ajax-action-btn" data-type="sms">
+                                    <i class="bi bi-chat-left-text-fill"></i>
+                                </a>
+                                <a href="{% url 'send_low_attendance_email' student.id %}"
+                                    class="icon-btn warning ajax-action-btn" data-type="email">
+                                    <i class="bi bi-envelope-fill"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr class="empty-row">
+                        <td colspan="8">No Warning Alerts Found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ================ WARNING - TABLE FOOTER (COUNT + PAGER) ================ -->
+        <div class="table-footer">
+            <span class="footer-count"></span>
+            <div class="pager"></div>
+        </div>
+
+    </div>
+
+    <!-- ================ BULK NOTIFICATION CARD (SMS/EMAIL/MONTHLY REPORT TO ALL) ================ -->
+
+    <div class="bulk-notification-card">
+
+        <div class="bulk-top">
+            <div>
+                <h4>
+                    Bulk Notifications
+                </h4>
+            </div>
+            <p>
+                Send SMS / Email to all alert students
+            </p>
+
+        </div>
+
+
+        <div class="bulk-buttons">
+            <button class="btn bulk-sms-btn" onclick="sendSMSAll()">
+                <i class="bi bi-chat-left-text-fill"></i>
+                Send SMS To All
+            </button>
+            <button class="btn bulk-email-btn" onclick="sendEmailAll()">
+                <i class="bi bi-envelope-fill"></i>
+                Send Email To All
+            </button>
+
+            <button class="btn bulk-report-btn" onclick="sendMonthlyReport()">
+                <i class="bi bi-file-earmark-text-fill"></i>
+                Send Monthly Report
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- ================ INFO NOTE (CRITICAL/WARNING EXPLANATION) ================ -->
+    <div class="note-box">
+        <i class="bi bi-info-circle-fill"></i>
+        <div>
+            <strong>Note</strong>
+            <p>Students in Critical Alerts have attendance below 60% and require immediate attention.</p>
+            <p>Students in Warning Alerts have attendance between 60% and 75% and should be monitored closely.</p>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{% static 'js/attendance_js/low_attendance.js' %}"></script>
+{% endblock %}

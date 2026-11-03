@@ -1,0 +1,240 @@
+{% extends 'leads/base.html' %}
+
+{% block content %}
+{% include 'partials/toast_messages.html' %}
+
+<div class="calllog-container">
+
+   
+
+    <div class="left-content">
+
+        <div class="call-header">
+
+            <div class="header-left">
+                <div class="header-icon">
+                    <i class="fa-solid fa-phone"></i>
+                </div>
+
+                <div>
+                    <h2>Log a Call</h2>
+                    <p>Record call details and track your conversations</p>
+                </div>
+            </div>
+
+            <div class="header-right">
+          
+                <i class="fa-solid fa-phone-volume call-illus"></i>
+            </div>
+
+        </div>
+
+        <div class="form-box card-box">
+
+        <form method="POST" onsubmit="return validateForm()">
+        {% csrf_token %}
+        
+        <div class="section-title">
+    <i class="fa-solid fa-phone"></i>
+    <span>Call Information</span>
+</div>
+    
+<div class="row">
+
+    <div class="field">
+        <label class="label">Contact Name</label>
+
+        <div class="input-box">
+            <i class="fa-regular fa-user"></i>
+
+            <input type="hidden" name="lead" id="lead_id_input">
+            <input type="text" name="lead_name" id="lead_name" maxlength="20" class="input" placeholder="Search or enter name" oninput="onlyLetters(this); searchLeadName(this.value)" autocomplete="off" required>
+
+            <div id="lead_suggestions" class="lead-suggestions"></div>
+        </div>
+
+        <span id="name_error"></span>
+    </div>
+
+    <div class="field">
+        <label class="label">Call Date</label>
+
+        <div class="input-box">
+            <i class="fa-regular fa-calendar"></i>
+
+            <input type="date" id="call_date" name="call_date"  class="input" onclick="this.showPicker()" required>
+        </div>
+    </div>
+
+
+      
+                <div class="field">
+                    <label class="label">Call Time</label>
+                    <div class="input-box">
+                    <i class="fa-regular fa-clock"></i>
+                    <input type="time" name="call_time" placeholder="Enter calltime" onclick="this.showPicker()" class="input" required>
+                </div>
+                  
+                </div>
+            </div>
+        
+           <div class="row  small-row">
+
+                <div class="field">
+                    <label class="label">Call Type</label>
+                    <div class="input-box">
+                        <i class="fa-solid fa-phone-flip"></i>
+                        <select name="call_type" id="call_type" class="select" required>
+                            <option value="outgoing">Outgoing</option>
+                            <option value="answered">Answered (incoming)</option>
+                            <option value="did_not_connect">Did not connect</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label">Duration (MIN)</label>
+                    <div class="input-box">
+                        <i class="fa-solid fa-stopwatch"></i>
+                        <input type="number" name="duration" id="duration_min" value="0" placeholder="Minutes" class="input" min="0" oninput="this.value = this.value.replace('-', '')">
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label">Duration (SEC)</label>
+                    <div class="input-box">
+                        <i class="fa-solid fa-stopwatch-20"></i>
+                        <input type="number" name="duration_seconds" id="duration_sec" value="0" placeholder="Seconds" class="input" min="0" max="59" oninput="this.value = this.value.replace('-', '')">
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label">Call Outcome</label>
+                    <div class="input-box">
+                        <i class="fa-solid fa-list"></i>
+                        <select name="call_outcome" id="call_outcome" class="select" required>
+                            <option>Interested</option>
+                            <option>Not Reachable</option>
+                            <option>Demo Scheduled</option>
+                            <option>Not Interested</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <div class="section-title">
+            <i class="fa-solid fa-note-sticky"></i>
+                 <span>Call Notes</span>
+            </div>
+
+            <label class="label">Notes (Optional)</label>
+            <div class="input-box textarea-box">
+           <i class="fa-regular fa-note-sticky"></i>
+
+            <textarea name="notes" rows="5" placeholder="Types your call notes here.." class="textarea" ></textarea>
+            </div>
+            
+        
+            <div class="section-title">
+             <i class="fa-solid fa-calendar-days"></i>
+           <span>Next Follow-Up</span>
+          </div>
+           <div class="field followup-field">
+            <label class="label">Next Follow-up date</label>
+              <div class="input-box">
+              <i class="fa-regular fa-calendar"></i>
+            <input type="date" id="next_followup_date" name="next_followup_date" onclick="this.showPicker()" class="input" >
+            </div>
+            </div>
+           <div class="btn-group">
+
+    <button type="reset" class="reset-btn">
+      ✕ &nbsp; Reset
+    </button>
+
+    <button type="submit" class="btn">
+        <i class="fa-solid fa-phone"></i>
+        Save Call Log
+    </button>
+
+</div>
+            
+        </form>
+    </div>
+    </div>
+
+<script>
+const searchLeadNameUrl = "{% url 'leads:search_lead_by_name' %}";
+</script>
+
+   {% if logs %}
+    <div class="history card-box">
+
+        
+    <h3 class="recent-header"><i class="fa-solid fa-phone"></i>&nbsp;&nbsp;Recent Call History</h3>
+  
+       
+
+    {% for log in logs|slice:":5" %}
+
+<div class="card {{ log.call_outcome|slugify }}">
+
+    <a href="{% url 'leads:contact_calls' log.id %}" class="card-link">
+
+        <div class="card-header">
+          
+    <div class="user-info">
+
+        <div class="user-icon">
+            <i class="fa-regular fa-user"></i>
+        </div>
+        <div class="user-content">
+            <h4>{{ log.lead_name }}</h4>
+            <span class="badge {{ log.call_outcome|slugify }}">
+            {{ log.call_outcome }}
+        </span>
+             <p class="user-p">{{ log.notes }}</p>
+
+        {% if log.next_followup_date and log.call_outcome != "Not Interested" %}
+            <div class="follow">
+                followup date: {{ log.next_followup_date }}
+            </div>
+        {% endif %}
+
+        </div>
+       </div>
+        
+        <span class="time">
+                {{ log.call_date }} • {% if log.is_connected %}{{ log.duration_display }}{% else %}Did not connect{% endif %}
+        </span>
+       </div>
+        
+
+    </a>
+
+    <form method="POST" action="{% url 'leads:delete_call' log.id %}"   onsubmit="return confirm('Do you want to delete this call history?')">
+        {% csrf_token %}
+
+        <button type="submit" class="delete-btn {% if log.notes %}has-notes{% endif %}">
+            🗑
+        </button>
+    </form>
+
+</div>
+
+    
+     {% endfor %}
+    <div class="history-footer">
+    <a href="{% url 'leads:call_history' %}" class="history-btn">
+        <i class="fa-solid fa-list"></i>
+        View All Call Logs
+        <i class="fa-solid fa-angle-right"></i>
+    </a>
+    </div>
+     {% endif %}
+</div>
+
+
+{% endblock %}

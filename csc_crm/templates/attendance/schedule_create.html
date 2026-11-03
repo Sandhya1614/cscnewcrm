@@ -1,0 +1,220 @@
+{% extends 'attendance/base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/attendance_css/schedule.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<script>
+    // used by schedule.js to decide trainer lock behaviour
+    const MY_ROLE = "{{ my_role }}";
+</script>
+
+<div class="schedule-page">
+
+    <!-- ============ PAGE HEADER ============ -->
+    <div class="schedule-header">
+        <div>
+            <h2 class="schedule-title">Trainer Schedule</h2>
+            <p class="schedule-subtitle">
+                {% if is_admin_or_manager %}
+                    Create and manage class / meeting schedules for trainers
+                {% else %}
+                    Your assigned classes and meetings
+                {% endif %}
+            </p>
+        </div>
+
+        <button type="button" id="exportBtn" class="export-btn">
+            <i class="fa-solid fa-download"></i> Export
+        </button>
+    </div>
+
+    <div id="scheduleAlert" class="schedule-alert" style="display:none;"></div>
+
+    <!-- ============ CREATE FORM (ADMIN / MANAGER ONLY) ============ -->
+    {% if is_admin_or_manager %}
+    <div class="schedule-form-card">
+
+        <h3 class="form-card-title"><i class="fa-solid fa-calendar-plus"></i> Create Schedule</h3>
+
+        <form method="POST" action="{% url 'create_schedule' %}" id="scheduleForm" novalidate>
+            {% csrf_token %}
+
+            <div class="schedule-form-grid">
+
+                <div class="field-group">
+                    <label for="assignTrainer">Assign Trainer <span class="required">*</span></label>
+                    {{ form.staff }}
+                    <small class="field-error" id="err-staff"></small>
+                </div>
+
+                <div class="field-group">
+                    <label for="scheduleTopic">Topic <span class="required">*</span></label>
+                    {{ form.topic }}
+                    <small class="field-error" id="err-topic"></small>
+                </div>
+
+                <div class="field-group">
+                    <label for="scheduleDate">Date <span class="required">*</span></label>
+                    {{ form.date }}
+                    <small class="field-error" id="err-date"></small>
+                </div>
+
+                <div class="field-group">
+                    <label for="scheduleTime">Time <span class="required">*</span></label>
+                    {{ form.time }}
+                    <small class="field-error" id="err-time"></small>
+                </div>
+
+                <div class="field-group">
+                    <label for="scheduleType">Type <span class="required">*</span></label>
+                    {{ form.type }}
+                    <small class="field-error" id="err-type"></small>
+                </div>
+
+                <!-- Status: always Upcoming on create. Not part of the form, display only. -->
+                <div class="field-group">
+                    <label for="scheduleStatus">Status</label>
+                    <input type="text" id="scheduleStatus" class="sched-input" value="Upcoming" disabled>
+                </div>
+
+                <div class="field-group form-submit-group">
+                    <button type="submit" class="add-schedule-btn">
+                        <i class="fa-solid fa-plus"></i> Add Schedule
+                    </button>
+                </div>
+
+            </div>
+        </form>
+
+    </div>
+    {% endif %}
+
+    <!-- ============ SCHEDULE LIST ============ -->
+    <div class="schedule-list-card">
+
+        <div class="schedule-list-header">
+            <h3 class="form-card-title"><i class="fa-solid fa-list"></i> Schedule History</h3>
+        </div>
+
+        {% if schedules %}
+        <div class="table-responsive">
+            <table class="schedule-table">
+                <thead>
+                    <tr>
+                        <th class="col-check"><input type="checkbox" id="selectAllRows"></th>
+                        {% if my_role != "Trainer" %}
+                        <th>Trainer</th>
+                        {% endif %}
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Class / Meeting</th>
+                        <th>Topic</th>
+                        <th>Status</th>
+
+                        {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" or request.user.staff_profile.role.role_name == "Trainer" %}
+                        <th>Actions</th>
+                        {% endif %}
+
+                    </tr>
+                </thead>
+                <tbody id="scheduleTableBody">
+                    {% for schedule in schedules %}
+                    <tr data-id="{{ schedule.id }}">
+                        <td class="col-check">
+                            <input type="checkbox" class="row-check" value="{{ schedule.id }}">
+                        </td>
+                        {% if my_role != "Trainer" %}
+                        <td>{{ schedule.staff.full_name }}</td>
+                        {% endif %}
+                        <td>{{ schedule.date|date:"d M Y" }}</td>
+                        <td>{{ schedule.time|time:"h:i A" }}</td>
+                        <td>{{ schedule.get_type_display }}</td>
+                        <td>{{ schedule.topic }}</td>
+                        <td>
+                            <span class="status-pill {{ schedule.status }}" id="pill-{{ schedule.id }}">
+                                {{ schedule.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+
+                            {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" or request.user.staff_profile.role.role_name == "Trainer" %}
+                            <div class="status-actions">
+
+                                <button type="button"
+                                        class="status-action-btn btn-complete {% if schedule.status == 'completed' %}active{% endif %}"
+                                        data-schedule-id="{{ schedule.id }}"
+                                        {% if my_role == "Trainer" and schedule.status != "upcoming" %}disabled{% endif %}>
+                                    {% if schedule.status == "completed" %}Uncomplete{% else %}Completed{% endif %}
+                                </button>
+
+                                <button type="button"
+                                        class="status-action-btn btn-block {% if schedule.status == 'blocked' %}active{% endif %}"
+                                        data-schedule-id="{{ schedule.id }}"
+                                        {% if my_role == "Trainer" and schedule.status != "upcoming" %}disabled{% endif %}>
+                                    {% if schedule.status == "blocked" %}Unblock{% else %}Block{% endif %}
+                                </button>
+
+                            </div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ============ PAGINATION (10 rows / page) ============ -->
+        {% if page_obj.paginator.num_pages > 1 %}
+        <div class="schedule-pagination">
+
+            <span class="rows-info">
+                Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} records
+            </span>
+
+            <div class="page-controls">
+
+                {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}" class="page-btn">&laquo;</a>
+                {% else %}
+                    <span class="page-btn disabled">&laquo;</span>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if num == page_obj.number %}
+                        <span class="page-btn active">{{ num }}</span>
+                    {% else %}
+                        <a href="?page={{ num }}" class="page-btn">{{ num }}</a>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}" class="page-btn">&raquo;</a>
+                {% else %}
+                    <span class="page-btn disabled">&raquo;</span>
+                {% endif %}
+
+            </div>
+
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="schedule-empty-state">
+            <i class="fa-solid fa-calendar-xmark"></i>
+            <p>No schedules found.</p>
+        </div>
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/attendance_js/schedule.js' %}"></script>
+{% endblock %}

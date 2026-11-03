@@ -1,0 +1,399 @@
+{% extends 'leads/base.html' %}
+{% load static %}
+{% block content %}
+{% include 'partials/toast_messages.html' %}
+<div class="target-container">
+
+    <header class="target-header">
+        <div class="target-header-content">
+
+            <h1 class="target-page-title"> Lead Capture Target</h1>
+
+            <p class="target-page-subtitle">
+                Assign and track lead capture targets for the Marketing team
+            </p>
+
+        </div>
+
+        {% if can_assign %}
+        <button type="button" class="btn-assign-target" onclick="openTargetModal()">
+            <i class="fa-solid fa-plus"></i> Assign Target
+        </button>
+        {% endif %}
+    </header>
+
+
+    <!-- SUMMARY CARDS -->
+    <section class="target-summary">
+
+        <div class="summary-card card-total">
+            <div class="summary-icon"><i class="fa-solid fa-bullseye"></i></div>
+            <div class="summary-content">
+                <div class="summary-label"> Total Targets </div>
+                <div class="summary-count"> {{ total_count }} </div>
+            </div>
+        </div>
+
+        <div class="summary-card card-active">
+            <div class="summary-icon"><i class="fa-solid fa-hourglass-half"></i></div>
+            <div class="summary-content">
+                <div class="summary-label"> Active </div>
+                <div class="summary-count"> {{ active_count }} </div>
+            </div>
+        </div>
+
+        <div class="summary-card card-completed">
+            <div class="summary-icon"><i class="fa-solid fa-circle-check"></i></div>
+            <div class="summary-content">
+                <div class="summary-label"> Completed </div>
+                <div class="summary-count"> {{ completed_count }} </div>
+            </div>
+        </div>
+
+        <div class="summary-card card-expired">
+            <div class="summary-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <div class="summary-content">
+                <div class="summary-label"> Expired </div>
+                <div class="summary-count"> {{ expired_count }} </div>
+            </div>
+        </div>
+
+    </section>
+
+
+    <!-- TARGET TABLE -->
+    <main class="target-table-card">
+
+        <div class="table-top">
+            <div>
+                <h2> Lead Capture Targets </h2>
+                <span class="table-count"> {{ total_count }} Target{{ total_count|pluralize }} </span>
+            </div>
+        </div>
+
+        {% if targets %}
+
+        <div class="table-wrapper">
+            <table class="target-table">
+                <thead>
+                    <tr>
+                        <th> TEAM MEMBER </th>
+                        <th> TARGET </th>
+                        <th> ACHIEVED </th>
+                        <th> PROGRESS </th>
+                        <th> END DATE </th>
+                        <th> STATUS </th>
+                        <th> ASSIGNED BY </th>
+                        <th> ACTION </th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for target in targets %}
+                    <tr>
+                        <td>
+                            <div class="member-info">
+                                <span class="member-icon-avatar">
+                                    <i class="fa-solid fa-user"></i>
+                                </span>
+                                <div class="member-details">
+                                    <div class="member-name"> {{ target.assigned_to.full_name }} </div>
+                                    <div class="member-role"> {{ target.assigned_to.role.get_role_name_display }} </div>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="cell-metric">
+                                <i class="fa-solid fa-flag-checkered"></i>
+                                <span> {{ target.target_count }} leads </span>
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="cell-metric">
+                                <i class="fa-solid fa-address-card"></i>
+                                <span> {{ target.achieved_count }} leads </span>
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="progress-wrap">
+                                <div class="progress-track">
+                                    <div class="progress-fill status-{{ target.status }}"
+                                        style="width: {{ target.progress_percent }}%;">
+                                        <span class="progress-fill-shine"></span>
+                                    </div>
+                                </div>
+                                <div class="progress-meta">
+                                    <span class="progress-text">
+                                        {% if target.status == 'completed' %}
+                                        <i class="fa-solid fa-circle-check"></i>
+                                        {% elif target.status == 'expired' %}
+                                        <i class="fa-solid fa-triangle-exclamation"></i>
+                                        {% else %}
+                                        <i class="fa-solid fa-arrow-trend-up"></i>
+                                        {% endif %}
+                                        {{ target.progress_percent }}%
+                                    </span>
+                                    <span class="progress-fraction"> {{ target.achieved_count }}/{{ target.target_count }} </span>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="cell-metric">
+                                <i class="fa-regular fa-calendar"></i>
+                                <span> {{ target.end_date|date:"d M Y" }} </span>
+                            </div>
+                        </td>
+
+                        <td>
+                            <span class="status-badge status-{{ target.status }}">
+                                {% if target.status == 'completed' %}
+                                <i class="fa-solid fa-circle-check"></i>
+                                {% elif target.status == 'expired' %}
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                                {% else %}
+                                <i class="fa-solid fa-hourglass-half"></i>
+                                {% endif %}
+                                {{ target.status|title }}
+                            </span>
+                        </td>
+
+                        <td>
+                            {% if target.assigned_by %}
+                            <div class="cell-metric">
+                                <i class="fa-solid fa-user-tie"></i>
+                                <span> {{ target.assigned_by.full_name }} </span>
+                            </div>
+                            {% else %}
+                            <span class="cell-empty"><i class="fa-solid fa-minus"></i></span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <div class="action-cell">
+                                {% if target.can_edit %}
+                                <button type="button" class="btn-icon-action btn-icon-edit" title="Update target"
+                                    onclick="openEditModal({{ target.id }}, '{{ target.assigned_to.full_name|escapejs }}', {{ target.target_count }}, '{{ target.end_date|date:'Y-m-d' }}', {{ target.achieved_count }}, {{ target.progress_percent }}, '{{ target.status }}')">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                                {% endif %}
+
+                                {% if target.can_delete %}
+                                <form method="POST" action="{% url 'leads:lead_capture_target_delete' target.id %}">
+                                    {% csrf_token %}
+
+                                    <button type="submit" class="btn-icon-action btn-icon-delete" title="Delete target">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+
+                                {% if not target.can_edit and not target.can_delete %}
+                                <span class="action-locked" title="View only">
+                                    <i class="fa-solid fa-lock"></i>
+                                </span>
+                                {% endif %}
+                            </div>
+                        </td>
+
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% else %}
+
+        <div class="target-empty-state">
+            <div class="empty-icon"><i class="fa-solid fa-bullseye"></i></div>
+            <p> No lead capture targets assigned yet. Click "Assign Target" to get started. </p>
+        </div>
+
+        {% endif %}
+
+    </main>
+
+</div>
+
+
+{% if can_assign %}
+<!-- ASSIGN TARGET MODAL -->
+<div class="target-modal-overlay" id="targetModalOverlay" onclick="closeTargetModal(event)">
+    <div class="target-modal" onclick="event.stopPropagation()">
+
+        <div class="target-modal-header">
+            <h3> Assign Lead Capture Target </h3>
+            <button type="button" class="target-modal-close" onclick="closeTargetModal()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <form method="POST" action="{% url 'leads:lead_capture_target_assign' %}" class="target-modal-form">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="id_target_assigned_to"> Team Member </label>
+                {{ form.assigned_to }}
+            </div>
+
+            <div class="form-group">
+                <label for="id_target_count"> Lead Target Count </label>
+                {{ form.target_count }}
+            </div>
+
+            <div class="form-group">
+                <label for="id_target_end_date">End Date</label>
+                {{ form.end_date }}
+            </div>
+
+            <div class="target-modal-actions">
+                <button type="button" class="btn-cancel" onclick="closeTargetModal()"> Cancel </button>
+                <button type="submit" class="btn-submit-target"> Assign Target </button>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+{% endif %}
+
+
+{% if can_assign %}
+<!-- EDIT TARGET MODAL (shared, populated via JS per row) -->
+<div class="target-modal-overlay" id="editTargetModalOverlay" onclick="closeEditModal(event)">
+    <div class="target-modal" onclick="event.stopPropagation()">
+
+        <div class="target-modal-header">
+            <h3> Update Lead Capture Target </h3>
+            <button type="button" class="target-modal-close" onclick="closeEditModal()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <form method="POST" id="editTargetForm" class="target-modal-form">
+            {% csrf_token %}
+
+            <div class="edit-member-strip">
+                <span class="member-icon-avatar">
+                    <i class="fa-solid fa-user"></i>
+                </span>
+                <span class="edit-member-name" id="editMemberName"></span>
+            </div>
+
+            <!-- Achieved progress (read-only context, auto-calculated from captured leads) -->
+            <div class="edit-progress-info">
+                <div class="progress-wrap">
+                    <div class="progress-track">
+                        <div class="progress-fill" id="editProgressFill" style="width: 0%;">
+                            <span class="progress-fill-shine"></span>
+                        </div>
+                    </div>
+                    <div class="progress-meta">
+                        <span class="progress-text" id="editProgressText">
+                            <i class="fa-solid fa-arrow-trend-up"></i> 0%
+                        </span>
+                        <span class="progress-fraction" id="editProgressFraction"></span>
+                    </div>
+                </div>
+                <p class="edit-progress-hint">
+                    <i class="fa-solid fa-circle-info"></i>
+                    Achieved progress updates automatically as leads get captured &mdash; only the target count and end
+                    date can be edited here.
+                </p>
+            </div>
+
+            <div class="form-group">
+                <label for="id_edit_target_count"> {{ edit_form.target_count.label }} </label>
+                {{ edit_form.target_count }}
+            </div>
+
+            <div class="form-group">
+                <label for="id_edit_target_end_date">{{ edit_form.end_date.label }}</label>
+                {{ edit_form.end_date }}
+            </div>
+
+            <div class="target-modal-actions">
+                <button type="button" class="btn-cancel" onclick="closeEditModal()"> Cancel </button>
+                <button type="submit" class="btn-submit-target"> Save Changes </button>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+{% endif %}
+
+
+<script>
+    function openTargetModal() {
+        document.getElementById('targetModalOverlay').classList.add('show');
+    }
+
+    function closeTargetModal(e) {
+        if (e) e.stopPropagation();
+        document.getElementById('targetModalOverlay').classList.remove('show');
+    }
+
+    {% if can_assign %}
+    // Base update URL built with a placeholder pk (0), swapped per row on open
+    var editTargetUrlTemplate = "{% url 'leads:lead_capture_target_update' 0 %}";
+
+    function openEditModal(targetId, memberName, targetCount, endDate, achievedCount, progressPercent, status) {
+        document.getElementById('editTargetForm').action = editTargetUrlTemplate.replace('/0/', '/' + targetId + '/');
+        document.getElementById('editMemberName').textContent = memberName;
+        document.getElementById('id_edit_target_count').value = targetCount;
+        document.getElementById('id_edit_target_end_date').value = endDate;
+
+        var fill = document.getElementById('editProgressFill');
+        fill.style.width = progressPercent + '%';
+        fill.className = 'progress-fill status-' + status;
+
+        document.getElementById('editProgressText').innerHTML =
+            '<i class="fa-solid fa-arrow-trend-up"></i> ' + progressPercent + '%';
+        document.getElementById('editProgressFraction').textContent = achievedCount + '/' + targetCount + ' leads';
+
+        document.getElementById('editTargetModalOverlay').classList.add('show');
+    }
+
+    function closeEditModal(e) {
+        if (e) e.stopPropagation();
+        document.getElementById('editTargetModalOverlay').classList.remove('show');
+    }
+    {% endif %}
+
+    {% if form.errors %}
+    document.addEventListener('DOMContentLoaded', function () {
+        openTargetModal();
+    });
+    {% endif %}
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    function enableDatePicker(id) {
+        const input = document.getElementById(id);
+        if (!input) return;
+
+        input.addEventListener('click', function () {
+            if (this.showPicker) {
+                this.showPicker();
+            }
+        });
+
+        input.addEventListener('focus', function () {
+            if (this.showPicker) {
+                this.showPicker();
+            }
+        });
+    }
+
+    enableDatePicker('id_target_end_date');
+    enableDatePicker('id_edit_target_end_date');
+});
+</script>
+
+{% endblock %}

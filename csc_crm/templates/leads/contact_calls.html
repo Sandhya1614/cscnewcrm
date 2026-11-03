@@ -1,0 +1,104 @@
+{% extends 'leads/base.html' %}
+
+{% block title %}{{ contact_name }} - Call Logs{% endblock %}
+
+{% block content %}
+{% include 'partials/toast_messages.html' %}
+
+<div class="contact-page">
+
+    <!-- Top bar (like the phone "Details" screen) -->
+    <div class="contact-topbar">
+        <a href="{% url 'leads:call_logs' %}" class="contact-back" title="Back to Call Logs">
+            <i class="fa-solid fa-chevron-left"></i>
+            <span>Details</span>
+        </a>
+
+        {% if lead %}
+        <a href="{% url 'leads:lead_capture_details' lead.id %}" class="contact-edit" title="Open full lead profile">
+            <i class="fa-solid fa-pen"></i>
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="contact-layout">
+
+        <!-- ============ CONTACT DETAILS ============ -->
+        <section class="contact-card">
+
+            <div class="contact-avatar">{{ contact_name|slice:":1"|upper }}</div>
+            <h2 class="contact-name">{{ contact_name }}</h2>
+
+            {% if lead %}
+            <a href="tel:{{ lead.phone_no }}" class="contact-phone">
+                <i class="fa-solid fa-phone"></i> {{ lead.phone_no }}
+            </a>
+
+            <div class="contact-info">
+                {% if lead.email %}
+                <div class="info-row"><i class="fa-regular fa-envelope"></i><div><label>Email</label><p>{{ lead.email }}</p></div></div>
+                {% endif %}
+                <div class="info-row"><i class="fa-solid fa-graduation-cap"></i><div><label>Course Interested</label><p>{{ lead.get_course_interested_display }}</p></div></div>
+                <div class="info-row"><i class="fa-solid fa-bullhorn"></i><div><label>Lead Source</label><p>{{ lead.get_lead_source_display }}</p></div></div>
+                <div class="info-row"><i class="fa-solid fa-signal"></i><div><label>Status</label><p>{{ lead.get_initial_status_display }}</p></div></div>
+                <div class="info-row"><i class="fa-regular fa-calendar"></i><div><label>Enquiry Date</label><p>{{ lead.enquiry_date|date:"d M Y" }}</p></div></div>
+                <div class="info-row"><i class="fa-regular fa-calendar-check"></i><div><label>Next Follow-up</label><p>{{ lead.next_followup_date|date:"d M Y" }}</p></div></div>
+                {% if lead.assigned_to %}
+                <div class="info-row"><i class="fa-regular fa-user"></i><div><label>Assigned To</label><p>{{ lead.assigned_to }}</p></div></div>
+                {% endif %}
+                {% if lead.initial_notes %}
+                <div class="info-row"><i class="fa-regular fa-note-sticky"></i><div><label>Lead Notes</label><p>{{ lead.initial_notes }}</p></div></div>
+                {% endif %}
+            </div>
+            {% else %}
+            <p class="contact-missing">This contact is not linked to a captured lead, so only call history is available.</p>
+            {% endif %}
+
+            <div class="contact-stats">
+                <div class="stat"><strong>{{ total_calls }}</strong><span>Total calls</span></div>
+                <div class="stat"><strong>{{ connected_calls }}</strong><span>Connected</span></div>
+                <div class="stat"><strong>{{ not_connected_calls }}</strong><span>Did not connect</span></div>
+                <div class="stat"><strong>{{ talk_time }}</strong><span>Talk time</span></div>
+            </div>
+
+            {% with latest=latest_log %}
+            <div class="latest-note">
+                <label>Latest outcome</label>
+                <span class="badge {{ latest.call_outcome|slugify }}">{{ latest.call_outcome }}</span>
+                {% if latest.notes %}<p>{{ latest.notes }}</p>{% endif %}
+                {% if latest.next_followup_date and latest.call_outcome != "Not Interested" %}
+                <p class="latest-follow">Follow-up: {{ latest.next_followup_date|date:"d M Y" }}</p>
+                {% endif %}
+            </div>
+            {% endwith %}
+        </section>
+
+        <!-- ============ MOBILE-STYLE CALL LOGS ============ -->
+        <section class="phone-log">
+
+            <h3 class="phone-log-title">Call logs</h3>
+
+            {% for call in calls %}
+            <div class="phone-log-row {% if not call.is_connected %}missed{% endif %}">
+
+                <span class="sim-icon"><i class="fa-regular fa-square"></i><b>1</b></span>
+
+                <div class="phone-log-main">
+                    <span class="phone-log-label">
+                        {{ call.log_label }}
+                    </span>
+                    {% if call.notes %}<span class="phone-log-note">{{ call.notes|truncatechars:60 }}</span>{% endif %}
+                </div>
+
+                <span class="phone-log-time">{{ call.timestamp_display }}</span>
+            </div>
+            {% empty %}
+            <p class="phone-log-empty">No calls recorded yet.</p>
+            {% endfor %}
+
+            <div class="phone-log-handle"></div>
+        </section>
+
+    </div>
+</div>
+{% endblock %}
