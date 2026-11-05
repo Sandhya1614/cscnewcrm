@@ -1,0 +1,126 @@
+{% extends 'admissions/base.html' %}
+{% load static %}
+
+{% block title %}
+Student Profile
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .tp-wrap { width: 100%; max-width: none; margin: 0; padding: 20px 20px 30px; box-sizing: border-box; }
+
+    /* Back + heading */
+    .tp-top { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; }
+    .tp-back { display: inline-flex; align-items: center; gap: 8px; background: #25236f; color: #fff; border: 0; border-radius: 9px; padding: 10px 18px; font-size: 14px; font-weight: 500; cursor: pointer; }
+    .tp-back:hover { background: #1c1a58; }
+    .tp-top h1 { margin: 0; font-size: 16px; font-weight: 600; color: #1f1b6b; }
+    .tp-top p { margin: 2px 0 0; font-size: 13px; color: #868aa6; }
+
+    /* Card */
+    .tp-card { background: #fff; border: 1px solid #eef0f5; border-radius: 16px; box-shadow: 0 1px 3px rgba(30,30,100,.06), 0 8px 24px rgba(30,30,100,.05); padding: 32px; display: flex; gap: 32px; align-items: flex-start; }
+
+    /* Photo (square) */
+    .tp-photo-box { display: flex; flex-direction: column; align-items: center; gap: 14px; flex-shrink: 0; }
+    .tp-photo { width: 132px; height: 132px; border-radius: 16px; object-fit: cover; background: #eef0fd; }
+    .tp-badge { background: #d9f7e4; color: #0a8a3a; font-size: 12px; font-weight: 600; padding: 5px 14px; border-radius: 99px; }
+
+    /* Info */
+    .tp-info { flex: 1; min-width: 0; }
+    .tp-name-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding-bottom: 18px; border-bottom: 1px solid #eef0f5; }
+    .tp-name { margin: 0; font-size: 24px; font-weight: 600; color: #1f1b6b; }
+    .tp-id { background: #eef0fd; color: #25236f; font-size: 12px; font-weight: 700; padding: 5px 11px; border-radius: 7px; }
+
+    .tp-row { display: flex; align-items: center; gap: 14px; padding: 16px 0; border-bottom: 1px solid #eef0f5; }
+    .tp-row i { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 10px; background: #eef0fd; color: #25236f; font-size: 15px; flex: none; }
+    .tp-row .tp-txt { flex: 1; min-width: 0; }
+    .tp-row small { display: block; color: #868aa6; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 3px; }
+    .tp-row span { color: #3d3f66; font-size: 15px; font-weight: 500; word-break: break-all; }
+    .tp-copy { background: none; border: 1px solid #eef0f5; color: #868aa6; border-radius: 8px; padding: 6px 12px; font-size: 12px; cursor: pointer; }
+    .tp-copy:hover { color: #25236f; border-color: #25236f; }
+
+    /* Actions */
+    .tp-actions { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+    .tp-btn { text-decoration: none; font-size: 14px; font-weight: 600; padding: 11px 20px; border-radius: 9px; background: #eef0fd; color: #25236f; }
+    .tp-btn.primary { background: #25236f; color: #fff; }
+    .tp-btn:hover { filter: brightness(.95); }
+
+    @media (max-width: 700px) {
+        .tp-card { flex-direction: column; align-items: stretch; padding: 24px 20px; }
+        .tp-photo-box { align-self: center; }
+        .tp-btn { flex: 1; text-align: center; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="tp-wrap">
+
+    <div class="tp-top">
+        <button type="button" class="tp-back" onclick="history.back()">
+            <i class="fa-solid fa-arrow-left"></i> Back
+        </button>
+        <div>
+            <h1>Student Profile</h1>
+            <p>View student contact information</p>
+        </div>
+    </div>
+
+    <div class="tp-card">
+
+        <div class="tp-photo-box">
+            {% if student.photo %}
+            <img class="tp-photo" src="{{ student.photo.url }}" alt="{{ student.first_name }}">
+            {% else %}
+            <img class="tp-photo"
+                 src="https://ui-avatars.com/api/?name={{ student.first_name|urlencode }}+{{ student.last_name|urlencode }}&background=eef0fd&color=25236f&size=264&bold=true&rounded=false"
+                 alt="{{ student.first_name }}">
+            {% endif %}
+            <span class="tp-badge">Active student</span>
+        </div>
+
+        <div class="tp-info">
+            <div class="tp-name-row">
+                <h2 class="tp-name">{{ student.first_name }} {{ student.last_name }}</h2>
+                <span class="tp-id">STU{{ student.id }}</span>
+            </div>
+
+            <div class="tp-row">
+                <i class="fa-solid fa-envelope"></i>
+                <div class="tp-txt"><small>Email</small><span>{{ student.email }}</span></div>
+                <button type="button" class="tp-copy" data-copy="{{ student.email }}">Copy</button>
+            </div>
+
+            <div class="tp-row">
+                <i class="fa-solid fa-phone"></i>
+                <div class="tp-txt"><small>Phone</small><span>{{ student.phone_no }}</span></div>
+                <button type="button" class="tp-copy" data-copy="{{ student.phone_no }}">Copy</button>
+            </div>
+
+            <div class="tp-actions">
+                <a class="tp-btn primary" href="tel:{{ student.phone_no }}">Call</a>
+                <a class="tp-btn" href="mailto:{{ student.email }}">Send Email</a>
+                <a class="tp-btn" href="https://wa.me/91{{ student.phone_no }}" target="_blank" rel="noopener">WhatsApp</a>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+document.querySelectorAll('.tp-copy').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+        var val = btn.dataset.copy;
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(val);
+        } else {
+            var t = document.createElement('textarea');
+            t.value = val; document.body.appendChild(t); t.select();
+            document.execCommand('copy'); t.remove();
+        }
+        btn.textContent = 'Copied';
+        setTimeout(function () { btn.textContent = 'Copy'; }, 1200);
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,808 @@
+/*==================================================
+ CSC CRM PROFESSIONAL PAYMENT RECEIPT
+==================================================*/
+
+@page{
+    size:A4;
+    margin:8mm;
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+html,
+body{
+    width:100%;
+    height:100%;
+}
+
+body{
+    font-family:Arial,Helvetica,sans-serif;
+    font-size:11px;
+    color:#1f2937;
+    background:#f4f6fb;
+}
+
+.receipt-container{
+
+    width:100%;
+
+    min-height:260mm;
+
+    background:#ffffff;
+
+    border:1px solid #d9dde7;
+
+    position:relative;
+
+    overflow:hidden;
+
+}
+
+
+/*==================================================
+ HEADER
+==================================================*/
+
+.header-table{
+
+    width:100%;
+
+    border-collapse:collapse;
+
+    background:#262170;
+
+    color:#ffffff;
+
+}
+
+.header-table td{
+
+    padding:18px;
+
+    vertical-align:top;
+
+}
+
+.logo-section{
+
+    width:65%;
+
+}
+
+.logo-box{
+
+    font-size:30px;
+
+    font-weight:bold;
+
+    letter-spacing:2px;
+
+}
+
+.company-name{
+
+    margin-top:8px;
+
+    font-size:15px;
+
+    font-weight:bold;
+
+}
+
+.company-address{
+
+    margin-top:5px;
+
+    color:#d9defc;
+
+    font-size:11px;
+
+}
+
+
+/*======================================
+ RECEIPT BOX
+======================================*/
+
+.receipt-section{
+
+    width:35%;
+
+    text-align:right;
+
+}
+
+.receipt-label{
+
+    display:inline-block;
+
+    background:#ffc107;
+
+    color:#222;
+
+    padding:7px 18px;
+
+    border-radius:30px;
+
+    font-weight:bold;
+
+    font-size:12px;
+
+}
+
+.receipt-id{
+
+    margin-top:15px;
+
+    font-size:24px;
+
+    color:#ffffff;
+
+}
+
+.receipt-date{
+
+    margin-top:8px;
+
+    font-size:12px;
+
+}
+
+
+/*======================================
+ PAGE TITLE
+======================================*/
+
+.page-title{
+
+    padding:12px 20px;
+
+    display:flex;
+
+    align-items:center;
+
+}
+
+.line{
+
+    flex:1;
+
+    height:2px;
+
+    background:#d7dbe5;
+
+}
+
+.title{
+
+    padding:0 20px;
+
+    font-size:18px;
+
+    color:#262170;
+
+    font-weight:bold;
+
+}
+
+
+/*======================================
+ DETAILS
+======================================*/
+
+.details-table{
+
+    width:94%;
+
+    margin:0 auto;
+
+    border-collapse:collapse;
+
+    border:1px solid #dfe4ec;
+
+}
+
+.details-table td{
+
+    vertical-align:top;
+
+}
+
+.left-column,
+.right-column{
+
+    width:49%;
+
+    padding:16px;
+
+}
+
+.divider{
+
+    width:1px;
+
+    background:#e2e6ee;
+
+}
+
+.section-heading{
+
+    color:#262170;
+
+    font-size:15px;
+
+    font-weight:bold;
+
+    margin-bottom:10px;
+
+    border-bottom:2px solid #262170;
+
+    padding-bottom:5px;
+
+}
+
+.info-table{
+
+    width:100%;
+
+    border-collapse:collapse;
+
+}
+
+.info-table td{
+
+    padding:7px 0;
+
+}
+
+.label{
+
+    width:42%;
+
+    color:#6b7280;
+
+    font-weight:bold;
+
+}
+
+.value{
+
+    font-weight:600;
+
+    color:#111827;
+
+}
+
+.amount-value{
+
+    color:#16a34a;
+
+    font-size:18px;
+
+    font-weight:bold;
+
+}
+
+/*==================================================
+ SUMMARY SECTION
+==================================================*/
+
+.summary-section{
+
+    width:94%;
+
+    margin:12px auto;
+
+}
+
+.summary-table{
+
+    width:100%;
+
+    border-collapse:separate;
+
+    border-spacing:8px;
+
+}
+
+.summary-card{
+
+    width:25%;
+
+    background:#ffffff;
+
+    border:1px solid #e4e7ef;
+
+    border-radius:12px;
+
+    text-align:center;
+
+    padding:14px 10px;
+
+    box-shadow:0 2px 8px rgba(0,0,0,.05);
+
+}
+
+.summary-icon{
+
+    width:42px;
+
+    height:42px;
+
+    line-height:42px;
+
+    margin:0 auto 12px;
+
+    border-radius:50%;
+
+    font-size:18px;
+
+    font-weight:bold;
+
+    color:#fff;
+
+}
+
+.purple{
+
+    background:#4f46e5;
+
+}
+
+.green{
+
+    background:#16a34a;
+
+}
+
+.orange{
+
+    background:#f59e0b;
+
+}
+
+.blue{
+
+    background:#2563eb;
+
+}
+
+.summary-title{
+
+    color:#6b7280;
+
+    font-size:12px;
+
+    margin-bottom:8px;
+
+}
+
+.summary-value{
+
+    font-size:18px;
+
+    font-weight:bold;
+
+    color:#111827;
+
+}
+
+.summary-value.paid{
+
+    color:#16a34a;
+
+}
+
+.summary-value.pending{
+
+    color:#dc2626;
+
+}
+
+
+/*==================================================
+ STATUS
+==================================================*/
+
+.status{
+
+    display:inline-block;
+
+    padding:7px 20px;
+
+    border-radius:30px;
+
+    font-size:11px;
+
+    font-weight:bold;
+
+}
+
+.paid-status{
+
+    background:#dcfce7;
+
+    color:#166534;
+
+}
+
+.partial-status{
+
+    background:#fef3c7;
+
+    color:#92400e;
+
+}
+
+.pending-status{
+
+    background:#fee2e2;
+
+    color:#b91c1c;
+
+}
+
+
+/*==================================================
+ TRANSACTION TABLE
+==================================================*/
+
+.table-section{
+
+    width:94%;
+
+    margin:12px auto;
+
+}
+
+.table-heading{
+
+    font-size:16px;
+
+    color:#262170;
+
+    font-weight:bold;
+
+    margin-bottom:10px;
+
+}
+
+.transaction-table{
+
+    width:100%;
+
+    border-collapse:collapse;
+
+    border:1px solid #dbe1eb;
+
+}
+
+.transaction-table th{
+
+    background:#262170;
+
+    color:#ffffff;
+
+    padding:9px;
+
+    font-size:12px;
+
+    text-align:left;
+
+}
+
+.transaction-table td{
+
+    padding:9px;
+
+    border-top:1px solid #e5e7eb;
+
+    font-size:12px;
+
+}
+
+.transaction-table tbody tr:nth-child(even){
+
+    background:#f8fafc;
+
+}
+
+.amount-column{
+
+    color:#16a34a;
+
+    font-weight:bold;
+
+}
+
+
+/*==================================================
+ NOTE
+==================================================*/
+
+.bottom-table{
+
+    width:94%;
+
+    margin:14px auto;
+
+    border-collapse:collapse;
+
+}
+
+.note-column{
+
+    width:60%;
+
+    vertical-align:top;
+
+}
+
+.note-box{
+
+    background:#fff8e8;
+
+    border-left:5px solid #f59e0b;
+
+    padding:14px;
+
+    border-radius:10px;
+
+}
+
+.note-heading{
+
+    font-size:15px;
+
+    font-weight:bold;
+
+    color:#262170;
+
+    margin-bottom:10px;
+
+}
+
+.note-box p{
+
+    line-height:1.8;
+
+    color:#555;
+
+    font-size:12px;
+
+}
+
+
+/*==================================================
+ SIGNATURE
+==================================================*/
+
+.signature-column{
+
+    width:40%;
+
+    text-align:center;
+
+    position:relative;
+
+}
+
+.signature-space{
+
+    height:45px;
+
+    margin-top:8px;
+
+}
+
+.signature-image{
+
+    width:130px;
+
+    height:auto;
+
+}
+
+.signature-line{
+
+    width:170px;
+
+    margin:12px auto;
+
+    border-bottom:2px solid #444;
+
+}
+
+.signature-text{
+
+    font-weight:bold;
+
+    font-size:12px;
+
+}
+
+.signature-company{
+
+    margin-top:6px;
+
+    color:#262170;
+
+    font-size:11px;
+
+}
+
+
+/*==================================================
+ ROUND PAID STAMP
+==================================================*/
+
+.stamp{
+
+    width:110px;
+
+    height:110px;
+
+    margin:0 auto 15px;
+
+    border:2px dashed #3b49b8;
+
+    border-radius:50%;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    transform:rotate(-18deg);
+
+}
+
+.stamp-inner{
+
+    width:88px;
+
+    height:88px;
+
+    border:2px dashed #3b49b8;
+
+    border-radius:50%;
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+    justify-content:center;
+
+}
+
+.stamp-title{
+
+    font-size:12px;
+
+    font-weight:bold;
+
+   color:#3b49b8;
+
+}
+
+.stamp-paid{
+
+    font-size:22px;
+
+    font-weight:bold;
+
+    color:#3b49b8;
+
+    line-height:1.1;
+
+}
+
+.stamp-year{
+
+    font-size:11px;
+
+    color:#3b49b8;
+
+}
+
+
+/*==================================================
+ FOOTER
+==================================================*/
+
+.footer{
+
+    position:absolute;
+
+    left:0;
+
+    right:0;
+
+    bottom:0;
+
+    background:#262170;
+
+    color:#ffffff;
+
+    padding:10px;
+
+    border-top:4px solid #ffc107;
+
+}
+
+.footer-table{
+
+    width:100%;
+
+    border-collapse:collapse;
+
+}
+
+.footer-table td{
+
+    width:25%;
+
+    text-align:center;
+
+    font-size:11px;
+
+    line-height:1.8;
+
+}
+.digital-sign{
+    font-size:18px;
+    font-weight:bold;
+    color:#262170;
+    margin-bottom:6px;
+}
+
+.digital-name{
+    font-size:15px;
+    color:#16a34a;
+    font-weight:bold;
+}
+
+.digital-date{
+    margin-top:5px;
+    font-size:11px;
+    color:#666;
+}
+
+.signature-space{
+    height:50px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+}
+
+/*==================================================
+ PRINT
+==================================================*/
+
+@media print{
+
+    body{
+
+        background:#ffffff;
+
+    }
+
+    .receipt-container{
+
+        min-height:277mm;
+
+        box-shadow:none;
+
+        border:none;
+
+    }
+
+}

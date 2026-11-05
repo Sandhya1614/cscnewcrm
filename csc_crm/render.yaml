@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: csc-crm
+    env: python
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn csc_crm.wsgi:application"

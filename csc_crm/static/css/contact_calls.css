@@ -1,0 +1,297 @@
+/* Contact details + mobile-style call log page (leads/contact_calls.html) */
+
+/* ===== Contact call-log page ===== */
+.contact-page {
+    padding: 6px 4px 30px;
+    font-family: 'Poppins', sans-serif;
+}
+
+.contact-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.contact-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: #0b0b95;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.contact-edit {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #fff;
+    border: 1px solid #e3e8ef;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #55209a;
+    text-decoration: none;
+}
+
+.contact-layout {
+    display: grid;
+    grid-template-columns: minmax(300px, 420px) minmax(300px, 1fr);
+    gap: 22px;
+    align-items: start;
+}
+
+@media (max-width: 900px) {
+    .contact-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+.contact-card {
+    background: #fff;
+    border: 1px solid #edf2f7;
+    border-radius: 22px;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, .08);
+    padding: 22px 20px;
+    text-align: center;
+}
+
+.contact-avatar {
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 10px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #55209a, #8b6cff);
+    color: #fff;
+    font-size: 30px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.contact-name {
+    margin: 0 0 6px;
+    font-size: 1.2rem;
+    color: #0b0b95;
+}
+
+.contact-phone {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #1d6f42;
+    background: #e9f7ef;
+    padding: 6px 14px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.contact-missing {
+    color: #777;
+    font-size: 13px;
+    margin: 14px 0;
+}
+
+.contact-info {
+    margin-top: 18px;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.info-row {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.info-row>i {
+    width: 30px;
+    height: 30px;
+    flex: 0 0 30px;
+    border-radius: 50%;
+    background: #f1ecfb;
+    color: #55209a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+}
+
+.info-row label {
+    display: block;
+    font-size: 11px;
+    color: #8b8da3;
+    margin-bottom: 1px;
+}
+
+.info-row p {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: #222;
+    word-break: break-word;
+}
+
+.contact-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-top: 20px;
+}
+
+.contact-stats .stat {
+    background: #f7f8fc;
+    border-radius: 12px;
+    padding: 10px 4px;
+}
+
+.contact-stats .stat strong {
+    display: block;
+    font-size: 14px;
+    color: #0b0b95;
+}
+
+.contact-stats .stat span {
+    font-size: 10px;
+    color: #777;
+}
+
+.latest-note {
+    margin-top: 16px;
+    text-align: left;
+    background: #f7f8fc;
+    border-radius: 12px;
+    padding: 12px;
+}
+
+.latest-note label {
+    display: block;
+    font-size: 11px;
+    color: #8b8da3;
+    margin-bottom: 4px;
+}
+
+.latest-note p {
+    margin: 8px 0 0;
+    font-size: 12.5px;
+    color: #333;
+}
+
+.latest-note .latest-follow {
+    color: #55209a;
+    font-weight: 600;
+}
+
+/* --- phone style log (matches the mobile call-log screen) --- */
+.phone-log {
+    background: #f2f0f0;
+    color: #120101;
+    border-radius: 26px;
+    padding: 20px 18px 14px;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, .25);
+    max-height: 78vh;
+    overflow-y: auto;
+}
+
+.phone-log-title {
+    margin: 0 0 14px 6px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #010118;
+}
+
+.phone-log-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 6px;
+}
+
+.sim-icon {
+    position: relative;
+    width: 22px;
+    height: 26px;
+    flex: 0 0 22px;
+    color: #020215;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sim-icon i {
+    font-size: 22px;
+}
+
+.sim-icon b {
+    position: absolute;
+    font-size: 10px;
+    color: #0c0c0c;
+}
+
+.phone-log-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.phone-log-label {
+    font-size: 15px;
+    font-weight: 500;
+    color: #00001c;
+}
+
+.phone-log-row.missed .phone-log-label {
+    color: #010115;
+}
+
+.phone-log-note {
+    font-size: 11.5px;
+    color: #1d1d1f;
+    margin-top: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.phone-log-time {
+    font-size: 12px;
+    color: #04041b;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.phone-log-empty {
+    color: #111112;
+    text-align: center;
+    padding: 30px 0;
+    font-size: 13px;
+}
+
+.phone-log-handle {
+    width: 120px;
+    height: 4px;
+    background: hwb(240 95% 4%);
+    border-radius: 3px;
+    margin: 16px auto 4px;
+    opacity: .6;
+}
+
+@media (max-width: 480px) {
+    .phone-log-row {
+        flex-wrap: wrap;
+    }
+
+    .phone-log-time {
+        width: 100%;
+        text-align: left;
+        padding-left: 36px;
+    }
+}

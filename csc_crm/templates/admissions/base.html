@@ -1,0 +1,140 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% block title %}
+    <title>Student Management System</title>
+    {% endblock title %}
+    <script>if (localStorage.getItem("sidebarCollapsed") === "true") { document.documentElement.classList.add("sidebar-collapsed");}</script>
+
+    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+    <!-- <link rel="stylesheet" href="{% static 'admissions/css/style.css' %}">-->
+       <link rel="stylesheet" href="{% static 'css/responsive.css' %}">
+    <link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+   
+
+    <link rel="stylesheet" href="{% static 'css/admissions_css/style.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    {% block extra_css %}
+    {% endblock extra_css %}
+</head>
+<body>
+     
+    <!-- Sidebar -->
+    {% include "includes/sidebar.html" %}
+   <div class="sidebar-overlay"></div>
+    <!-- Right Side -->
+    <div class="main-wrapper">
+
+      <nav class="top-navbar">
+
+    <div class="nav-left">
+
+        <button class="menu-btn" id="menuToggle">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+
+        <div class="brand">
+            <div class="logo-box">CSC</div>
+
+            <div class="brand-text">
+                <h3>CSC CRM</h3>
+                <small>Institute Operations Suite</small>
+            </div>
+        </div>
+
+    </div>
+
+       <!-- ==================== USER INFO ==================== -->
+
+            {% if request.user.is_authenticated and request.user.staff_profile %}
+<div class="sidebar-user-main">
+    <div class="sidebar-user">
+
+        {% if request.user.staff_profile.profile_photo %}
+        <div class="sidebar-user-avatar">
+            <img src="{{ request.user.staff_profile.profile_photo.url }}" alt="Profile" class="sidebar-user-avatar-img">
+        </div>
+        {% else %}
+        <div class="sidebar-user-avatar">
+            {{ request.user.staff_profile.get_initials }}
+        </div>
+        {% endif %}
+
+        <div class="sidebar-user-info">
+            <p class="sidebar-user-name">
+                {{ request.user.staff_profile.full_name }}
+            </p>
+
+            <p class="sidebar-user-role">
+                <small>{{ request.user.staff_profile.employee_id }}</small>
+                -
+                {{ request.user.staff_profile.role.get_role_name_display }}
+            </p>
+        </div>
+
+    </div>
+</div>
+{% endif %}
+
+
+</nav>
+
+<!-- White Tabs -->
+
+<div class="top-tabs">
+
+{% if request.resolver_match.url_name == "student" %}
+
+    <a href="{% url 'student' %}"
+       class="{% if request.resolver_match.url_name == 'student' %}active{% endif %}">
+        Student Register
+    </a>
+
+{% else %}
+
+     {% if request.user.staff_profile.role.role_name in "Admin,Manager" %}
+    <a href="{% url 'fee_dashboard' %}"
+       class="{% if request.resolver_match.url_name == 'fee_dashboard' %}active{% endif %}">
+        Fee Management
+    </a>
+    {% endif %}
+
+    <a href="{% url 'batch_list' %}"
+       class="{% if request.resolver_match.url_name == 'batch_list' %}active{% endif %}">
+        Student List
+    </a>
+
+    <a href="{% url 'search_batch_list' %}"
+       class="{% if request.resolver_match.url_name == 'search_batch_list' %}active{% endif %}">
+        Search & Filter
+    </a>
+
+{% endif %}
+
+</div>
+
+        {% include 'partials/toast_messages.html' %}
+
+        <div class="page-content">
+            {% block content %}
+            {% endblock %}
+        </div>
+
+    </div>
+
+    <script src="{% static 'js/admissions_js/base.js' %}"></script>
+
+    {% block extra_js %}
+    {% endblock %}
+
+</body>
+
+
+
+</html>

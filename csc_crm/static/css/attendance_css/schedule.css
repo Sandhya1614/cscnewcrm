@@ -1,0 +1,426 @@
+:root {
+    --sch-navy: #1e2a78;
+    --sch-navy-dark: #1a2260;
+    --sch-gold: #ffca2b;
+    --sch-bg: #f5f6fb;
+    --sch-border: #e7e9f3;
+    --sch-muted: #8b90a6;
+    --sch-radius: 12px;
+    --sch-green: #16a34a;
+    --sch-red: #e0453f;
+}
+
+.schedule-page {
+    padding: 15px 25px 40px;
+    box-sizing: border-box;
+    color: var(--sch-navy);
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* ============ HEADER ============ */
+
+.schedule-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+.schedule-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--sch-navy);
+    margin: 0;
+}
+
+.schedule-subtitle {
+    margin: 2px 0 0;
+    font-size: 12.5px;
+    color: var(--sch-muted);
+}
+
+.export-btn {
+    height: 38px;
+    padding: 0 18px;
+    background: #fff;
+    border: 1.5px solid var(--sch-gold);
+    color: var(--sch-navy);
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.export-btn:hover {
+    background: var(--sch-gold);
+}
+
+/* ============ ALERT ============ */
+
+.schedule-alert {
+    padding: 12px 16px;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 16px;
+}
+
+.schedule-alert.success {
+    background: #e2f8ec;
+    color: #1fa159;
+    border: 1px solid #b8ecd0;
+}
+
+.schedule-alert.error {
+    background: #fde7e7;
+    color: #e0453f;
+    border: 1px solid #f7c9c9;
+}
+
+/* ============ FORM CARD ============ */
+
+.schedule-form-card,
+.schedule-list-card {
+    background: #fff;
+    border: 1px solid var(--sch-border);
+    border-radius: var(--sch-radius);
+    padding: 14px 16px;
+    margin-bottom: 14px;
+    box-shadow: 0 2px 6px rgba(30, 42, 120, .04);
+}
+
+.form-card-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--sch-navy);
+    margin: 0 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.schedule-form-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    align-items: start;
+}
+
+.field-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.field-group label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #1f2d6b;
+    margin-bottom: 4px;
+}
+
+.required {
+    color: #e0453f;
+}
+
+.sched-input {
+    height: 34px;
+    border: 1px solid #dbe2ef;
+    border-radius: 7px;
+    padding: 0 10px;
+    font-size: 12px;
+    color: var(--sch-navy);
+    background: #fff;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.sched-input:focus {
+    outline: none;
+    border-color: #2b2f87;
+    box-shadow: 0 0 0 2px rgba(43, 47, 135, .10);
+}
+
+.sched-input:disabled {
+    background: #f2f3f8;
+    color: var(--sch-muted);
+    cursor: not-allowed;
+}
+
+.sched-input.input-error {
+    border-color: #e0453f;
+    box-shadow: 0 0 0 2px rgba(224, 69, 63, .10);
+}
+
+.field-error {
+    color: #e0453f;
+    font-size: 10px;
+    margin-top: 3px;
+    min-height: 12px;
+    display: block;
+}
+
+.form-submit-group {
+    justify-content: flex-end;
+}
+
+.add-schedule-btn {
+    height: 34px;
+    padding: 0 16px;
+    background: var(--sch-navy);
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.add-schedule-btn:hover {
+    background: var(--sch-navy-dark);
+}
+/* ============ TABLE ============ */
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+.schedule-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+}
+
+.schedule-table thead {
+    background: var(--sch-navy);
+}
+
+.schedule-table th {
+    color: #fff;
+    padding: 11px 12px;
+    font-size: 11.5px;
+    font-weight: 600;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.schedule-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--sch-border);
+    vertical-align: middle;
+}
+
+.schedule-table tbody tr:hover {
+    background: #fbf7e6;
+}
+
+.col-check {
+    width: 40px;
+    text-align: center;
+}
+
+/* ============ STATUS PILL ============ */
+
+.status-pill {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    display: inline-block;
+}
+
+.status-pill.upcoming {
+    background: #fdf1de;
+    color: #d99a1e;
+}
+
+.status-pill.completed {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.status-pill.blocked {
+    background: #fde7e7;
+    color: #e0453f;
+}
+
+/* ============ ACTIONS - Completed & Block share ONE button design ============ */
+
+.status-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* Shared base look for both buttons - same size, radius, weight, transition */
+.status-action-btn {
+    height: 28px;
+    padding: 0 14px;
+    background: #fff;
+    border: 1.5px solid;
+    border-radius: 8px;
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: .2s;
+    white-space: nowrap;
+}
+
+/* Completed button - green theme */
+.status-action-btn.btn-complete {
+    border-color: var(--sch-green);
+    color: var(--sch-green);
+}
+
+.status-action-btn.btn-complete:hover:not(:disabled) {
+    background: var(--sch-green);
+    color: #fff;
+}
+
+.status-action-btn.btn-complete.active {
+    background: var(--sch-green);
+    color: #fff;
+}
+
+/* Block button - red theme */
+.status-action-btn.btn-block {
+    border-color: var(--sch-red);
+    color: var(--sch-red);
+}
+
+.status-action-btn.btn-block:hover:not(:disabled) {
+    background: var(--sch-red);
+    color: #fff;
+}
+
+.status-action-btn.btn-block.active {
+    background: var(--sch-red);
+    color: #fff;
+}
+
+.status-action-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    border-color: var(--sch-muted) !important;
+    color: var(--sch-muted) !important;
+    background: #fff !important;
+}
+
+/* ============ PAGINATION ============ */
+
+.schedule-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid var(--sch-border);
+}
+
+.rows-info {
+    font-size: 12px;
+    color: var(--sch-muted);
+}
+
+.page-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.page-btn {
+    min-width: 30px;
+    height: 30px;
+    padding: 0 8px;
+    border-radius: 7px;
+    border: 1px solid var(--sch-border);
+    background: #fff;
+    color: var(--sch-navy);
+    font-size: 12.5px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.page-btn:hover:not(.disabled):not(.active) {
+    background: var(--sch-bg);
+    border-color: var(--sch-navy);
+}
+
+.page-btn.active {
+    background: var(--sch-navy);
+    border-color: var(--sch-navy);
+    color: #fff;
+    cursor: default;
+}
+
+.page-btn.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    color: var(--sch-muted);
+}
+
+/* ============ EMPTY STATE ============ */
+
+.schedule-empty-state {
+    text-align: center;
+    padding: 40px 10px;
+    color: var(--sch-muted);
+}
+
+.schedule-empty-state i {
+    font-size: 32px;
+    margin-bottom: 10px;
+    display: block;
+}
+
+/* ============ RESPONSIVE ============ */
+
+@media (max-width: 992px) {
+    .schedule-form-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .schedule-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .schedule-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .export-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .status-actions {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+
+    .schedule-pagination {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

@@ -1,0 +1,505 @@
+body {
+    
+    padding: 0px 10px;
+    background-color: #f5f7fb;
+}
+
+.edit-container {
+    width: 98%;
+    margin: 20px auto 20px auto;
+}
+
+/* ===== Page head ===== */
+.page-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.page-title-add {
+    margin: 0;
+    color: rgb(30, 42, 120);
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.page-sub-add {
+    margin: 4px 0 0 0;
+    color: #6b7280;
+    font-size: 13px;
+}
+
+.hide-filters-btn {
+    background: transparent;
+    color: rgb(30, 42, 120);
+    border: none;
+    font-weight: 500;
+    font-size: 14px;
+    padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.hide-filters-btn:hover {
+    background: transparent;
+    color: rgb(30, 42, 120);
+    box-shadow: none;
+}
+
+/* ===== Filter card ===== */
+.filter-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    padding: 16px 16px;
+    margin-bottom: 20px;
+}
+
+.top-bar {
+    gap: 10px;
+}
+
+.filter-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+.field label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #555;
+    margin-bottom: 6px;
+}
+
+.filter-grid input,
+.filter-grid select {
+    padding: 9px 10px;
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #e0e2e8;
+    border-radius: 8px;
+    background: #fafbfc;
+}
+
+.form-btn {
+    margin-top: 14px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+#filter-error {
+    margin: 0 auto 0 0;
+    font-size: 13px;
+}
+
+button {
+    background: rgb(30, 42, 120);
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.filter-btn:hover,
+.filter-btn.btn.next:hover,
+button:hover {
+    background-color: rgb(20, 30, 90);
+    color: white;
+    box-shadow: none;
+}
+
+.clear-btn {
+    background: white;
+    color: rgb(30, 42, 120);
+    border: 1px solid #d7d9e0;
+}
+
+.clear-btn:hover {
+    background-color: #eef1ff;
+    color: rgb(30, 42, 120);
+    border-color: rgb(30, 42, 120);
+    box-shadow: none;
+}
+
+.filter-btn {
+    background: rgb(30, 42, 120);
+}
+
+/* ===== Results bar ===== */
+.results-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    padding: 14px 16px;
+    margin-bottom: 16px;
+}
+
+.results-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.results-icon {
+    background: #eef1ff;
+    color: rgb(30, 42, 120);
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pagination-info.result-info {
+    font-weight: 600;
+    color: #222;
+    font-size: 14px;
+}
+
+.results-sub {
+    font-size: 12px;
+    color: #8a8f98;
+}
+
+.results-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.per-page-select {
+    padding: 7px 10px;
+    border-radius: 8px;
+    border: 1px solid #e0e2e8;
+    background: white;
+    color: #333;
+}
+
+.export-btn {
+    background: rgb(30, 42, 120);
+    color: white;
+    border: 1px solid rgb(30, 42, 120);
+    font-weight: 500;
+    font-size: 13.5px;
+    padding: 8px 16px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 8px;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.export-btn i {
+    font-size: 12px;
+}
+
+.export-btn:hover {
+    background-color: rgb(20, 30, 90);
+    color: white;
+    border-color: rgb(20, 30, 90);
+    box-shadow: 0 2px 6px rgba(30, 42, 120, 0.25);
+}
+
+/* ===== Table ===== */
+.table-wrapper {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+th, td {
+    padding: 10px 12px;
+    text-align: left;
+}
+
+table tr:first-child th {
+    background: rgb(30, 42, 120);
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+td {
+    border-bottom: 1px solid #eef0f3;
+    font-size: 14px;
+    color: #333;
+}
+
+.student-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.avatar-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #dbeafe;
+    color: rgb(30, 42, 120);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+}
+
+.student-link {
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.profile-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.kebab-btn {
+    background: transparent;
+    color: #8a8f98;
+    padding: 4px 6px;
+}
+
+.kebab-btn:hover {
+    background: transparent;
+    color: #8a8f98;
+    box-shadow: none;
+}
+
+/* ===== Badges ===== */
+.badge {
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 12px;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.paid {
+    background: #d4f5e9;
+    color: #1ca97c;
+}
+
+.pending {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.partial {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.badge.enrolled {
+    background-color: #d4f5e9;
+    color: #1ca97c;
+}
+
+.badge.confirmed {
+    background-color: #dbeafe;
+    color: #2563eb;
+}
+
+.badge.enquiry {
+    background-color: #fef3c7;
+    color: #d97706;
+}
+
+.badge.dropped {
+    background-color: #fee2e2;
+    color: #dc2626;
+}
+
+a {
+    text-decoration: none;
+    color: white;
+}
+
+/* ===== Pagination footer ===== */
+.pagination-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 16px;
+    padding: 12px 16px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+}
+
+.pagination-info {
+    font-size: 14px;
+    color: #555;
+}
+
+.pagination-buttons {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.btn {
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.btn.prev, .btn.next {
+    background-color: #f3f4f6;
+    color: #333;
+}
+
+.page-badge {
+    background: rgb(30, 42, 120);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+
+
+@media (max-width: 550px) {
+    body {
+        background-color: white;
+        margin-top: 8px;
+    }
+
+    .page-head {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .filter-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .results-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    table {
+        width: 100%;
+    }
+
+    tbody {
+        display: block;
+        overflow-x: auto;
+    }
+
+    .table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        scrollbar-width: thin;
+    }
+
+    .table-wrapper::-webkit-scrollbar {
+        height: 2px;
+    }
+
+    .table-wrapper::-webkit-scrollbar-track {
+        background: #e5e5e5;
+        border-radius: 10px;
+    }
+
+    .table-wrapper::-webkit-scrollbar-thumb {
+        background: rgb(255, 202, 43);
+        border-radius: 10px;
+    }
+}
+
+.kebab-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.kebab-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    min-width: 140px;
+    z-index: 100;
+    overflow: hidden;
+}
+
+.kebab-menu.show {
+    display: block;
+}
+
+.kebab-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    color: #333;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.kebab-item:hover {
+    background: #f5f5f5;
+}
+
+.kebab-item.delete-item {
+    color: #d9534f;
+}
+/* ===== Field validation ===== */
+.filter-grid input.error-input,
+.filter-grid select.error-input {
+    border-color: red;
+}
+
+/* ===== Back link (batch mode) ===== */
+.back-link {
+    display: inline-block;
+    margin-bottom: 6px;
+    color: rgb(30, 42, 120);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.back-link:hover {
+    color: rgb(255, 160, 0);
+}
+
+/* ---- student photo inside the avatar circle ---- */
+.avatar-circle { overflow: hidden; flex: none; }
+.avatar-circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}

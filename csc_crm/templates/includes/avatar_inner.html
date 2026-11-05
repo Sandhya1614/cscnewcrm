@@ -1,0 +1,5 @@
+{% comment %}
+Shared avatar content for students and staff, so a name is never shown without its profile picture.
+Usage:  {% include "includes/avatar_inner.html" with photo=student.photo initials="AB" alt="Name" %}
+Put it inside the existing avatar wrapper (the wrapper keeps its own size/colour); shows the photo, or the initials when there is none.
+{% endcomment %}{% if photo %}<img src="{{ photo.url }}" alt="{{ alt }}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;">{% else %}{{ initials }}{% endif %}

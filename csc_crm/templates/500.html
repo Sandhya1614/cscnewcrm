@@ -1,0 +1,12 @@
+{% extends 'error_base.html' %}
+
+{% block title %}500 Server Error{% endblock %}
+{% block icon_bg %}#FEE2E2{% endblock %}
+{% block icon %}🛠️{% endblock %}
+{% block code %}500{% endblock %}
+{% block heading %}Something Went Wrong{% endblock %}
+{% block message %}We hit an unexpected problem on our side. Please try again in a moment.{% endblock %}
+{% block buttons %}
+<a href="javascript:location.reload()" class="btn btn-light">Try Again</a>
+<a href="/" class="btn btn-primary">Go Home</a>
+{% endblock %}

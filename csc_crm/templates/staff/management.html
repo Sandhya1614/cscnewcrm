@@ -1,0 +1,256 @@
+{% extends 'staff/base.html' %}
+{% load static %}
+{% block content %}
+
+{% include 'partials/toast_messages.html' %}
+<div class="management-container">
+
+    <!-- ========================= HEADER SECTION ========================= -->
+     <div class="management-header">
+        <div class="header-top">
+            <div class="header-title">
+                <div class="header-icon">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+                <div class="header-title-text">
+                    <h1 class="page-title">Staff Management</h1>
+
+                    {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" or request.user.staff_profile.role.role_name == "HR" or request.user.staff_profile.role.role_name == "Sales Exec Lead" or request.user.staff_profile.role.role_name == "Marketing Lead" %}
+                    <p class="page-subtitle">Manage and oversee all staff members</p>
+                    {% endif %}
+
+
+                    {% if request.user.staff_profile.role.role_name == "Trainer" or request.user.staff_profile.role.role_name == "Sales Exec" or request.user.staff_profile.role.role_name == "Developer" or request.user.staff_profile.role.role_name == "Content Creator" or request.user.staff_profile.role.role_name == "Digital Marketing" %}
+                    <p class="page-subtitle">Manage and see my page</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" %}
+            <form method="GET" class="header-action">
+                <select name="department" id="departmentFilter" class="filter-select department-filter">
+                    <option value="">All Departments</option>
+                    {% for dept in departments %}
+                    <option value="{{ dept.id }}"
+                        {% if request.GET.department == dept.id|stringformat:"s" %}selected{% endif %}>
+                        {{ dept.get_dept_name_display }}
+                    </option>
+                    {% endfor %}
+                </select>
+
+                <select name="role" id="roleFilter" class="filter-select role-filter">
+                    <option value="">All Roles</option>
+                    {% for role in roles %}
+                    <option value="{{ role.id }}"
+                        {% if request.GET.role == role.id|stringformat:"s" %}selected{% endif %}>
+                        {{ role.get_role_name_display }}
+                    </option>
+                    {% endfor %}
+                </select>
+
+                <a href="{% url 'add_staff' %}" class="btn-add-staff">
+                    <span class="btn-icon">+</span>
+                    Add Staff
+                </a>
+
+            </form>
+            {% endif %}
+            
+        </div>
+     </div>
+
+    <!-- ====================== STAFF LIST SECTION ====================== -->
+    <section class="staff-list-section">
+
+        <form method="GET" class="list-header" id="searchForm">
+            <div class="list-title-group">
+                <div class="list-icon">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+                <div class="list-title-text">
+
+                    {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" or request.user.staff_profile.role.role_name == "HR" or request.user.staff_profile.role.role_name == "Sales Exec Lead" or request.user.staff_profile.role.role_name == "Marketing Lead" %}
+                    <h2 class="list-title">All Staff ({{ total_staff }})</h2>
+                    <p class="list-subtitle">View and manage institute staff details</p>
+                    {% endif %}
+
+                    {% if request.user.staff_profile.role.role_name == "Trainer" or request.user.staff_profile.role.role_name == "Sales Exec" or request.user.staff_profile.role.role_name == "Developer" or request.user.staff_profile.role.role_name == "Content Creator" or request.user.staff_profile.role.role_name == "Digital Marketing" %}
+                    <h2 class="list-title">My Details</h2>
+                    <p class="list-subtitle">View my details</p>
+                    {% endif %}
+
+
+                </div>
+            </div>
+
+            <div class="list-actions">
+
+                {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" or request.user.staff_profile.role.role_name == "HR" or request.user.staff_profile.role.role_name == "Sales Exec Lead" or request.user.staff_profile.role.role_name == "Marketing Lead" %}
+                <div class="search-wrapper">
+                    <input name="search"
+                           type = text
+                           class="search-input"
+                           id="staffSearch"
+                           placeholder="Search staff..."
+                           value="{{ request.GET.search|default:'' }}">
+                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="1.8"/>
+                        <path d="M20 20l-4.3-4.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                
+                
+                <button type="submit" class="btn-search">Search</button>
+                {% endif %}
+                <a href="{% url 'export_staff' %}?{{ request.GET.urlencode }}" class="btn-export">
+                    <svg class="export-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 3v12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                        <path d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M4 19h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                    </svg>
+                    Export
+                </a>
+            </div>
+
+        </form>
+
+        <!-- ======================== STAFF TABLE ======================== -->
+         <div class="staff-table-wrapper">
+            <div class="staff-table">
+                <table class="staff-table">
+                        <thead>
+                        <tr>
+                            <th class="staff-column">Staff</th>
+                            <th class="role-column">Role</th>
+                            <th class="dept-column">Department</th>
+                            <th class="leads-column">Leads Assigned</th>
+                            <th class="deals-column">Closed Deals</th>
+                            <th class="status-column">Status</th>
+                            <th class="performance-column">Performance</th>
+                            <th class="action-column">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for staff in staff_list %}
+                        <tr class="staff-row" data-staff-id="{{ staff.id }}">
+                            <td class="staff-info-cell">
+                                <div class="staff-info">
+                                    <div class="staff-avatar">
+    {% if staff.profile_photo %}
+        <img src="{{ staff.profile_photo.url }}" alt="{{ staff.full_name }}">
+    {% else %}
+        {{ staff.get_initials }}
+    {% endif %}
+</div>
+                                    <div class="staff-details">
+                                        <h3 class="staff-name">{{ staff.first_name }} {{ staff.last_name }}</h3>
+                                        <p class="staff-id">{{ staff.employee_id }}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="role-cell">
+                                <span class="role-badge">{{ staff.role.get_role_name_display }}</span>
+                            </td>
+                            <td class="dept-cell">
+                                <span class="dept-name">{{ staff.department.get_dept_name_display }}</span>
+                            </td>
+                            <td class="leads-cell">
+                                {% if staff.role.get_role_name_display in "Sales Exec" %}
+                                <span class="leads-count">{{ staff.leads_assigned }}</span>
+                                {% else %}
+                                <span class="leads-count">N/A</span>
+                                {% endif %}
+                            </td>
+                            <td class="deals-cell">
+                                {% if staff.role.get_role_name_display in "Sales Exec" %}
+                                <span class="deals-count">{{ staff.closed_deals }}</span>
+                                {% else %}
+                                <span class="deals-count">N/A</span>
+                                {% endif %}
+                            </td>
+                            <td class="status-cell">
+                                <span class="status-badge {{ staff.get_status_badge_class }}">
+                                    {{ staff.get_status_display }}
+                                </span>
+                            </td>
+                            <td class="performance-cell">
+                                <div class="performance-star">
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter <= staff.performance_rating %}
+                                            <span class="star-filled">★</span>
+                                        {% else %}
+                                            <span class="star-empty">★</span>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </td>
+                            <td class="actions-cell">
+                                <div class="action-buttons">
+                                    
+                                    <a href="{% url 'overview' staff.id %}" class="action-btn view-btn" title="View">
+                                        <span class="action-icon"><i class="fa-solid fa-eye"></i></span>
+                                    </a>
+
+                                    {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" %}
+                                    <a href="{% url 'edit_staff' staff.id %}" class="action-btn edit-btn" title="Edit">
+                                        <span class="action-icon"><i class="fa-duotone fa-solid fa-marker"></i></span>
+                                    </a>
+                                    {% if staff.status == 'terminated' %}
+                                        <button type="button" class="action-btn delete-btn" title="Already Terminated" disabled>
+                                            <span class="action-icon"><i class="fa-regular fa-trash-can"></i></span>
+                                        </button>
+                                    {% else %}
+                                        <a href="{% url 'delete_staff' staff.id %}?next={{ request.get_full_path|urlencode }}"
+                                            class="action-btn delete-btn"
+                                            title="Terminate">
+                                            <span class="action-icon"><i class="fa-regular fa-trash-can"></i></span>
+                                        </a>
+                                    {% endif %}
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr class="empty-row">
+                            <td colspan="8" class="empty-message">No staff members found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- ========================= PAGINATION ========================== -->
+             <!-- PAGINATION -->
+            {% if is_paginated %}
+            <div class="pagination-wrapper">
+                <div class="pagination">
+                    {% if page_obj.has_previous %}
+                    <a href="?page=1&search={{ search_query }}" class="pagination-link">First</a>
+                    <a href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}" class="pagination-link">Previous</a>
+                    {% endif %}
+    
+                    <span class="pagination-info">
+                        page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    </span>
+    
+                    {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}&search={{ search_query }}" class="pagination-link">Next</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}&search={{ search_query }}" class="pagination-link">Last</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            </div>
+
+    </section>
+
+
+
+</div>
+
+{% block extra_js %}
+<script src="{% static 'js/staff_js/management.js' %}"></script>
+{% endblock %}
+
+{% endblock %}

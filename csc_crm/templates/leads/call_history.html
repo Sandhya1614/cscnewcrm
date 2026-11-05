@@ -1,0 +1,107 @@
+{% extends 'leads/base.html' %}
+{% load static %}
+
+{% block extra_css %}
+{# Loaded after the other stylesheets: pipeline_view.css also defines .card-header / .card-link and was overriding call_log.css #}
+<link rel="stylesheet" href="{% static 'css/call_log.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="back-header">
+
+    <a href="{% url 'leads:call_logs' %}" class="back-btn">
+        <i class="fa-solid fa-arrow-left"></i>
+        Back to Call Logs
+    </a>
+
+</div>
+
+
+<h2 style="font-size:14px;">All Call History</h2><br/>
+<div class="filter-box">
+
+    <a href="?outcome=All"
+       class="filter-btn {% if selected == 'All' %}active{% endif %}">
+        All
+    </a>
+
+    <a href="?outcome=Interested"
+       class="filter-btn {% if selected == 'Interested' %}active{% endif %}">
+        Interested
+    </a>
+
+    <a href="?outcome=Demo Scheduled"
+       class="filter-btn {% if selected == 'Demo Scheduled' %}active{% endif %}">
+        Demo
+    </a>
+
+    <a href="?outcome=Not Reachable"
+       class="filter-btn {% if selected == 'Not Reachable' %}active{% endif %}">
+        Not Reachable
+    </a>
+
+    <a href="?outcome=Not Interested"
+       class="filter-btn {% if selected == 'Not Interested' %}active{% endif %}">
+        Not Interested
+    </a>
+
+</div>
+
+<br>
+
+<div class="history-page">
+
+    {% for log in logs %}
+
+    <div class="card {{ log.call_outcome|slugify }}">
+
+        <a href="{% url 'leads:contact_calls' log.id %}" class="card-link">
+
+          
+        <div class="card-header">
+          
+    <div class="user-info">
+
+        <div class="user-icon">
+            <i class="fa-regular fa-user"></i>
+        </div>
+        <div class="user-content">
+            <h4>{{ log.lead_name }}</h4>
+            <span class="badge {{ log.call_outcome|slugify }}">
+            {{ log.call_outcome }}
+        </span>
+             <p class="user-p">{{ log.notes }}</p>
+
+        {% if log.next_followup_date and log.call_outcome != "Not Interested" %}
+            <div class="follow">
+                followup date: {{ log.next_followup_date }}
+            </div>
+        {% endif %}
+
+        </div>
+       </div>
+        
+        <span class="time">
+                {{ log.call_date }} • {% if log.is_connected %}{{ log.duration_display }}{% else %}Did not connect{% endif %}
+        </span>
+       </div>
+        
+
+    </a>  
+
+        <form method="POST"
+              action="{% url 'leads:delete_call' log.id %}"
+              onsubmit="return confirm('Do you want to delete this call history?')">
+
+            {% csrf_token %}
+
+            <button type="submit" class="delete-btn {% if log.notes %}has-notes{% endif %}">🗑</button>
+
+        </form>
+
+    </div>
+
+    {% endfor %}
+
+</div>
+{% endblock %}

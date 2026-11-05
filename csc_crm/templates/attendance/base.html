@@ -1,0 +1,157 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    {% block title %}
+    <title>Student Attendance System</title>
+    {% endblock %}
+     <script>if (localStorage.getItem("sidebarCollapsed") === "true") { document.documentElement.classList.add("sidebar-collapsed");}</script>
+     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+     
+    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+    <link rel="stylesheet" href="{% static 'css/attendance_css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/responsive.css' %}">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">   
+      
+
+
+    {% block extra_css %}
+    {% endblock %}
+</head>
+
+<body>
+   <div class="sidebar-overlay"></div>
+    <!-- Main CSC CRM Sidebar -->
+    {% include "includes/sidebar.html" %}
+    
+    <div class="main-wrapper">
+
+    <!-- Top Blue Navbar -->
+    <nav class="top-navbar">
+
+        <div class="nav-left">
+            <button class="menu-btn" id="menuToggle">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+
+            <div class="brand">
+                <div class="logo-box">CSC</div>
+
+                <div class="brand-text">
+                    <h3>CSC CRM</h3>
+                    <small>Institute Operations Suite</small>
+                </div>
+            </div>
+        </div>
+
+           <!-- ==================== USER INFO ==================== -->
+
+            {% if request.user.is_authenticated and request.user.staff_profile %}
+<div class="sidebar-user-main">
+    <div class="sidebar-user">
+
+        {% if request.user.staff_profile.profile_photo %}
+        <div class="sidebar-user-avatar">
+            <img src="{{ request.user.staff_profile.profile_photo.url }}" alt="Profile" class="sidebar-user-avatar-img">
+        </div>
+        {% else %}
+        <div class="sidebar-user-avatar">
+            {{ request.user.staff_profile.get_initials }}
+        </div>
+        {% endif %}
+
+        <div class="sidebar-user-info">
+            <p class="sidebar-user-name">
+                {{ request.user.staff_profile.full_name }}
+            </p>
+
+            <p class="sidebar-user-role">
+                <small>{{ request.user.staff_profile.employee_id }}</small>
+                -
+                {{ request.user.staff_profile.role.get_role_name_display }}
+            </p>
+        </div>
+
+    </div>
+</div>
+{% endif %}
+
+
+    </nav>
+
+    <!-- White Tabs -->
+    <div class="top-tabs">
+
+        <a href="{% url 'dashboard' %}"
+           class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+            Dashboard
+        </a>
+        
+        <a href="{% url 'batches_page' %}"
+           class="{% if request.resolver_match.url_name == 'batches_page' %}active{% endif %}">
+            Batches
+        </a>
+        
+
+        <a href="{% url 'attendance_history' %}"
+           class="{% if request.resolver_match.url_name == 'attendance_history' %}active{% endif %}">
+            Attendance History
+        </a>
+
+        <a href="{% url 'absent_tracker' %}"
+           class="{% if request.resolver_match.url_name == 'absent_tracker' %}active{% endif %}">
+            Absent Tracker
+        </a>
+
+        <a href="{% url 'low_attendance_alerts' %}"
+           class="{% if request.resolver_match.url_name == 'low_attendance_alerts' %}active{% endif %}">
+            Low Attendance
+        </a>
+
+        <a href="{% url 'reports' %}"
+           class="{% if request.resolver_match.url_name == 'reports' %}active{% endif %}">
+            Reports
+        </a>
+
+    </div>
+
+   
+        {% if messages %}
+        <div class="message-container">
+            {% for message in messages %}
+            <div class="toast-message
+                {% if message.tags == 'success' %}
+                    success
+                {% elif message.tags == 'error' %}
+                    error
+                {% endif %}
+            ">
+                <i class="fa-solid fa-circle-check"></i>
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <main class="page-content">
+            {% block content %}
+            {% endblock %}
+        </main>
+    
+    </div>
+
+    <script src="{% static 'js/attendance_js/base.js' %}"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+    {% block extra_js %}
+    {% endblock %}
+
+</body>
+</html>

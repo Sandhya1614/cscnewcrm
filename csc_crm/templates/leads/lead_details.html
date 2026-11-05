@@ -1,0 +1,246 @@
+{% extends 'leads/base.html' %}
+{% load static %}
+
+{% block content %}
+{% include 'partials/toast_messages.html' %}
+
+<section class="lead-details-page">
+
+    <!-- TOP BAR -->
+    <div class="page-topbar">
+
+        <div class="page-heading-row">
+            <div>
+                <h1 class="page-title">Lead Preview</h1>
+                <p class="page-subtitle">View Lead Details &amp; Activity</p>
+            </div>
+
+            <div class="page-actions no-print">
+                <a href="{% url 'leads:lead_capture_download_pdf' lead.id %}" class="btn-primary" id="downloadPdfBtn">
+                <i class="fa-solid fa-download"></i> <span class="btn-text">Download</span>
+                </a>
+
+                {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" or request.user.staff_profile.role.role_name == "Sales Exec Lead" %}
+                <a href="{% url 'leads:lead_capture_update' lead.id %}" class="btn-primary">Edit Lead</a>
+                {% endif %}
+
+                {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" or request.user.staff_profile.role.role_name == "Sales Exec Lead" %}
+                <a href="{% url 'leads:lead_capture_list' %}" class="btn-outline">
+                    <i class="fa-solid fa-arrow-left"></i> Back to Lead List
+                </a>
+                {% endif %}
+
+                {% if request.user.staff_profile.role.role_name == "HR" or request.user.staff_profile.role.role_name == "Sales Exec" %}
+                <a href="{% url 'leads:lead_pipeline_view' %}" class="btn-outline">
+                    <i class="fa-solid fa-arrow-left"></i> Back to Lead List
+                </a>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+
+    <!-- HEADER SECTION -->
+    <div class="details-header">
+
+        <div class="lead-avatar">{{ lead.lead_name|slice:"1" }}</div>
+
+        <div class="header-content">
+            <h1 class="lead-title">{{ lead.lead_name }}</h1>
+            <p class="lead-id">Lead ID: {{ lead.lead_id }}</p>
+        </div>
+
+        <div class="header-status">
+            <span class="status-label">Lead Status</span>
+
+            {% if lead.initial_status == "new" %}
+                <span class="status-pill status-new">{{ lead.initial_status }}</span>
+            {% elif lead.initial_status == "contacted" %}
+                <span class="status-pill status-contacted">{{ lead.initial_status }}</span>
+            {% elif lead.initial_status == "interested" %}
+                <span class="status-pill status-interested">{{ lead.initial_status }}</span>
+            {% elif lead.initial_status == "demo_scheduled" %}
+                <span class="status-pill status-demo">{{ lead.initial_status }}</span>
+            {% elif lead.initial_status == "enrolled" %}
+                <span class="status-pill status-enrolled">{{ lead.initial_status }}</span>
+            {% elif lead.initial_status == "lost" %}
+                <span class="status-pill status-lost">{{ lead.initial_status }}</span>
+            {% else %}
+                <span class="status-pill">{{ lead.initial_status }}</span>
+            {% endif %}
+        </div>
+
+    </div>
+
+    <!-- QUICK INFO STRIP -->
+    <div class="quick-info-row">
+
+        <div class="quick-info-card">
+            <div class="icon-box icon-purple"><i class="fa-solid fa-phone"></i></div>
+            <div>
+                <label class="details-label">Phone Number</label>
+                <p class="details-value">{{ lead.phone_no }}</p>
+            </div>
+        </div>
+
+        <div class="quick-info-card">
+            <div class="icon-box icon-purple"><i class="fa-solid fa-envelope"></i></div>
+            <div>
+                <label class="details-label">Email Address</label>
+                <p class="details-value">{{ lead.email }}</p>
+            </div>
+        </div>
+
+        <div class="quick-info-card">
+            <div class="icon-box icon-purple"><i class="fa-solid fa-book"></i></div>
+            <div>
+                <label class="details-label">Course Interested</label>
+                <p class="details-value">{{ lead.course_interested }}</p>
+            </div>
+        </div>
+
+        <div class="quick-info-card">
+            <div class="icon-box icon-purple"><i class="fa-regular fa-calendar"></i></div>
+            <div>
+                <label class="details-label">Enquiry Date</label>
+                <p class="details-value">{{ lead.enquiry_date }}</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- TWO COLUMN: FOLLOW-UP STATUS + ENQUIRY DETAILS -->
+    <div class="lead-two-col-row">
+
+        <!-- FOLLOW-UP STATUS -->
+        <div class="followup-group">
+            <h2 class="followup-title"><i class="fa-solid fa-people-arrows"></i> Follow-Up Status</h2>
+
+            <div class="followup-timeline">
+
+                <div class="followup-step step-new {% if lead.initial_status == 'new' %}filled{% endif %}">
+                    <span class="followup-step-icon"><i class="fa-solid fa-check"></i></span>
+                    New
+                </div>
+                <div class="followup-line"></div>
+
+                <div class="followup-step step-contacted {% if lead.initial_status == 'contacted' %}filled{% endif %}">
+                    <span class="followup-step-icon"><i class="fa-solid fa-check"></i></span>
+                    Contacted
+                </div>
+                <div class="followup-line"></div>
+
+                <div class="followup-step step-interested {% if lead.initial_status == 'interested' %}filled{% endif %}">
+                    <span class="followup-step-icon"><i class="fa-solid fa-check"></i></span>
+                    Interested
+                </div>
+                <div class="followup-line"></div>
+
+                <div class="followup-step step-demo {% if lead.initial_status == 'demo_scheduled' %}filled{% endif %}">
+                    <span class="followup-step-icon"><i class="fa-solid fa-check"></i></span>
+                    Demo Scheduled
+                </div>
+                <div class="followup-line"></div>
+
+                <div class="followup-step step-enrolled {% if lead.initial_status == 'enrolled' %}filled{% endif %}">
+                    <span class="followup-step-icon"><i class="fa-solid fa-check"></i></span>
+                    Enrolled
+                </div>
+                <div class="followup-line"></div>
+
+                <div class="followup-step step-lost {% if lead.initial_status == 'lost' %}filled{% endif %}">
+                    <span class="followup-step-icon"><i class="fa-solid fa-check"></i></span>
+                    Lost
+                </div>
+
+            </div>
+
+            <div class="followup-row">
+                <div class="followup-item">
+                    <label class="followup-label">Next Follow-Up</label>
+                    <p class="followup-value" id="followup-value-1"><span><i class="fa-regular fa-calendar"></i></span> {{ lead.next_followup_date }}</p>
+                </div>
+
+                <div class="followup-item">
+                    <label class="followup-label">Current Status</label>
+                    <p class="followup-value">
+                        <span class="followup-pill
+                            {% if lead.initial_status == 'new' %}status-new
+                            {% elif lead.initial_status == 'contacted' %}status-contacted
+                            {% elif lead.initial_status == 'interested' %}status-interested
+                            {% elif lead.initial_status == 'demo_scheduled' %}status-demo
+                            {% elif lead.initial_status == 'enrolled' %}status-enrolled
+                            {% elif lead.initial_status == 'lost' %}status-lost
+                            {% endif %}">
+                            {{ lead.initial_status }}
+                        </span>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ENQUIRY DETAILS -->
+        <div class="enquiry-group">
+            <h2 class="enquiry-title"><span><i class="fa-solid fa-file-lines"></i></span> Enquiry Details</h2>
+
+            <div class="enquiry-row">
+
+                <div class="enquiry-item">
+                    <label class="enquiry-label">Lead Source</label>
+                    <p class="enquiry-value">{{ lead.lead_source }}</p>
+                </div>
+
+                <div class="enquiry-item">
+                    <label class="enquiry-label">Enquiry Date</label>
+                    <p class="enquiry-value">{{ lead.enquiry_date }}</p>
+                </div>
+                <div class="enquiry-item">
+                    <label class="enquiry-label">Course Interested</label>
+                    <p class="enquiry-value">{{ lead.course_interested }}</p>
+                </div>
+
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- NOTES -->
+    {% if lead.initial_notes %}
+    <div class="details-group">
+        <h2 class="group-title"><i class="fa-solid fa-note-sticky"></i> Initial Notes</h2>
+        <div class="notes-box">
+            {{ lead.initial_notes }}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- SYSTEM INFORMATION -->
+    <div class="sysinfo-group">
+        <h2 class="sysinfo-title"><i class="fa-solid fa-gear"></i> System Information</h2>
+        <div class="sysinfo-row">
+
+            <div class="sysinfo-item">
+                <label class="sysinfo-label">Created At</label>
+                <p class="sysinfo-value"><i class="fa-regular fa-calendar"></i> {{ lead.created_at }}</p>
+            </div>
+
+            <div class="sysinfo-item">
+                <label class="sysinfo-label">Updated At</label>
+                <p class="sysinfo-value"><i class="fa-regular fa-calendar"></i> {{ lead.updated_at }}</p>
+            </div>
+
+        </div>
+    </div>
+
+</section>
+
+<div id="leadToast" class="toast">
+    <i class="fa-solid fa-circle-check"></i>
+    <span id="leadToastMsg">Done</span>
+</div>
+
+<script src="{% static 'leads/js/lead_details.js' %}"></script>
+
+{% endblock %}

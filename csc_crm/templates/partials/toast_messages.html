@@ -1,0 +1,161 @@
+<!-- ============ TOAST CONTAINER + DJANGO MESSAGES AS TOASTS ============ -->
+<div id="toastContainer" class="toast-wrapper"></div>
+
+<style>
+    /* ============ TOAST NOTIFICATIONS ============ */
+.toast-wrapper {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1080;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.toast {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: #fff;
+    border-radius: 12px;
+    padding: 14px 16px;
+    box-shadow: 0 8px 24px rgba(30, 27, 75, 0.18);
+    opacity: 1;
+    /* Bootstrap's own .toast class defaults to opacity:0 (only its JS
+       component sets .show to opacity:1). Since our custom toast never
+       gets that .show class, we override opacity here explicitly and
+       add "forwards" so the slide-in animation holds its end state
+       instead of snapping back to Bootstrap's default opacity:0. */
+    animation: toastSlideIn 0.3s ease forwards;
+}
+
+.toast.toast-hide {
+    animation: toastSlideOut 0.3s ease forwards;
+}
+
+@keyframes toastSlideIn {
+    from { transform: translateX(120%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes toastSlideOut {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(120%); opacity: 0; }
+}
+
+.toast-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 13px;
+    color: #fff;
+    margin-top: 15px;
+}
+
+
+.toast-success .toast-icon { background: #16A34A; }
+
+
+.toast-error .toast-icon { background: #DC2626; }
+
+.toast-warning .toast-icon { background: #D97706; }
+
+.toast-body { flex: 1; min-width: 0; }
+
+.toast-title {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #1E1B4B;
+    margin: 0 0 2px;
+}
+
+.toast-message {
+    font-size: 13px;
+    color: #6B7280;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.toast-close {
+    background: none;
+    border: none;
+    color: #9CA3AF;
+    font-size: 12px;
+    padding: 2px;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.toast-close:hover { color: #1E1B4B; }
+</style>
+
+<script>
+const TOAST_ICONS = {
+    success: "fa-check",
+    error: "fa-times",
+    warning: "fa-exclamation",
+    info: "fa-info"
+};
+
+const TOAST_TITLES = {
+    success: "Success",
+    error: "Error",
+    warning: "Attention",
+    info: "Info"
+};
+
+function showToast(message, type = "success", duration = 5000) {
+
+    const container = document.getElementById('toastContainer');
+
+    if (!container) {
+        alert(message);
+        return;
+    }
+
+    if (!TOAST_ICONS[type]) type = "info";
+
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+
+    toast.innerHTML = `
+        <div class="toast-icon"><i class="fas ${TOAST_ICONS[type]}"></i></div>
+        <div class="toast-body">
+            <p class="toast-title">${TOAST_TITLES[type]}</p>
+            <p class="toast-message"></p>
+        </div>
+        <button type="button" class="toast-close" aria-label="Close">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+
+    // textContent -> safe, no HTML injection
+    toast.querySelector('.toast-message').textContent = message;
+
+    container.appendChild(toast);
+
+    const removeToast = () => {
+        toast.classList.add('toast-hide');
+        setTimeout(() => toast.remove(), 2000);
+    };
+
+    toast.querySelector('.toast-close').addEventListener('click', removeToast);
+
+    const timer = setTimeout(removeToast, duration);
+
+    toast.addEventListener('mouseenter', () => clearTimeout(timer));
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    {% if messages %}
+        {% for message in messages %}
+            showToast("{{ message|escapejs }}", "{{ message.level_tag }}");
+        {% endfor %}
+    {% endif %}
+});
+</script>

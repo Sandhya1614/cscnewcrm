@@ -1,0 +1,688 @@
+{% extends 'staff/base.html' %}
+{% load static %}
+{% block content %}
+
+<!-- ======================================== Header ================================================== -->
+{% include 'partials/toast_messages.html' %}
+
+<div class="over-top-header">
+
+    <div class="header-left">
+        <div class="header-title">
+            <div class="over-hamburger-wrap">
+    <button class="over-hamburger" id="navToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <nav class="nav-tabs" id="navTabs">
+        <a href="#" class="nav-tab-link {% if request.resolver_match.url_name == 'overview' %}active-nav-tab{% endif %}">Overview</a>
+        <a href="{% url 'attendance' staff.id %}" class="nav-tab-link">Attendance</a>
+        <a href="{% url 'staff_documents' staff.id %}" class="nav-tab-link">Documents</a>
+        <a href="{% url 'staff_export' staff.id %}" class="nav-tab-link">Export</a>
+    </nav>
+</div>
+
+            <div>
+                <h1>Overview</h1>
+                <p>Staff Performance Dashboard</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="over-header-right">
+
+        <div class="over-last-login">
+            <span class="login-label">Last Login :</span>
+            {% if today_attendance and today_attendance.log_in %}
+                <span class="login-times">
+                    {{ today_attendance.log_in|date:"M d, Y" }},
+                    {{ today_attendance.log_in|time:"h:i A" }}
+                </span>
+            {% else %}
+                <span class="login-times">Never Logged In</span>
+            {% endif %}
+        </div>
+        
+        
+        <div class="over-header-buttons">
+            {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" %}
+            <a href="{% url 'edit_staff' staff.id %}" class="over-edit-btn">
+                <i class="fas fa-pen"></i> Edit
+            </a>
+            {% endif %}
+            <a href="{% url 'staff_management' %}" class="over-back-btn">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
+
+    </div>
+      
+    
+</div>
+
+
+<!-- ================================== PROFILE =============================================== -->
+
+ {% if staff.role.role_name == "Sales Exec" or staff.role.role_name == "Sales Exec Lead" or staff.role.role_name == "Manager" or staff.role.role_name == "Digital Marketing" or staff.role.role_name == "Content Creator" or staff.role.role_name == "HR" or staff.role.role_name == "Trainer" or staff.role.role_name == "Developer" or staff.role.role_name == "Admin" or staff.role.role_name == "Marketing Lead" %}
+<div class="over-profile-card">
+
+    <!-- LEFT SIDE -->
+    <div class="over-profile-left">
+
+        <div class="over-profile-image">
+
+            {% if staff.profile_photo %}
+                <img src="{{ staff.profile_photo.url }}" alt="Profile Image">
+            {% else %}
+                <img src="https://th.bing.com/th/id/OIP.dDKYQqVBsG1tIt2uJzEJHwHaHa?w=180&h=180&c=7&r=0&o=7&dpr=1.5&pid=1.7&rm=3" alt="Default Image">
+            {% endif %}
+
+            {% if staff.status == 'active' %}
+                <div class="over-online"></div>
+            {% else %}
+                <div class="over-offline"></div>
+            {% endif %}
+
+        </div>
+
+        <div class="over-profile-details">
+
+            <h1 class="over-name">
+                {{ staff.first_name }} {{ staff.last_name }}
+            </h1>
+
+            <div class="over-badges">
+
+                <div class="over-badge over-badge-blue">
+                    {{ staff.department }}
+                </div>
+
+                <div class="over-badge status-{{ staff.status }}">
+                    {{ staff.get_status_display }}
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- RIGHT SIDE -->
+    <div class="over-info-grid">
+
+        <div class="over-info-card">
+            <div class="over-info-card-icon">
+                <i class="fas fa-id-card"></i>
+            </div>
+            <div class="over-info-card-text">
+                <span>EMPLOYEE ID</span>
+                <h3>{{ staff.employee_id }}</h3>
+            </div>
+        </div>
+
+        <div class="over-info-card">
+            <div class="over-info-card-icon">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="over-info-card-text">
+                <span>ROLE</span>
+                <h3>{{ staff.role }}</h3>
+            </div>
+        </div>
+
+        <div class="over-info-card">
+            <div class="over-info-card-icon">
+                <i class="fas fa-phone-alt"></i>
+            </div>
+            <div class="over-info-card-text">
+                <span>PHONE</span>
+                <h3>{{ staff.phone }}</h3>
+            </div>
+        </div>
+
+        <div class="over-info-card">
+            <div class="over-info-card-icon">
+                <i class="fas fa-calendar-alt"></i>
+            </div>
+            <div class="over-info-card-text">
+                <span>DATE OF BIRTH</span>
+                <h3>{{ staff.date_of_birth }}</h3>
+            </div>
+        </div>
+
+        <div class="over-info-card">
+            <div class="over-info-card-icon">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div class="over-info-card-text">
+                <span>JOINING DATE</span>
+                <h3>{{ staff.date_of_joining }}</h3>
+            </div>
+        </div>
+
+        <div class="over-info-card">
+            <div class="over-info-card-icon">
+                <i class="fas fa-envelope"></i>
+            </div>
+            <div class="over-info-card-text">
+                <span>EMAIL</span>
+                <h3>{{ staff.email }}</h3>
+            </div>
+        </div>
+
+        <div class="over-info-card">
+            <div class="over-info-card-icon">
+                <i class="fas fa-star"></i>
+            </div>
+            <div class="over-info-card-text">
+                <span>PERFORMANCE</span>
+                <h3>{{ staff.performance_rating }}/5</h3>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endif %}
+
+
+
+<!-- =====================    Attendance TOP CARDS =========================-->
+
+{% if staff.role.role_name == "Sales Exec" or staff.role.role_name == "Sales Exec Lead" or staff.role.role_name == "Manager" or staff.role.role_name == "Digital Marketing" or staff.role.role_name == "Marketing Lead" or staff.role.role_name == "Content Creator" or staff.role.role_name == "HR" or staff.role.role_name == "Trainer" or staff.role.role_name == "Developer" %}
+<div class="top-cards-over">
+
+    <div class="att-card-over att-blue-over">
+        <div class="card-content-over">
+            <p>Total Working Days</p>
+            <h2>{{ total_working_days }}</h2>
+        </div>
+    </div>
+
+    <div class="att-card-over att-green-over">
+        <div class="card-content-over">
+            <p>Present Days</p>
+            <h2>{{ present_days }}</h2>
+        </div>
+    </div>
+
+    <div class="att-card-over att-red-over">
+        <div class="card-content-over">
+            <p>Absent Days</p>
+            <h2>{{ absent_days }}</h2>
+        </div>
+    </div>
+
+    <div class="att-card-over att-yellow-over">
+        <div class="card-content-over">
+            <p>Leave Days</p>
+            <h2>{{ leave_days }}</h2>
+        </div>
+    </div>
+
+    <div class="att-card-over att-orange-over">
+        <div class="card-content-over">
+            <p>Late Days</p>
+            <h2>{{ late_days }}</h2>
+        </div>
+    </div>
+
+</div>
+{% endif %}
+
+<!-- ======================== ATTENDANCE (moved to top, restyled) ============================= -->
+
+{% if staff.role.role_name == "Sales Exec" or staff.role.role_name == "Sales Exec Lead" or staff.role.role_name == "Manager" or staff.role.role_name == "Digital Marketing" or staff.role.role_name == "Marketing Lead" or staff.role.role_name == "Content Creator" or staff.role.role_name == "HR" or staff.role.role_name == "Trainer" or staff.role.role_name == "Developer" %}
+<div class="over-attendance-card">
+
+    <div class="over-attendance-card-head">
+        <div class="over-attendance-card-icon"><i class="fa-solid fa-calendar-days"></i></div>
+        <h2>Today's Attendance</h2>
+    </div>
+
+    <div class="over-attendance-cols">
+
+        <div class="over-attendance-col">
+            <div class="over-attendance-col-icon ci-checkin"><i class="fa-solid fa-arrow-right-to-bracket"></i></div>
+            <div class="over-attendance-col-info">
+                <span>Check In</span>
+                <h3 class="{% if today_attendance.log_in %}val-green{% else %}val-muted{% endif %}">
+                    {% if today_attendance.log_in %}{{ today_attendance.log_in|time:"h:i A" }}{% else %}--{% endif %}
+                </h3>
+            </div>
+        </div>
+
+        <div class="over-attendance-col">
+            <div class="over-attendance-col-icon ci-checkout"><i class="fa-solid fa-arrow-right-from-bracket"></i></div>
+            <div class="over-attendance-col-info">
+                <span>Check Out</span>
+                <h3 class="{% if today_attendance.log_out %}val-red{% else %}val-muted{% endif %}">
+                    {% if today_attendance.log_out %}{{ today_attendance.log_out|time:"h:i A" }}{% else %}--{% endif %}
+                </h3>
+            </div>
+        </div>
+
+        <div class="over-attendance-col">
+            <div class="over-attendance-col-icon ci-hours"><i class="fa-regular fa-clock"></i></div>
+            <div class="over-attendance-col-info">
+                <span>Working Hours</span>
+                <h3 class="val-muted">
+                    {% if today_attendance.total_hours %}{{ today_attendance.total_hours }}{% else %}--{% endif %}
+                </h3>
+            </div>
+        </div>
+
+        <div class="over-attendance-col over-attendance-col-last">
+            <div class="over-attendance-col-icon ci-status"><i class="fa-solid fa-user"></i></div>
+            <div class="over-attendance-col-info">
+                <span>Status</span>
+                <span class="attendance-status-pill
+                    {% if today_status == 'Present' %} pill-present
+                    {% elif today_status == 'Absent' %} pill-absent
+                    {% elif today_status == 'Leave' %} pill-leave
+                    {% elif today_status == 'Late' %} pill-late
+                    {% endif %}">
+                    {{ today_status }}
+                </span>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endif %}
+
+<!-- ================================ ATTENDANCE OVERVIEW  ================================== -->
+
+ {% if staff.role.role_name == "Sales Exec" or staff.role.role_name == "Sales Exec Lead" or staff.role.role_name == "Manager" or staff.role.role_name == "Digital Marketing" or staff.role.role_name == "Marketing Lead" or staff.role.role_name == "Content Creator" or staff.role.role_name == "HR" or staff.role.role_name == "Trainer" or staff.role.role_name == "Developer" %}
+<div class="over-att-percentage-card">
+
+    <div class="over-att-header">
+        <h3>Attendance Overview</h3>
+
+        <div class="over-att-stats">
+            <span class="over-att-percent">
+                {{ attendance_percentage }}%
+            </span>
+
+            <span class="over-att-days">
+                ({{ present_days }} present + {{ late_days }} late / {{ total_working_days }} working days &middot; {{ attendance_period }})
+            </span>
+        </div>
+    </div>
+
+    <div class="over-att-progress">
+        <div class="over-att-progress-fill"
+             style="width:{{ attendance_percentage }}%;">
+        </div>
+    </div>
+
+</div>
+{% endif %}
+
+<!-- =================================== KPI CARDS =================================== -->
+<div class="over-cards">
+
+    <!-- ===================== -->
+    <!-- Sales Exec / Sales Exec Lead -->
+    <!-- ===================== -->
+    {% if staff.role.role_name == "Sales Exec" or staff.role.role_name == "Sales Exec Lead" %}
+
+    <div class="over-card" id="assigned-kpi">
+        <div class="over-card-icon blue">
+            <i class="fa fa-users"></i>
+        </div>
+        <h3>Assigned Leads</h3>
+        <h2>{{ assigned_leads }}</h2>
+    </div>
+
+    <div class="over-card" id="convert-kpi">
+        <div class="over-card-icon green">
+            <i class="fa fa-check"></i>
+        </div>
+        <h3>Converted Leads</h3>
+        <h2>{{ converted_leads }}</h2>
+    </div>
+
+    <div class="over-card" id="pending-kpi">
+        <div class="over-card-icon orange">
+            <i class="fa fa-clock"></i>
+        </div>
+        <h3>Pending Leads</h3>
+        <h2>{{ pending_leads }}</h2>
+    </div>
+
+    {% endif %}
+
+
+    <!-- ===============================  Revenue  ================================== -->
+    
+    {% if staff.role.role_name == "Sales Exec" or staff.role.role_name == "Sales Exec Lead" or staff.role.role_name == "Manager" or staff.role.role_name == "Digital Marketing" or staff.role.role_name == "Marketing Lead" or staff.role.role_name == "Content Creator" %}
+
+    {% if uses_lead_capture %}
+    <div class="over-card" id="revenue-kpi">
+        <div class="over-card-icon purple">
+            <i class="fa fa-bullseye"></i>
+        </div>
+        <h3>Targets Completed</h3>
+        <h2>{{ targets_completed }}/{{ targets_total }}</h2>
+    </div>
+    {% else %}
+    <div class="over-card" id="revenue-kpi">
+        <div class="over-card-icon purple">
+            <i class="fa fa-indian-rupee-sign"></i>
+        </div>
+        <h3>Revenue</h3>
+        <h2>₹{{ completed_amount }}</h2>
+    </div>
+    {% endif %}
+
+    {% endif %}
+
+
+    <!-- ================================ Present Today  ======================== ========== -->
+   
+    {% if staff.role.role_name == "Sales Exec" or staff.role.role_name == "Sales Exec Lead" or staff.role.role_name == "Manager" or staff.role.role_name == "Digital Marketing" or staff.role.role_name == "Marketing Lead" or staff.role.role_name == "Content Creator" %}
+
+    <div class="over-card" id="present-kpi">
+        <div class="over-card-icon cyan">
+            <i class="fa fa-calendar"></i>
+        </div>
+
+        <h3>Present Today</h3>
+
+        <h2>
+            {% if is_present_today %}
+                Yes
+            {% else %}
+                No
+            {% endif %}
+        </h2>
+    </div>
+
+    {% endif %}
+
+
+    <!-- ===============================  HR / Trainer / Developer  ================================ -->
+   
+    {% if staff.role.role_name == "HR" or staff.role.role_name == "Trainer" or staff.role.role_name == "Developer" %}
+
+    <div class="over-card" id="present-kpi">
+        <div class="over-card-icon cyan">
+            <i class="fa fa-calendar"></i>
+        </div>
+
+        <h3>Present Today</h3>
+
+        <h2>
+            {% if is_present_today %}
+                Yes
+            {% else %}
+                No
+            {% endif %}
+        </h2>
+    </div>
+
+    <div class="over-card" id="rating-kpi">
+        <div class="over-card-icon red">
+            <i class="fa fa-star"></i>
+        </div>
+
+        <h3>Rating</h3>
+        <h2>{{ rating }}/5</h2>
+    </div>
+
+    {% endif %}
+
+</div>
+
+
+<!--======================================= PERFORMANCE SECTION ==================================-->
+
+{% if staff.role.role_name == "Sales Exec" or staff.role.role_name == "Sales Exec Lead" or staff.role.role_name == "Manager" or staff.role.role_name == "Digital Marketing" or staff.role.role_name == "Marketing Lead" or staff.role.role_name == "Content Creator" %}
+
+    
+<div class="over-performance-grid">
+
+    <!-- LEFT :  -->
+    <div class="over-chart">
+
+    <div class="over-chart-title-main">
+    <h2 class="over-chart-title">Performance Overview </h2>
+
+       <div class="over-chart-para">
+        <p class="over-chart-para1">
+            <span>This Month</span>
+            <i class="fa-solid fa-chart-line"></i>
+        </p>
+
+        <p class="over-chart-para2">
+            <span>Last Month</span>
+            <i class="fa-solid fa-chart-line"></i> 
+        </p>
+        </div>
+        </div>
+
+    <div class="over-chart-area">
+
+    <svg viewBox="-30 90 730 280" id="performance-svg" data-unit="{% if uses_lead_capture %}leads{% else %}rupees{% endif %}">
+
+        <defs>
+            <linearGradient id="gradientBlue" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#29b6b0" stop-opacity="0.28"/>
+                <stop offset="100%" stop-color="#29b6b0" stop-opacity="0"/>
+            </linearGradient>
+            <linearGradient id="gradientGreen" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#22c55e" stop-opacity="0.20"/>
+                <stop offset="100%" stop-color="#22c55e" stop-opacity="0"/>
+            </linearGradient>
+        </defs>
+
+        <!-- LEFT SIDE VALUES -->
+        <text x="25" y="330" class="over-chart-text" text-anchor="end">0</text>
+        <text x="25" y="290" class="over-chart-text" text-anchor="end">20</text>
+        <text x="25" y="250" class="over-chart-text" text-anchor="end">40</text>
+        <text x="25" y="210" class="over-chart-text" text-anchor="end">60</text>
+        <text x="25" y="170" class="over-chart-text" text-anchor="end">80</text>
+        <text x="25" y="130" class="over-chart-text" text-anchor="end">100</text>
+
+        <!-- GRID LINES -->
+        <line x1="50" y1="320" x2="650" y2="320" class="over-grid-line"/>
+        <line x1="50" y1="280" x2="650" y2="280" class="over-grid-line"/>
+        <line x1="50" y1="240" x2="650" y2="240" class="over-grid-line"/>
+        <line x1="50" y1="200" x2="650" y2="200" class="over-grid-line"/>
+        <line x1="50" y1="160" x2="650" y2="160" class="over-grid-line"/>
+        <line x1="50" y1="120" x2="650" y2="120" class="over-grid-line"/>
+
+        <!-- VERTICAL GRID LINES -->
+        <line x1="200" y1="120" x2="200" y2="320" class="over-grid-line"/>
+        <line x1="350" y1="120" x2="350" y2="320" class="over-grid-line"/>
+        <line x1="500" y1="120" x2="500" y2="320" class="over-grid-line"/>
+        <line x1="650" y1="120" x2="650" y2="320" class="over-grid-line"/>
+
+        <!-- Y AXIS -->
+        <line x1="50" y1="100" x2="50" y2="335" class="over-axis-line"/>
+        <polygon points="50,95 45,105 55,105" class="over-axis-arrow"/>
+
+        <!-- X AXIS -->
+        <line x1="50" y1="320" x2="670" y2="320" class="over-axis-line"/>
+        <polygon points="675,320 665,315 665,325" class="over-axis-arrow"/>
+
+        <!-- AREA FILLS (under lines) -->
+        <polygon id="area-this-month" class="over-area-this-month" points=""/>
+        <polygon id="area-last-month" class="over-area-last-month" points=""/>
+
+        <!-- THIS MONTH LINE -->
+        <polyline
+            id="line-this-month"
+            class="over-performance-blueline"
+            points=""
+        />
+
+        <!-- LAST MONTH LINE -->
+        <polyline
+            id="line-last-month"
+            class="over-performance-greenline"
+            points=""
+        />
+
+        <!-- MARKER DOTS + VALUE LABELS (filled by JS) -->
+        <g id="dots-this-month"></g>
+        <g id="dots-last-month"></g>
+
+        <!-- BOTTOM WEEK TEXT -->
+        <text x="42" y="355" class="over-week-text">W1</text>
+        <text x="192" y="355" class="over-week-text">W2</text>
+        <text x="342" y="355" class="over-week-text">W3</text>
+        <text x="492" y="355" class="over-week-text">W4</text>
+        <text x="642" y="355" class="over-week-text">W5</text>
+
+    </svg>
+
+    {{ week_data_this|json_script:"week-data-this" }}
+    {{ week_data_last|json_script:"week-data-last" }}
+
+</div>
+
+
+        <!-- TARGET -->
+
+        <div class="over-target-section">
+
+            <h4>Monthly Target Progress{% if uses_lead_capture %} (Lead Capture){% endif %}</h4>
+
+            <div class="over-target-flex">
+
+                <div class="over-chart-z1">
+                    <p>Total Target</p>
+                    {% if uses_lead_capture %}
+                    <h3>{{ performance_target }} leads</h3>
+                    {% else %}
+                    <h3>₹{{ staff.monthly_target }}</h3>
+                    {% endif %}
+                </div>
+
+                <div class="over-chart-z2">
+                    <p>Completed</p>
+                    {% if uses_lead_capture %}
+                    <h3>{{ completed_amount }} leads</h3>
+                    {% else %}
+                    <h3>₹{{ completed_amount }}</h3>
+                    {% endif %}
+                </div>
+
+                <div class="over-chart-z3">
+                    <p>Progress</p>
+                    <h3>{{ progress_percentage }}%</h3>
+                </div>
+
+            </div>
+
+            <div class="over-progress">
+                <div
+                    class="over-progress-bar"
+                    style="width: {{ progress_percentage }}%;"
+                ></div>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    
+</div>
+{% endif %}
+
+
+
+<!--==================== Recent Lead ==========================-->
+
+{% if staff.role.role_name == "Sales Exec" or staff.role.role_name == "Sales Exec Lead" %}
+<div class="over-box-recent">
+
+<div class="over-box-head">
+    <h2>Recent Leads</h2>
+    <a href="{% url 'staff_assigned_leads' staff.id %}" class="over-viewall-btn">View All</a>
+</div>
+
+<table>
+<tr>
+<th>ID</th>
+<th>Name</th>
+<th>Phone</th>
+<th>Status</th>
+</tr>
+
+{% if recent_leads %}
+    {% for lead in recent_leads %}
+        <tr>
+            <td>{{ lead.lead_id }}</td>
+            <td>{{ lead.lead_name }}</td>
+            <td>{{ lead.phone_no }}</td>
+            <td><span class="lead-status-pill lead-status-{{ lead.initial_status }}">{{ lead.get_initial_status_display }}</span></td>
+        </tr>
+    {% endfor %}
+{% else %}
+<tr>
+    <td colspan="3" class="over-recent-no">No recent leads found</td>
+</tr>
+{% endif %}
+
+</table>
+
+</div>
+{% endif %}
+<!--==================== Meeting & Class Schedule ==========================-->
+
+{% if staff.role.role_name == "Trainer" %}
+<div class="over-box-trainers">
+
+    <div class="over-box-head">
+        <h2><i class="fa-solid fa-calendar-days"></i> Meeting & Class Schedule</h2>
+        <a href="{% url 'schedule_page' %}" class="over-viewall-btn">View All</a>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Class / Meeting</th>
+                <th>Topic</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for item in schedules %}
+            <tr>
+                <td>{{ item.date }}</td>
+                <td>{{ item.time }}</td>
+                <td>{{ item.get_type_display }}</td>
+                <td>{{ item.topic }}</td>
+
+                {% if item.status == "upcoming" %}
+                    <td><span class="schedule-status-pill status-upcoming">Upcoming</span></td>
+                {% else %}
+                    <td><span class="schedule-status-pill status-completed">Completed</span></td>
+                {% endif %}
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="over-trainers-no">No schedules available</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+
+    </table>
+</div>
+{% endif %}
+
+
+{% block extra_js %}
+    <script src="{% static 'js/staff_js/overview.js' %}"></script>
+{% endblock %}
+
+
+{% endblock %}
