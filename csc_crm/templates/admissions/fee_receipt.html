@@ -1,0 +1,500 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSC CRM Fee Receipt</title>
+
+    <link rel="stylesheet" href="{% static 'css/admissions_css/fee_receipt.css' %}">
+</head>
+
+<body>
+
+    <div class="receipt-container">
+
+        <!-- ================= HEADER ================= -->
+
+        <table class="header-table">
+            <tr>
+
+                <td class="logo-section">
+                    <div class="logo-box">
+                        CSC CRM
+                    </div>
+
+                    <div class="company-name">
+                        CSC Training & Admission Center
+                    </div>
+
+                    <div class="company-address">
+                        Chennai, Tamil Nadu, India
+                    </div>
+                </td>
+
+                <td class="receipt-section">
+
+                    <div class="receipt-label">
+                        PAYMENT RECEIPT
+                    </div>
+
+                    <h1 class="receipt-id">
+                        RCPT-{{ payment.id }}
+                    </h1>
+
+                    <div class="receipt-date">
+                        {{ payment.date }}
+                    </div>
+
+                </td>
+
+            </tr>
+        </table>
+
+        <!-- ================= TITLE ================= -->
+
+        <div class="page-title">
+
+            <div class="line"></div>
+
+            <div class="title">
+                PAYMENT RECEIPT
+            </div>
+
+            <div class="line"></div>
+
+        </div>
+
+        <!-- ================= STUDENT + PAYMENT DETAILS ================= -->
+
+        <table class="details-table">
+
+            <tr>
+
+                <td class="left-column">
+
+                    <div class="section-heading">
+                        STUDENT DETAILS
+                    </div>
+
+                    <table class="info-table">
+
+                        <tr>
+                            <td class="label">
+                                Student Name
+                            </td>
+
+                            <td class="value">
+                                {{ student_name }}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="label">
+                                Phone Number
+                            </td>
+
+                            <td class="value">
+                                {{ phone }}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="label">
+                                Email
+                            </td>
+
+                            <td class="value">
+                                {{ email }}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="label">
+                                Course
+                            </td>
+
+                            <td class="value">
+                                {{ course }}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="label">
+                                Batch
+                            </td>
+
+                            <td class="value">
+                                {{ batch }}
+                            </td>
+                        </tr>
+
+                    </table>
+
+                </td>
+
+                <td class="divider"></td>
+
+                <td class="right-column">
+
+                    <div class="section-heading">
+                        PAYMENT DETAILS
+                    </div>
+
+                    <table class="info-table">
+
+                        <tr>
+                            <td class="label">
+                                Payment Date
+                            </td>
+
+                            <td class="value">
+                                {{ payment.date }}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="label">
+                                Payment Mode
+                            </td>
+
+                            <td class="value">
+                                {{ payment.mode }}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="label">
+                                Reference ID
+                            </td>
+
+                            <td class="value">
+                                {{ payment.reference_id }}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="label">
+                                Amount Paid
+                            </td>
+
+                            <td class="amount-value">
+                                ₹{{ payment.amount }}
+                            </td>
+                        </tr>
+
+                    </table>
+
+                </td>
+
+            </tr>
+
+        </table>
+
+        <!-- Continue with Fee Summary -->
+        <!-- =====================================================
+         FEE SUMMARY
+    ====================================================== -->
+
+        <div class="summary-section">
+
+            <table class="summary-table">
+
+                <tr>
+
+                    <td class="summary-card">
+
+                        <div class="summary-icon purple">
+                            ₹
+                        </div>
+
+                        <div class="summary-title">
+                            Total Course Fee
+                        </div>
+
+                        <div class="summary-value">
+                            ₹{{ total_fee }}
+                        </div>
+
+                    </td>
+
+                    <td class="summary-card">
+
+                        <div class="summary-icon green">
+                            ✓
+                        </div>
+
+                        <div class="summary-title">
+                            Total Paid
+                        </div>
+
+                        <div class="summary-value paid">
+                            ₹{{ total_paid }}
+                        </div>
+
+                    </td>
+
+                    <td class="summary-card">
+
+                        <div class="summary-icon orange">
+                            !
+                        </div>
+
+                        <div class="summary-title">
+                            Pending Amount
+                        </div>
+
+                        <div class="summary-value pending">
+                            ₹{{ pending }}
+                        </div>
+
+                    </td>
+
+                    <td class="summary-card">
+
+                        <div class="summary-icon blue">
+                            ✔
+                        </div>
+
+                        <div class="summary-title">
+                            Payment Status
+                        </div>
+
+                        {% if pending <= 0 %} <div class="status paid-status">
+                            PAID
+        </div>
+
+        {% elif total_paid > 0 %}
+        <div class="status partial-status">
+            PARTIAL
+        </div>
+
+        {% else %}
+        <div class="status pending-status">
+            PENDING
+        </div>
+        {% endif %}
+
+        </td>
+
+        </tr>
+
+        </table>
+
+    </div>
+
+
+    <!-- =====================================================
+         TRANSACTION DETAILS
+    ====================================================== -->
+
+    <div class="table-section">
+
+        <div class="table-heading">
+            TRANSACTION DETAILS
+        </div>
+
+        <table class="transaction-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>Receipt No</th>
+
+                    <th>Reference ID</th>
+
+                    <th>Date</th>
+
+                    <th>Mode</th>
+
+                    <th>Amount</th>
+
+                    <th>Status</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                <tr>
+
+                    <td>
+                        RCPT-{{ payment.id }}
+                    </td>
+
+                    <td>
+                        {{ payment.reference_id }}
+                    </td>
+
+                    <td>
+                        {{ payment.date }}
+                    </td>
+
+                    <td>
+                        {{ payment.mode }}
+                    </td>
+
+                    <td class="amount-column">
+                        ₹{{ payment.amount }}
+                    </td>
+
+                    <td>
+
+                        <span class="status paid-status">
+                            SUCCESS
+                        </span>
+
+                    </td>
+
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+    <!-- =====================================================
+         NOTE + SIGNATURE
+    ====================================================== -->
+
+    <table class="bottom-table">
+
+        <tr>
+
+            <!-- NOTE -->
+
+            <td class="note-column">
+
+                <div class="note-box">
+
+                    <div class="note-heading">
+                        IMPORTANT NOTE
+                    </div>
+
+                    <p>
+                        This is a computer generated payment receipt issued by
+                        <strong>CSC CRM Training & Admission Center.</strong>
+                        No physical signature is required for verification.
+                    </p>
+
+                    <p>
+                        Please keep this receipt safely for future reference.
+                    </p>
+
+                </div>
+
+            </td>
+
+
+            <!-- SIGNATURE -->
+
+            <td class="signature-column">
+
+                <div class="stamp">
+
+                    <div class="stamp-inner">
+
+                        <div class="stamp-title">
+                            CSC CRM
+                        </div>
+
+                        <div class="stamp-paid">
+                            PAID
+                        </div>
+
+                        <div class="stamp-year">
+                            2026
+                        </div>
+
+                    </div>
+
+                </div>
+                <div class="signature-space">
+
+                    <div class="digital-sign">
+                        Digitally Signed
+                    </div>
+
+                    <div class="digital-name">
+                        CSC CRM
+                    </div>
+
+                    <div class="digital-date">
+                        {{ today|date:"d-M-Y" }}
+                    </div>
+
+                </div>
+
+                <div class="signature-line"></div>
+
+                <div class="signature-text">
+                    Authorized Signatory
+                </div>
+
+                <div class="signature-company">
+                    CSC CRM Training & Admission Center
+                </div>
+
+
+
+
+            </td>
+
+        </tr>
+
+    </table>
+
+
+
+    <!-- =====================================================
+         FOOTER
+    ====================================================== -->
+
+    <div class="footer">
+
+        <table class="footer-table">
+
+            <tr>
+
+                <td>
+
+                    <strong>Website</strong><br>
+                    www.csccrm.com
+
+                </td>
+
+                <td>
+
+                    <strong>Email</strong><br>
+                    support@csccrm.com
+
+                </td>
+
+                <td>
+
+                    <strong>Phone</strong><br>
+                    +91 12345 67890
+
+                </td>
+
+                <td>
+
+                    <strong>Address</strong><br>
+                    Chennai, Tamil Nadu, India
+
+                </td>
+
+            </tr>
+
+        </table>
+
+    </div>
+
+    </div>
+
+</body>
+
+</html>

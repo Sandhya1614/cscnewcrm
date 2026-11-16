@@ -1,0 +1,330 @@
+{% extends 'admissions/base.html' %}
+{% load static %}
+{# View Student page: full profile with tabs for personal, guardian, academic, documents and payment info #}
+{% block title %}
+View Student
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/admissions_css/view_student.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+    integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+{% endblock %}
+
+
+{% block content %}
+<div class="profile-page">
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <a href="{% url 'student_list' %}" class="link">
+            <button class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back</button>
+        </a>
+        <div class="page-title">
+            <h4>Student Profile</h4>
+            <p>View and manage student information</p>
+        </div>
+    </div>
+
+    <!-- User Card -->
+    <div class="user-card">
+        <div class="user-photo-block">
+            <div class="user-photo">
+                {% if student.photo %}
+                <img src="{{ student.photo.url }}" alt="{{ student.first_name }}">
+                {% else %}
+                <span>{{ student.first_name|first }}</span>
+                {% endif %}
+            </div>
+
+            {% if admission.status|lower == "confirmed" or admission.status|lower == "enrolled" %}
+            <span class="status-badge enrolled">Active student</span>
+            {% elif admission.status|lower == "enquiry" or admission.status|lower == "dropped" %}
+            <span class="status-badge dropped">Inactive student</span>
+            {% else %}
+            <span class="status-badge unknown">Unknown</span>
+            {% endif %}
+        </div>
+
+        <div class="user-main">
+            <div class="user-name-row">
+                <h3>{{ student.first_name }} {{ student.last_name }}</h3>
+                <span class="stu-id-badge">STU{{ student.id }} <i class="fa-regular fa-copy"></i></span>
+            </div>
+
+            <div class="user-info-grid">
+                <div class="info-col">
+                    <p><i class="fa-solid fa-graduation-cap"></i><span><small>Course</small><br>{{ admission.course_name }}</span></p>
+                    <p><i class="fa-regular fa-envelope"></i><span><small>Email</small><br>{{ student.email }}</span></p>
+                    <p><i class="fa-solid fa-phone"></i><span><small>Phone</small><br>{{ student.phone_no }}</span></p>
+                    <p><i class="fa-regular fa-calendar"></i><span><small>Date of Birth</small><br>{{ student.dob }}</span></p>
+                </div>
+                <div class="info-col">
+                    <p><i class="fa-solid fa-venus-mars"></i><span><small>Gender</small><br>{{ student.gender }}</span></p>
+                    <p><i class="fa-solid fa-users"></i><span><small>Batch</small><br>{{ enrollment.batch }}</span></p>
+                    <p><i class="fa-regular fa-calendar-check"></i><span><small>Admission Date</small><br>{{ enrollment.start_date }}</span></p>
+                    <p><i class="fa-solid fa-user-shield"></i><span><small>Guardian</small><br>{{ student.guardian_name }} ({{ student.guardian_phone_no }})</span></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="user-address">
+            <h5><i class="fa-solid fa-location-dot"></i> Address</h5>
+            <p>{{ student.address }}</p>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+        <div class="box total">
+            <div class="stat-icon icon-purple"><i class="fa-solid fa-wallet"></i></div>
+            <div class="text"><span>Total Fee</span><br>₹{{ student.total_fee }}</div>
+        </div>
+        <div class="box paid">
+            <div class="stat-icon icon-green"><i class="fa-regular fa-circle-check"></i></div>
+            <div class="text"><span>Paid</span><br>₹{{ student.total_paid }}</div>
+        </div>
+        <div class="box pending">
+            <div class="stat-icon icon-red"><i class="fa-solid fa-clock"></i></div>
+            <div class="text"><span>Pending</span><br>₹{{ student.pending_amount }}</div>
+        </div>
+        <div class="box trans">
+            <div class="stat-icon icon-blue"><i class="fas fa-file-alt"></i></div>
+            <div class="text"><span>Transactions</span><br>{{ payments.count }}</div>
+        </div>
+    </div>
+
+    <!-- Tabs Card -->
+    <div class="card tabs-card">
+        <div class="tabs-nav">
+            <button type="button" class="tab-btn active" data-tab="personal">Personal Information</button>
+            <button type="button" class="tab-btn" data-tab="guardian">Guardian Information</button>
+            <button type="button" class="tab-btn" data-tab="academic">Academic Information</button>
+            <button type="button" class="tab-btn" data-tab="other">Other Details</button>
+            <button type="button" class="tab-btn" data-tab="documents">Documents</button>
+            <button type="button" class="tab-btn" data-tab="payment">Payment History</button>
+        </div>
+
+        <!-- Personal Information -->
+        <div class="tab-content active" id="tab-personal">
+            <div class="tab-grid">
+                <div class="detail-list">
+                    <div class="detail-cols">
+                        <div>
+                            <p><span>Student ID</span><strong>STU{{ student.id }}</strong></p>
+                            <p><span>Full Name</span><strong>{{ student.first_name }} {{ student.last_name }}</strong></p>
+                            <p><span>Date of Birth</span><strong>{{ student.dob }}</strong></p>
+                            <p><span>Gender</span><strong>{{ student.gender }}</strong></p>
+                            <p><span>Email</span><strong>{{ student.email }}</strong></p>
+                            <p><span>Phone</span><strong>{{ student.phone_no }}</strong></p>
+                        </div>
+                        <div>
+                            <p><span>Course</span><strong>{{ admission.course_name }}</strong></p>
+                            <p><span>Batch</span><strong>{{ enrollment.batch }}</strong></p>
+                            <p><span>Admission Date</span><strong>{{ enrollment.start_date }}</strong></p>
+                            <p><span>Enrollment No.</span><strong>{{ enrollment.enrollment_no|default:"—" }}</strong></p>
+                            <p><span>Status</span>
+                                {% if admission.status|lower == "enquiry" %}
+                                <span class="pill enquiry">Enquiry</span>
+                                {% elif admission.status|lower == "confirmed" %}
+                                <span class="pill confirmed">Confirmed</span>
+                                {% elif admission.status|lower == "enrolled" %}
+                                <span class="pill enrolled">Enrolled</span>
+                                {% elif admission.status|lower == "dropped" %}
+                                <span class="pill dropped">Dropped</span>
+                                {% else %}
+                                <span class="pill unknown">Unknown</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Guardian Information -->
+        <div class="tab-content" id="tab-guardian">
+            <div class="detail-cols">
+                <div>
+                    <p><span>Guardian Name</span><strong>{{ student.guardian_name }}</strong></p>
+                    <!-- <p><span>Relationship</span><strong>{{ student.guardian_relation|default:"—" }}</strong></p> -->
+                </div>
+                <div>
+                    <p><span>Phone</span><strong>{{ student.guardian_phone_no }}</strong></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Academic Information -->
+        <div class="tab-content" id="tab-academic">
+            <div class="detail-cols">
+                <div>
+                    <p><span>Course</span><strong>{{ admission.course_name }}</strong></p>
+                    <p><span>Enrollment Year</span><strong>{{ enrollment.enrollment_year|default:"—" }}</strong></p>
+                </div>
+                <div>
+                    <p><span>Attendance</span><strong>{{ enrollment.attendance_percent|default:"—" }}%</strong></p>
+                    <p><span>Batch</span><strong>{{ enrollment.batch }}</strong></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Other Details -->
+        <div class="tab-content" id="tab-other">
+            <div class="detail-cols">
+                <div>
+                    <p><span>Address</span><strong>{{ student.address }}</strong></p>
+                </div>
+                <div>
+                    <p><span>Admission Date</span><strong>{{ enrollment.start_date }}</strong></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Documents -->
+        <div class="tab-content" id="tab-documents">
+            <div class="doc-list">
+                <!-- ID Proof -->
+                <div class="proof">
+                    <div class="icon"><i class="fa-regular fa-file-pdf"></i></div>
+                    <div>
+                        {% if student.id_proof %}
+                        <a href="{{ student.id_proof.url }}" target="_blank">ID Proof<br>Aadhar Card</a>
+                        {% else %}
+                        <span>No File</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Address Proof -->
+                <div class="proof">
+                    <div class="icon"><i class="fa-regular fa-file-pdf"></i></div>
+                    <div>
+                        {% if student.certificate %}
+                        <a href="{{ student.certificate.url }}" target="_blank">Address Proof<br>Electricity Bill</a>
+                        {% else %}
+                        <span>No File</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Photo -->
+                <div class="proof">
+                    <div class="icon"><i class="fa-regular fa-file-pdf"></i></div>
+                    <div>
+                        {% if student.photo %}
+                        <a href="{{ student.photo.url }}" target="_blank">Photo<br>Passport Size</a>
+                        {% else %}
+                        <span>No Photo</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Admission Form -->
+                <div class="proof">
+                    <div class="icon"><i class="fa-regular fa-file-pdf"></i></div>
+                    <div>
+                        {% if student.admission_form %}
+                        <a href="{{ student.admission_form.url }}" target="_blank">Admission Form<br>admission_form.pdf</a>
+                        {% else %}
+                        <span>Not Uploaded</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment History -->
+        <div class="tab-content" id="tab-payment">
+            <div class="table-wrapper">
+                <table>
+                    <tr>
+                        <th>ID</th>
+                        <th>Amount</th>
+                        <th>Mode</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                    </tr>
+                    {% for p in payments %}
+                    <tr>
+                        <td>{{ p.id }}</td>
+                        <td>₹{{ p.amount }}</td>
+                        <td>{{ p.mode }}</td>
+                        <td>{{ p.date }}</td>
+                        <td>
+                            {% if p.status == "SUCCESS" %}
+                            <span class="success">Success</span>
+                            {% elif p.status == "PENDING" %}
+                            <span class="pending-status">Pending</span>
+                            {% else %}
+                            <span class="failed">Failed</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">No payments found</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Summary Cards -->
+    <div class="bottom">
+        <!-- <div class="card summary-card">
+            <h4><i class="fa-solid fa-user-shield"></i> Guardian Information</h4>
+            <p><span>Guardian Name</span><strong>{{ student.guardian_name }}</strong></p>
+            <p><span>Relationship</span><strong>{{ student.guardian_relation|default:"—" }}</strong></p>
+            <p><span>Phone</span><strong>{{ student.guardian_phone_no }}</strong></p>
+            <p><span>Email</span><strong>{{ student.guardian_email|default:"—" }}</strong></p>
+        </div>
+
+        <div class="card summary-card">
+            <h4><i class="fa-solid fa-book"></i> Academic Information</h4>
+            <p><span>Current Semester</span><strong>{{ enrollment.current_semester|default:"—" }}</strong></p>
+            <p><span>Enrollment Year</span><strong>{{ enrollment.enrollment_year|default:"—" }}</strong></p>
+            <p><span>CGPA</span><strong>{{ enrollment.cgpa|default:"—" }}</strong></p>
+            <p><span>Attendance</span><strong>{{ enrollment.attendance_percent|default:"—" }}%</strong></p>
+        </div> -->
+
+        <div class="card summary-card">
+            <h4><i class="fa-solid fa-wallet"></i> Payment Overview</h4>
+            <p><span>Total Fee</span><strong>₹{{ student.total_fee }}</strong></p>
+            <p><span>Paid Amount</span><strong>₹{{ student.total_paid }}</strong></p>
+            <p><span>Pending Amount</span><strong>₹{{ student.pending_amount }}</strong></p>
+            <p><span>Last Payment Date</span><strong>{{ payments.last.date|default:"—" }}</strong></p>
+        </div>
+
+
+{% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" %}
+        <div class="card summary-card">
+                    <div class="notes-box">
+                        <h4><i class="fas fa-file-alt icon-blue"></i> Notes</h4>
+                        <div class="notes-list">
+                            <p>Good performance.<br> Needs improvement in assignment and consistency.</p>
+                        </div>
+                    </div>
+
+                    <div class="quick-actions">
+                        <h4>Quick Actions</h4>
+                        <div class="qa-buttons">
+                            <a href="{% url 'edit_student' student.id %}" class="qa-btn qa-status"><i class="fa-solid fa-rotate"></i> Update Status</a>
+                            <a href="{% url 'delete_student' student.id %}" class="qa-btn qa-delete" onclick="confirmDelete(event, this.href)"><i class="fa-solid fa-trash" ></i> Delete Student</a>
+                            
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{% static 'js/admissions_js/view_student.js' %}"></script>
+
+{% endblock %}

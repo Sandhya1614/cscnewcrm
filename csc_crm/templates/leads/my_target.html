@@ -1,0 +1,244 @@
+{% extends 'leads/base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="target-container">
+
+    <header class="target-header">
+        <div class="target-header-content">
+            <h1 class="target-page-title"> My Lead Capture Target</h1>
+            <p class="target-page-subtitle">
+                Track your own lead capture target progress
+            </p>
+        </div>
+    </header>
+
+    <!-- SUMMARY CARDS -->
+    <section class="target-summary">
+
+        <div class="summary-card card-total">
+            <div class="summary-icon"><i class="fa-solid fa-bullseye"></i></div>
+            <div class="summary-content">
+                <div class="summary-label"> Total Targets </div>
+                <div class="summary-count"> {{ total_count }} </div>
+            </div>
+        </div>
+
+        <div class="summary-card card-active">
+            <div class="summary-icon"><i class="fa-solid fa-hourglass-half"></i></div>
+            <div class="summary-content">
+                <div class="summary-label"> Active </div>
+                <div class="summary-count"> {{ active_count }} </div>
+            </div>
+        </div>
+
+        <div class="summary-card card-completed">
+            <div class="summary-icon"><i class="fa-solid fa-circle-check"></i></div>
+            <div class="summary-content">
+                <div class="summary-label"> Completed </div>
+                <div class="summary-count"> {{ completed_count }} </div>
+            </div>
+        </div>
+
+        <div class="summary-card card-expired">
+            <div class="summary-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <div class="summary-content">
+                <div class="summary-label"> Expired </div>
+                <div class="summary-count"> {{ expired_count }} </div>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- MY TARGET LIST -->
+    <main class="target-table-card">
+
+        <div class="table-top">
+            <div>
+                <h2> My Targets </h2>
+                <span class="table-count"> {{ total_count }} Target{{ total_count|pluralize }} </span>
+            </div>
+        </div>
+
+        {% if targets %}
+
+        <div class="table-wrapper">
+            <table class="target-table">
+                <thead>
+                    <tr>
+                        <th> TARGET </th>
+                        <th> ACHIEVED </th>
+                        <th> PROGRESS </th>
+                        <th> END DATE </th>
+                        <th> STATUS </th>
+                        <th> ASSIGNED BY </th>
+                        <th> ACTION </th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for target in targets %}
+                    <tr>
+                        <td>
+                            <div class="cell-metric">
+                                <i class="fa-solid fa-flag-checkered"></i>
+                                <span> {{ target.target_count }} leads </span>
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="cell-metric">
+                                <i class="fa-solid fa-address-card"></i>
+                                <span> {{ target.achieved_count }} leads </span>
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="progress-wrap">
+                                <div class="progress-track">
+                                    <div class="progress-fill status-{{ target.status }}"
+                                        style="width: {{ target.progress_percent }}%;">
+                                        <span class="progress-fill-shine"></span>
+                                    </div>
+                                </div>
+                                <div class="progress-meta">
+                                    <span class="progress-text">
+                                        {% if target.status == 'completed' %}
+                                        <i class="fa-solid fa-circle-check"></i>
+                                        {% elif target.status == 'expired' %}
+                                        <i class="fa-solid fa-triangle-exclamation"></i>
+                                        {% else %}
+                                        <i class="fa-solid fa-arrow-trend-up"></i>
+                                        {% endif %}
+                                        {{ target.progress_percent }}%
+                                    </span>
+                                    <span class="progress-fraction"> {{ target.achieved_count }}/{{ target.target_count }} </span>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="cell-metric">
+                                <i class="fa-regular fa-calendar"></i>
+                                <span> {{ target.end_date|date:"d M Y" }} </span>
+                            </div>
+                        </td>
+
+                        <td>
+                            <span class="status-badge status-{{ target.status }}">
+                                {% if target.status == 'completed' %}
+                                <i class="fa-solid fa-circle-check"></i>
+                                {% elif target.status == 'expired' %}
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                                {% else %}
+                                <i class="fa-solid fa-hourglass-half"></i>
+                                {% endif %}
+                                {{ target.status|title }}
+                            </span>
+                        </td>
+
+                        <td>
+                            {% if target.assigned_by %}
+                            <div class="cell-metric">
+                                <i class="fa-solid fa-user-tie"></i>
+                                <span> {{ target.assigned_by.full_name }} </span>
+                            </div>
+                            {% else %}
+                            <span class="cell-empty"><i class="fa-solid fa-minus"></i></span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <div class="action-cell">
+                                {% if target.can_update_progress %}
+                                <button type="button" class="btn-lead-capture" title="Enter how many leads you captured"
+                                    onclick="openProgressModal({{ target.id }}, {{ target.achieved_count }}, {{ target.target_count }})">
+                                    <i class="fa-solid fa-address-card"></i> Update Progress
+                                </button>
+                                {% else %}
+                                <span class="action-locked"
+                                    title="{% if target.status == 'completed' %}Target completed{% else %}Target expired{% endif %}">
+                                    <i class="fa-solid {% if target.status == 'completed' %}fa-circle-check{% else %}fa-triangle-exclamation{% endif %}"></i>
+                                </span>
+                                {% endif %}
+                            </div>
+                        </td>
+
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% else %}
+
+        <div class="target-empty-state">
+            <div class="empty-icon"><i class="fa-solid fa-bullseye"></i></div>
+            <p> No lead capture target has been assigned to you yet. </p>
+        </div>
+
+        {% endif %}
+
+    </main>
+
+</div>
+
+<!-- UPDATE PROGRESS MODAL (self-report captured lead count) -->
+<div class="target-modal-overlay" id="progressModalOverlay" onclick="closeProgressModal(event)">
+    <div class="target-modal" onclick="event.stopPropagation()">
+
+        <div class="target-modal-header">
+            <h3> Update Progress </h3>
+            <button type="button" class="target-modal-close" onclick="closeProgressModal()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <form method="POST" id="progressForm" class="target-modal-form">
+            {% csrf_token %}
+
+            <p class="edit-progress-hint" id="progressRemainingHint">
+                <i class="fa-solid fa-circle-info"></i>
+                <span id="progressRemainingText"></span>
+            </p>
+
+            <div class="form-group">
+                <label for="id_progress_count"> {{ progress_form.captured_count.label }} </label>
+                {{ progress_form.captured_count }}
+            </div>
+
+            <div class="target-modal-actions">
+                <button type="button" class="btn-cancel" onclick="closeProgressModal()"> Cancel </button>
+                <button type="submit" class="btn-submit-target"> Update Progress </button>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+<script>
+    // Base progress-update URL built with a placeholder pk (0), swapped per row on open
+    var progressUrlTemplate = "{% url 'leads:lead_capture_target_progress' 0 %}";
+
+    function openProgressModal(targetId, achievedCount, targetCount) {
+        document.getElementById('progressForm').action = progressUrlTemplate.replace('/0/', '/' + targetId + '/');
+
+        var remaining = targetCount - achievedCount;
+        document.getElementById('progressRemainingText').textContent =
+            achievedCount + '/' + targetCount + ' leads captured so far — ' + remaining + ' remaining.';
+
+        var input = document.getElementById('id_progress_count');
+        input.value = '';
+        input.setAttribute('max', remaining);
+
+        document.getElementById('progressModalOverlay').classList.add('show');
+    }
+
+    function closeProgressModal(e) {
+        if (e) e.stopPropagation();
+        document.getElementById('progressModalOverlay').classList.remove('show');
+    }
+</script>
+
+{% endblock %}

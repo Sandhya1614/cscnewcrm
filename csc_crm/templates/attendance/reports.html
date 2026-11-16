@@ -1,0 +1,482 @@
+{% extends 'attendance/base.html' %}
+
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/attendance_css/reports.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+
+<div class="main-content">
+
+    <div class="reports-page">
+
+        <!-- ============ TOPBAR (TITLE + ANALYTICS PDF/EXCEL EXPORT) ============ -->
+        <div class="reports-topbar">
+
+            <div>
+                <h5>
+                    Reports & Analytics
+                </h5>
+            </div>
+
+            <div class="topbar-actions">
+                <a href="{% url 'analytics_pdf' %}" class="export-btn pdf-btn">
+                    <i class="fas fa-file-pdf"></i>
+                    Analytics PDF
+                </a>
+
+                <a href="{% url 'analytics_excel' %}" class="export-btn excel-btn">
+                    <i class="fas fa-file-excel"></i>
+                    Analytics Excel
+                </a>
+
+            </div>
+
+        </div>
+
+        <!-- ============ FILTER CARD (NAME, COURSE, BATCH, STATUS, DATE RANGE, %) ============ -->
+        <div class="filter-card">
+
+            <div class="filter-container">
+
+                <!-- ============ STUDENT NAME FILTER ============ -->
+                <div class="filter-field">
+                    <label class="filter-label" for="studentNameFilter">Student Name</label>
+                    <div class="filter-input-icon">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="studentNameFilter" class="filter-input"
+                            placeholder="Search by name or ID..." value="{{ student_name_filter }}">
+                    </div>
+                </div>
+
+                <!-- ============ COURSE FILTER ============ -->
+                {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" or request.user.staff_profile.role.role_name == "HR" %}
+                <div class="filter-field">
+                <label class="filter-label" for="CourseFilter">Course</label>
+                <select id="courseFilter" class="filter-input">
+
+                    <option value="">
+                        Course
+                    </option>
+
+                    {% for course in courses %}
+
+                    <option value="{{ course.course_name|lower }}">
+                        {{ course.course_name }}
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+                </div>
+                {% endif %}
+
+                <!-- ============ BATCH FILTER ============ -->
+                <div class="filter-field">
+                    <label class="filter-label" for="batchFilter">Batch</label>
+                    <select id="batchFilter" class="filter-input">
+
+                        <option value="">
+                            All Batches
+                        </option>
+
+                        {% for batch in batches %}
+
+                        <option value="{{ batch.id }}">
+                            {{ batch.batch_name }}
+                            ({{ batch.course.course_name }})
+                        </option>
+
+                        {% endfor %}
+
+                    </select>
+                </div>
+
+                <!-- ============ STATUS FILTER (EXCELLENT/GOOD/WARNING/CRITICAL) ============ -->
+                <div class="filter-field">
+                    <label class="filter-label" for="statusFilter">Status</label>
+                    <select id="statusFilter" class="filter-input">
+
+                        <option value="">
+                            All Status
+                        </option>
+
+                        <option value="excellent">
+                            Excellent
+                        </option>
+
+                        <option value="good">
+                            Good
+                        </option>
+
+                        <option value="warning">
+                            Warning
+                        </option>
+
+                        <option value="critical">
+                            Critical
+                        </option>
+
+                    </select>
+                </div>
+
+                <!-- ============ DATE RANGE FILTER ============ -->
+                <div class="filter-field date-range-group">
+                    <label class="filter-label">Date Range</label>
+                    <div class="date-range-inputs">
+                        <div class="filter-input-icon date-icon">
+                            <i class="fas fa-calendar-alt"></i>
+                            <input type="date" id="dateFromFilter" class="filter-input" value="{{ date_from_filter }}">
+                        </div>
+                        <span class="date-range-sep">&ndash;</span>
+                        <div class="filter-input-icon date-icon">
+                            <i class="fas fa-calendar-alt"></i>
+                            <input type="date" id="dateToFilter" class="filter-input" value="{{ date_to_filter }}">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ============ ATTENDANCE % FILTER (TABLE) ============ -->
+                <div class="filter-field">
+                    <label class="filter-label" for="attendanceFilter">Attendance % (Table)</label>
+                    <input type="number" id="attendanceFilter" class="filter-input" placeholder="e.g. 75" min="0"
+                        max="100" value="{{ attendance_filter }}">
+                </div>
+
+                <!-- ============ MIN % FILTER (DISTRIBUTION CHART) ============ -->
+                <div class="filter-field">
+                    <label class="filter-label" for="distributionPercentageFilter">Min % (Distribution)</label>
+                    <input type="number" id="distributionPercentageFilter" class="filter-input" placeholder="e.g. 60"
+                        min="0" max="100" value="{{ distribution_percentage_filter }}">
+                </div>
+
+            </div>
+
+            <!-- ============ CLEAR / APPLY FILTER BUTTONS ============ -->
+            <div class="filter-actions-row">
+
+                <button id="clearFilters" class="clear-btn">
+                    <i class="fas fa-rotate-left"></i>
+                    Clear
+                </button>
+
+                <button id="showAllBtn" class="apply-btn">
+                    <i class="fas fa-filter"></i>
+                    Apply Filter
+                </button>
+
+            </div>
+
+            <!-- ============ FILTER STATUS MESSAGE (AJAX-UPDATED) ============ -->
+            <!-- filter-container close -->
+            <div class="filter-message" id="filterMessage">
+                {% include "attendance/_filter_message.html" %}
+            </div>
+
+        </div>
+
+        <div id="noResultsMessage" style="display:none;text-align:center;padding:20px;font-weight:bold;">
+
+            No records found
+
+        </div>
+
+        <!-- ============ MONTHLY ATTENDANCE BAR CHART (Row 1 - full width) ============ -->
+        <div class="charts-row">
+
+            <div class="chart-card monthly-chart-card">
+
+                <div class="chart-header">
+                    <h4 id="monthlyChartTitle">
+                        {{ monthly_chart_title }}
+                    </h4>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="attendanceChart"></canvas>
+
+                    <div class="chart-empty-state" id="attendanceChartEmpty">
+                        <i class="fas fa-chart-bar"></i>
+                        <p>No data available for the selected filters.</p>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ============ DISTRIBUTION + BATCH-WISE (Row 2 - side by side) ============ -->
+        <div class="charts-top-row">
+
+            <div class="chart-card distribution-chart-card">
+                <div class="chart-header">
+                    <h4>Attendance Distribution</h4>
+                </div>
+                <div class="pie-chart-container">
+                    <canvas id="distributionChart"></canvas>
+                    <div class="chart-empty-state" id="distributionChartEmpty">
+                        <i class="fas fa-chart-pie"></i>
+                        <p>No data available for the selected filters.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-header batch-wise-header">
+                    <h4>Batch-wise Attendance</h4>
+                    <div class="batch-wise-header-actions">
+                        <select id="batchWiseSelector" class="filter-input" style="max-width:220px;">
+                            <option value="">All Batches</option>
+                        </select>
+                        <div class="text-muted">
+                            Attendance Updated On : {{ attendance_date }}
+                        </div>
+                    </div>
+                </div>
+
+                {% if show_batch_chart %}
+                <div class="pie-chart-container">
+                    <canvas id="batchChart"></canvas>
+                    <div class="chart-empty-state" id="batchChartEmpty">
+                        <i class="fas fa-chart-pie"></i>
+                        <p>No data available for the selected batch.</p>
+                    </div>
+                </div>
+                {% else %}
+                <div class="chart-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h5>Attendance Not Available</h5>
+                    <p>{{ warning_message }}</p>
+                </div>
+                {% endif %}
+            </div>
+
+        </div>
+
+
+        <!-- ============ STUDENT PERFORMANCE REPORT TABLE ============ -->
+        <div class="report-table-card">
+
+            <!-- ============ TABLE HEADER (TITLE + PDF/EXCEL EXPORT) ============ -->
+            <div class="report-table-header">
+
+                <h4>
+                    Student Performance Report
+                </h4>
+
+                <div class="table-actions">
+
+                    <a href="{% url 'report_pdf' %}" class="export-btn pdf-btn">
+                        <i class="fas fa-file-pdf"></i>
+                        Report PDF
+                    </a>
+
+                    <a href="{% url 'report_excel' %}" class="export-btn excel-btn">
+                        <i class="fas fa-file-excel"></i>
+                        Report Excel
+                    </a>
+                </div>
+
+            </div>
+
+
+            <div class="table-responsive">
+
+                <table class="table align-middle">
+
+                    <thead>
+
+                        <tr>
+
+
+                            <th>STUDENT</th>
+                            <th>COURSE</th>
+                            <th>BATCH</th>
+                            <th>TOTAL DAYS</th>
+                            <th>PRESENT</th>
+                            <th>ABSENT</th>
+                            <th>LATE</th>
+                            <th>ATTENDANCE RATE</th>
+                            <th>STATUS</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="reportTableBody">
+
+                        <!-- ============ TABLE ROW - PER STUDENT ============ -->
+                        {% for student in report_students %}
+
+                        <tr class="report-row" data-name="{{ student.student.first_name|lower }}"
+                            data-course="{{ student.course.course_name|lower }}" data-batch="{{ student.batch.id }}"
+                            data-attendance="{{ student.attendance_rate }}" data-status="{{ student.status|lower }}">
+
+
+                            <td>
+
+                                <div class="student-cell">
+
+                                    <div class="student-avatar" style="overflow:hidden;">
+                                        {% include "includes/avatar_inner.html" with photo=student.student.photo initials=student.student.first_name|slice:":2"|upper alt=student.student.first_name %}
+                                    </div>
+
+                                    <span>
+
+                                        {{ student.student.first_name }}
+                                        {{ student.student.last_name }}
+
+                                    </span>
+
+                                </div>
+
+                            </td>
+
+                            <td>
+
+                                {{ student.course }}
+
+                            </td>
+                            <td>
+
+                                {{ student.batch.batch_name }}
+
+                            </td>
+                            <td>
+
+                                {{ student.total_days }}
+
+                            </td>
+
+                            <td class="present-text">
+                                {{ student.present_count }}
+                            </td>
+                            <td class="absent-text">
+                                {{ student.absent_count }}
+                            </td>
+
+                            <td class="late-text">
+
+                                {{ student.late_count }}
+
+                            </td>
+
+                            <td class="rate-text">
+
+                                {{ student.attendance_rate }}%
+
+                            </td>
+
+                            <td>
+
+                                {% if student.status == "Critical" %}
+
+                                <span class="status-badge critical-badge">
+                                    Critical
+                                </span>
+
+                                {% elif student.status == "Warning" %}
+
+                                <span class="status-badge warning-badge">
+                                    Warning
+                                </span>
+
+                                {% elif student.status == "Excellent" %}
+
+                                <span class="status-badge excellent-badge">
+                                    Excellent
+                                </span>
+
+                                {% else %}
+
+                                <span class="status-badge good-badge">
+                                    Good
+                                </span>
+
+                                {% endif %}
+                            </td>
+
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+                            <td colspan="9" style="text-align:center;">
+                                No records found
+                            </td>
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            <div class="report-table-footer" id="reportTableFooter">
+                <span id="paginationInfo">Showing 0 records</span>
+
+                <div class="pagination-controls" id="paginationControls">
+                    <button type="button" id="firstPageBtn" class="pagination-btn">
+                     First
+                    </button>
+
+                    <button type="button" id="prevPageBtn" class="pagination-btn">
+                       Previous
+                    </button>
+
+                    <div id="paginationNumbers" class="pagination-numbers"></div>
+                    
+                    <button type="button" id="nextPageBtn" class="pagination-btn">
+                    Next
+                    </button>
+
+                    <button type="button" id="lastPageBtn" class="pagination-btn">
+                    Last
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+
+<!-- ============ CHART.JS LIBRARY + JSON DATA FOR reports.js ============ -->
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{{ monthly_present|json_script:"monthly-present" }}
+{{ monthly_absent|json_script:"monthly-absent" }}
+{{ monthly_late|json_script:"monthly-late" }}
+
+{{ batch_labels|json_script:"batch-labels" }}
+{{ batch_present_counts|json_script:"batch-counts" }}
+{{ batch_performance_labels|json_script:"batch-performance-labels" }}
+
+{{ batch_performance_counts|json_script:"batch-performance-counts" }}
+
+{{ batch_present_list|json_script:"batch-present-list" }}
+{{ batch_absent_list|json_script:"batch-absent-list" }}
+{{ batch_late_list|json_script:"batch-late-list" }}
+{{ batch_percentage_list|json_script:"batch-percentage-list" }}
+{{ batch_status_map|json_script:"batch-status-map" }}
+
+{{ distribution_data|json_script:"distribution-data" }}
+
+{{ all_batch_labels|json_script:"all-batch-labels" }}
+{{ all_batch_ids|json_script:"all-batch-ids" }}
+{{ all_batch_present_list|json_script:"all-batch-present-list" }}
+{{ all_batch_absent_list|json_script:"all-batch-absent-list" }}
+{{ all_batch_late_list|json_script:"all-batch-late-list" }}
+{{ all_batch_percentage_list|json_script:"all-batch-percentage-list" }}
+
+{{ latest_month|json_script:"latest-month" }}
+<script src="{% static 'js/attendance_js/reports.js' %}"></script>
+{% endblock %}

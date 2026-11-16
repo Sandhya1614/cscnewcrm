@@ -1,0 +1,298 @@
+{% extends 'attendance/base.html' %}
+{% load static %}
+
+{# Batches page: batch stat cards, filters and the create/edit batch modal.
+   Actual batch list/data is loaded and paginated by batches.js via the API. #}
+
+{% block title %}
+Student Attendance - Batches
+{% endblock title %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/attendance_css/batches.css' %}">
+{% endblock extra_css %}
+
+{% block content %}
+
+<!-- ============ TOAST CONTAINER (SUCCESS/ERROR MESSAGES) ============ -->
+<div id="toastContainer" class="toast-wrapper"></div>
+
+<div class="main-content">
+
+    <div class="container-fluid mt-4 batches-page">
+
+        <!-- ============ HERO BANNER (PAGE TITLE + NEW BATCH BUTTON) ============ -->
+        <div class="hero-banner">
+            <div class="hero-left">
+                <div class="hero-icon">
+                    <i class="fa-solid fa-calendar-days"></i>
+                </div>
+                <div>
+                    <h2>Batch Management</h2>
+                    <p>Manage training batches and daily attendance</p>
+                </div>
+            </div>
+            {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" %}
+            <button class="btn-new-batch" data-bs-toggle="modal" data-bs-target="#batchModal">
+            <i class="fa-solid fa-plus"></i> New Batch
+            </button>
+            {% endif %}
+        </div>
+
+        <!-- ============ TOP STAT CARDS (BATCHES, MARKED, NOT MARKED, STUDENTS, ABSENT) ============ -->
+        <div class="stat-row">
+            <div class="top-card">
+                <div class="icon-box icon-batches">
+                    <i class="fa-solid fa-calendar-days"></i>
+                </div>
+                <div class="card-info">
+                    <p>Batches (This Page)</p>
+                    <h2 id="totalBatches">0</h2>
+                    <span class="card-sub sub-up" id="batchesThisMonth">0 ongoing · 0 upcoming</span>
+                </div>
+            </div>
+
+            <div class="top-card">
+                <div class="icon-box icon-marked">
+                    <i class="fa-solid fa-check"></i>
+                </div>
+                <div class="card-info">
+                    <p>Attendance Marked</p>
+                    <h2 id="attendanceMarked">0</h2>
+                    <span class="card-sub sub-muted">Today</span>
+                </div>
+            </div>
+
+            <div class="top-card">
+                <div class="icon-box icon-notmarked">
+                    <i class="fa-regular fa-clock"></i>
+                </div>
+                <div class="card-info">
+                    <p>Not Marked</p>
+                    <h2 id="notMarked">0</h2>
+                    <span class="card-sub sub-muted">Today</span>
+                </div>
+            </div>
+
+            <div class="top-card">
+                <div class="icon-box icon-students">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+                <div class="card-info">
+                    <p>Total Students</p>
+                    <h2 id="totalStudents">0</h2>
+                    <span class="card-sub sub-muted">Across Batches</span>
+                </div>
+            </div>
+
+            <div class="top-card">
+                <div class="icon-box icon-absent">
+                    <i class="fa-solid fa-user-clock"></i>
+                </div>
+                <div class="card-info">
+                    <p>Absent Today</p>
+                    <h2 id="absentToday">0</h2>
+                    <span class="card-sub sub-down">Needs Follow Up</span>
+                </div>
+            </div>
+        </div>
+       
+        <!-- ============ FILTER BAR (COURSE, TRAINER, TIMING, STATUS, SEARCH) ============ -->
+        <div class="filter-card">
+            <div class="filter-grid">
+                <div class="filter-field">
+                    <label>Course</label>
+                    <select id="filterCourse">
+                        <option value="">All Courses</option>
+                    </select>
+                </div>
+                <div class="filter-field">
+                    <label>Trainer</label>
+                    <select id="filterTrainer">
+                        <option value="">All Trainers</option>
+                    </select>
+                </div>
+                <div class="filter-field">
+                    <label>Timing</label>
+                    <select id="filterTiming">
+                        <option value="">All Timings</option>
+                    </select>
+                </div>
+                <div class="filter-field">
+                    <label>Status</label>
+                    <select id="filterStatus">
+                        <option value="">All Statuses</option>
+                        <option value="active">Active</option>
+                        <option value="upcoming">Upcoming</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                </div>
+                <div class="filter-field search-field">
+                    <label>&nbsp;</label>
+                    <div class="search-box">
+                        <i class="fa-solid fa-search"></i>
+                        <input type="text" id="searchInput" placeholder="Search batch...">
+                    </div>
+                </div>
+
+                <button class="btn-search" id="btnReset">
+                    Reset
+                </button>
+            </div>
+        </div>
+
+        <!-- ============ BATCH CARDS CONTAINER (LOADED VIA JS/API) ============ -->
+        <div class="row mt-3" id="batchContainer"></div>
+
+        <!-- ============ PAGINATION BAR ============ -->
+        <div class="pagination-bar">
+            <span id="paginationInfo">Showing 0 to 0 of 0 batches</span>
+            <div class="pagination-controls">
+                <button id="prevPage" class="page-btn"><i class="fa-solid fa-chevron-left"></i></button>
+                <div id="pageNumbers" class="page-numbers"></div>
+                <button id="nextPage" class="page-btn"><i class="fa-solid fa-chevron-right"></i></button>
+                <select id="pageSizeSelect">
+                    <option value="10">10 per page</option>
+                    <option value="20">20 per page</option>
+                    <option value="50">50 per page</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- BATCH CREATE / EDIT MODAL -->
+        <div class="modal fade" id="batchModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content attendance-modal">
+
+                    <div class="modal-header">
+                        <div class="modal-title-wrap">
+                            <div class="modal-icon">
+                                <i class="fa-solid fa-calendar-days"></i>
+                            </div>
+                            <div>
+                                <h5 class="modal-title" id="batchModalTitle">Create New Batch</h5>
+                                <p class="modal-subtitle" id="batchModalSubtitle">Add a new training batch to schedule classes and track
+                                    attendance</p>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+
+                    <form method="post" id="batchForm">
+                        {% csrf_token %}
+
+                        <div class="modal-body">
+
+                            <!-- ============ BATCH NAME FIELD ============ -->
+                            <div class="mb-3">
+                                <label>Batch Name <span class="required"> *</span></label>
+                                <div class="field-icon">
+                                    <i class="fa-solid fa-signature"></i>
+                                    {{ form.batch_name }}
+                                </div>
+                                <div id="batchNameError" class="text-danger mt-1"></div>
+                            </div>
+
+                            <!-- ============ COURSE & TIMING FIELDS ============ -->
+                            <div class="grid gap-3">
+                                <div class="mb-3">
+                                    <label>Course <span class="required"> *</span></label>
+                                    <div class="field-icon">
+                                        <i class="fa-solid fa-book"></i>
+                                        {{ form.course }}
+                                    </div>
+                                    <div id="courseError" class="text-danger mt-1"></div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label>Timing <span class="required"> *</span></label>
+                                    <div class="field-icon">
+                                        <i class="fa-regular fa-clock"></i>
+                                        {{ form.timing }}
+                                    </div>
+                                    <div id="timingError" class="text-danger mt-1"></div>
+                                </div>
+                            </div>
+
+                            <!-- ============ START DATE & END DATE FIELDS ============ -->
+                            <div class="grid gap-3">
+                                <div class="mb-3">
+                                    <label>Start Date <span class="required"> *</span></label>
+                                    <div class="field-icon">
+                                        <i class="fa-regular fa-calendar"></i>
+                                        {{ form.start_date }}
+                                    </div>
+                                    <div id="startDateError" class="text-danger mt-1"></div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label>End Date <span class="required"> *</span></label>
+                                    <div class="field-icon">
+                                        <i class="fa-regular fa-calendar"></i>
+                                        {{ form.end_date }}
+                                    </div>
+                                    <div id="endDateError" class="text-danger mt-1"></div>
+                                </div>
+                            </div>
+
+                            <!-- ============ START TIME & END TIME FIELDS ============ -->
+                            <div class="grid gap-3">
+                                <div class="mb-3">
+                                    <label>Start Time <span class="required"> *</span></label>
+                                    <div class="field-icon">
+                                        <i class="fa-regular fa-clock"></i>
+                                        {{ form.start_time }}
+                                    </div>
+                                    <div id="startTimeError" class="text-danger mt-1"></div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label>End Time <span class="required"> *</span></label>
+                                    <div class="field-icon">
+                                        <i class="fa-regular fa-clock"></i>
+                                        {{ form.end_time }}
+                                    </div>
+                                    <div id="endTimeError" class="text-danger mt-1"></div>
+                                </div>
+                            </div>
+
+                            <!-- ============ TRAINER FIELD ============ -->
+                            <div class="mb-3">
+                                <label>Trainer <span class="required"> *</span></label>
+                                <div class="field-icon">
+                                    <i class="fa-solid fa-chalkboard-user"></i>
+                                    {{ form.trainer }}
+                                </div>
+                                <div id="trainerError" class="text-danger mt-1"></div>
+                            </div>
+
+                        </div>
+
+                         <!-- ============ MODAL FOOTER (CANCEL / SUBMIT BUTTONS) ============ -->
+                        <div class="modal-footer">
+                            <button type="button" class="btn-cancel" id="btn-cancel" data-bs-dismiss="modal">
+                                <i class="fa-solid fa-xmark"></i> Cancel
+                            </button>
+                            <button type="submit" class="btn-create" id="batchSubmitBtn">
+                                <i class="fa-solid fa-plus"></i> Create Batch
+                            </button>
+                        </div>
+
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+    const IS_TRAINER = {% if request.user.staff_profile.role.role_name == "Trainer" %}true{% else %}false{% endif %};
+    const IS_HR = {% if request.user.staff_profile.role.role_name == "HR" %}true{% else %}false{% endif %};
+    </script>
+<script src="{% static 'js/attendance_js/batches.js' %}"></script>
+{% endblock %}

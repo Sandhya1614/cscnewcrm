@@ -1,0 +1,260 @@
+{% extends 'admissions/base.html' %}
+{% load static %}
+
+{% block title %}
+<title>Advanced Search & Filter</title>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="{% static 'css/admissions_css/search_students.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="edit-container">
+
+    <div class="page-head">
+        <div>
+            {% if selected_batch %}
+            <a href="{% url 'search_batch_list' %}" class="back-link">
+                <i class="fa-solid fa-arrow-left"></i> All Batches
+            </a>
+            <h3 class="page-title-add">{{ selected_batch.batch_name }}</h3>
+            <p class="page-sub-add">{{ selected_batch.course.course_name }} · search and filter students of this batch</p>
+            {% else %}
+            <h3 class="page-title-add">Advanced Search &amp; Filter</h3>
+            <p class="page-sub-add">Find and filter students using advanced search options</p>
+            {% endif %}
+        </div>
+        <button type="button" class="hide-filters-btn" id="toggleFiltersBtn">
+            <i class="fa-solid fa-chevron-up"></i> Hide Filters
+        </button>
+    </div>
+
+    <div class="filter-card" id="filterCard">
+
+        <form method="GET" class="top-bar" id="filterForm">
+
+            <div class="filter-grid">
+
+                <div class="field">
+                    <label><i class="fa-regular fa-user"></i> Search Name</label>
+                    <input type="text" name="search" pattern="^[A-Za-z ]+$" value="{{ request.GET.search }}" placeholder="Search by student name">
+                </div>
+
+                <div class="field">
+                    <label><i class="fa-solid fa-hashtag"></i> Search ID</label>
+                    <input type="text" name="id" pattern="^\d{1,5}$" value="{{ request.GET.id }}" placeholder="Search by student ID">
+                </div>
+
+                <div class="field">
+                    <label><i class="fa-solid fa-phone"></i> Phone</label>
+                    <input type="text" name="phone_no" maxlength="10" pattern="^\d{10}$" value="{{ request.GET.phone_no }}" placeholder="Enter phone number">
+                </div>
+
+                {% if selected_batch %}
+                <input type="hidden" name="batch" value="{{ selected_batch.id }}">
+                {% else %}
+
+
+                {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" or request.user.staff_profile.role.role_name == "HR" %}
+                <div class="field">
+                    <label><i class="fa-solid fa-book"></i> Course</label>
+                    <select name="course_name">
+                        <option value="">All Course</option>
+                        {% for c in courses %}
+                        <option value="{{ c.course_name }}" {% if request.GET.course_name == c.course_name %}selected{% endif %}>{{ c.course_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+
+                <div class="field">
+                    <label><i class="fa-regular fa-calendar"></i> Batch</label>
+                    <select name="batch">
+                        <option value="">All Batch</option>
+                        {% for batch in batches %}
+                        <option value="{{ batch.id }}" {% if request.GET.batch == batch.id|stringformat:"s" %}selected{% endif %}>{{ batch.batch_name }} ({{ batch.course.course_name }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+
+
+                {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" %}
+                <div class="field">
+                    <label><i class="fa-regular fa-circle-check"></i> Status</label>
+                    <select name="status">
+                        <option value="">All Status</option>
+                        <option value="Enquiry" {% if request.GET.status == "Enquiry" %}selected{% endif %}>Enquiry</option>
+                        <option value="Confirmed" {% if request.GET.status == "Confirmed" %}selected{% endif %}>Confirmed</option>
+                        <option value="Enrolled" {% if request.GET.status == "Enrolled" %}selected{% endif %}>Enrolled</option>
+                        <option value="Dropped" {% if request.GET.status == "Dropped" %}selected{% endif %}>Dropped</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label><i class="fa-regular fa-credit-card"></i> Payment</label>
+                    <select name="payment_status">
+                        <option value="">All Payment</option>
+                        <option value="Paid" {% if request.GET.payment_status == "Paid" %}selected{% endif %}>Paid</option>
+                        <option value="Partial" {% if request.GET.payment_status == "Partial" %}selected{% endif %}>Partial</option>
+                        <option value="Pending" {% if request.GET.payment_status == "Pending" %}selected{% endif %}>Pending</option>
+                    </select>
+                </div>
+                {% endif %}
+
+            </div>
+
+            <div class="form-btn">
+                <p id="filter-error"></p>
+                <button type="button" class="clear-btn" id="resetBtn">
+                    <i class="fa-solid fa-rotate-left"></i> Reset
+                </button>
+                <button type="submit" class="filter-btn">
+                    <i class="fa-solid fa-magnifying-glass"></i> Filter
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+
+    <div class="results-bar">
+        <div class="results-left">
+            <span class="results-icon"><i class="fa-solid fa-table-list"></i></span>
+            <div>
+                <div class="pagination-info result-info">
+                    Showing {{ page_obj.paginator.count }} results matching your filters
+                </div>
+                <div class="results-sub">Students matching your search criteria</div>
+            </div>
+        </div>
+        <div class="results-right">
+            <select class="per-page-select" id="perPageSelect">
+                <option value="10" {% if per_page == 10 %}selected{% endif %}>10 per page</option>
+                <option value="25" {% if per_page == 25 %}selected{% endif %}>25 per page</option>
+                <option value="50" {% if per_page == 50 %}selected{% endif %}>50 per page</option>
+                <option value="100" {% if per_page == 100 %}selected{% endif %}>100 per page</option>
+            </select>
+            <button type="button" class="export-btn" id="exportExcelBtn" data-base-query="{{ base_query }}">
+    <i class="fa-solid fa-download"></i> Export Excel
+</button>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+
+        <table>
+            <tr>
+               <th><input type="checkbox" id="selectAllCheckbox"></th>
+                <th>Student</th>
+                <th>Student ID</th>
+                <th>Course</th>
+                <th>Status</th>
+                <th>Fee</th>
+                <th>Joined</th>
+                <th>Profile</th>
+            </tr>
+
+            {% for student in page_obj %}
+            {% for admission in student.admissions.all %}
+            {% with e=admission.enrollment %}
+            <tr>
+                <td><input type="checkbox" class="row-checkbox" value="{{ student.id }}"></td>
+
+                <td class="student-cell">
+                    <span class="avatar-circle">{% if student.photo %}<img src="{{ student.photo.url }}" alt="{{ student.first_name }}">{% else %}{{ student.first_name|first|upper }}{% endif %}</span>
+                    <a href="{% url 'view_student' student.id %}" class="student-link">{{ student.first_name }} {{ student.last_name }}</a>
+                </td>
+
+                <td>STU{{ student.id }}</td>
+
+                <td>{{ admission.course_name }}</td>
+
+                <td>
+                    <span class="badge {{ admission.status|lower }}">{{ admission.status|title }}</span>
+                </td>
+
+                <td>
+                    {% if student.pending_amount <= 0 %}
+                    <span class="badge paid">Paid</span>
+                    {% elif student.total_paid > 0 %}
+                    <span class="badge partial">Partial</span>
+                    {% else %}
+                    <span class="badge pending">Pending</span>
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if e %}
+                    <span>{{ e.start_date }}</span>
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+
+                <td class="profile-cell">
+    <a href="{% url 'view_student' student.id %}"><button>View</button></a>
+
+    {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" %}
+    <div class="kebab-wrapper">
+        <button type="button" class="kebab-btn" onclick="toggleKebabMenu(event, this)">
+            <i class="fa-solid fa-ellipsis-vertical"></i>
+        </button>
+
+        <div class="kebab-menu">
+            <a href="{% url 'edit_student' student.id %}" class="kebab-item">
+                <i class="fa-solid fa-pen"></i> Edit
+            </a>
+            <a href="javascript:void(0)" class="kebab-item delete-item"
+               data-delete-url="{% url 'delete_student' student.id %}"
+               onclick="confirmDelete(this)">
+                <i class="fa-solid fa-trash"></i> Delete
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</td>
+            </tr>
+            {% endwith %}
+            {% endfor %}
+            {% empty %}
+            <tr>
+                <td colspan="8">No students found</td>
+            </tr>
+            {% endfor %}
+        </table>
+
+    </div>
+
+    <div class="pagination-container">
+        <div class="pagination-info">
+            Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} students
+        </div>
+        <div class="pagination-buttons">
+            {% if page_obj.has_previous %}
+            <a class="btn prev" href="?{{ base_query }}{% if base_query %}&{% endif %}page={{ page_obj.previous_page_number }}"><i class="fa-solid fa-chevron-left"></i></a>
+            {% else %}
+            <button type="button" class="btn prev" disabled><i class="fa-solid fa-chevron-left"></i></button>
+            {% endif %}
+
+            <span class="page-badge">{{ page_obj.number }}</span>
+
+            {% if page_obj.has_next %}
+            <a class="btn next" href="?{{ base_query }}{% if base_query %}&{% endif %}page={{ page_obj.next_page_number }}"><i class="fa-solid fa-chevron-right"></i></a>
+            {% else %}
+            <button type="button" class="btn next" disabled><i class="fa-solid fa-chevron-right"></i></button>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/admissions_js/search_students.js' %}"></script>
+
+{% endblock %}

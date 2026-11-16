@@ -1,0 +1,254 @@
+{% extends 'attendance/base.html' %}
+{% load static %}
+
+{% block title %}
+<title>Student Attendance - History</title>
+{% endblock title %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/attendance_css/attendance_history.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="ah-page">
+
+    <!-- ============ JUST-SAVED BANNER (after Mark Attendance) ============ -->
+    {% if saved_row %}
+    <div class="ah-toast" id="ahToast">
+        <div class="ah-toast-icon"><i class="fa-solid fa-check"></i></div>
+        <div class="ah-toast-text">
+            <b>Attendance saved for {{ saved_row.course }} - {{ saved_row.batch_name }}</b>
+            <span>{{ saved_row.present }} present · {{ saved_row.late }} late · {{ saved_row.absent }} absent. Highlighted below.</span>
+        </div>
+        <button type="button" class="ah-toast-close" id="ahToastClose">&times;</button>
+    </div>
+    {% endif %}
+
+    <!-- ============ PAGE HEADER ============ -->
+    <div class="ah-head">
+        <div class="ah-head-left">
+            <div class="ah-head-icon"><i class="fa-regular fa-calendar-days"></i></div>
+            <div>
+                <h2 class="ah-title">Attendance History</h2>
+                <p class="ah-sub">Register of every class: who marked it, when, what was taught, and any edits.</p>
+            </div>
+        </div>
+
+        <div class="ah-meta">
+            <div><b>{{ total_records }}</b>Records</div>
+            <div><b>{{ student_entries }}</b>Student entries</div>
+            <div><b>{{ edited_count }}</b>Edited</div>
+        </div>
+    </div>
+
+    <!-- ============ FILTERS ============ -->
+    <form method="GET" class="ah-card" id="filterForm">
+
+        <div class="ah-card-head">
+            <span class="ah-label-title">Filters</span>
+
+            <div class="ah-quick">
+                <span>Quick range</span>
+                <div class="ah-chips">
+                    {% for q in quick_ranges %}
+                    <a href="{{ q.url }}" class="{% if q.active %}on{% endif %}">{{ q.label }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="ah-grid">
+
+            <div class="ah-field ah-span2">
+                <label>Search</label>
+                <input type="text" name="search" value="{{ f.search }}" placeholder="Batch, trainer or topic...">
+            </div>
+
+            <div class="ah-field">
+                <label for="fromDate">From date</label>
+                <input type="date" id="fromDate" name="from_date" value="{{ f.from_date }}">
+            </div>
+
+            <div class="ah-field">
+                <label for="toDate">To date</label>
+                <input type="date" id="toDate" name="to_date" value="{{ f.to_date }}">
+            </div>
+
+            {% if my_role == "Admin" or my_role == "Manager" or my_role == "HR" %}
+            <div class="ah-field">
+                <label>Course</label>
+                <select name="course_name">
+                    <option value="">All Courses</option>
+                    {% for course in courses %}
+                    <option value="{{ course.course_name }}" {% if f.course_name == course.course_name %}selected{% endif %}>{{ course.course_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+
+            {% if my_role != "Trainer" %}
+            <div class="ah-field">
+                <label>Trainer</label>
+                <select name="trainer">
+                    <option value="">All Trainers</option>
+                    {% for t in trainers %}
+                    <option value="{{ t.id }}" {% if f.trainer == t.id|stringformat:'s' %}selected{% endif %}>{{ t.first_name }} {{ t.last_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+
+            <div class="ah-field">
+                <label>Record type</label>
+                <select name="record_type">
+                    <option value="">All Records</option>
+                    <option value="edited" {% if f.record_type == "edited" %}selected{% endif %}>Edited only</option>
+                    <option value="original" {% if f.record_type == "original" %}selected{% endif %}>Not edited</option>
+                </select>
+            </div>
+
+            <div class="ah-field">
+                <label>&nbsp;</label>
+                <a href="{{ request.path }}" class="ah-btn ah-btn-block">Reset filters</a>
+            </div>
+
+        </div>
+
+        {% if f.range_error %}
+        <p class="ah-error">From date cannot be after To date.</p>
+        {% endif %}
+
+    </form>
+
+    <!-- ============ DOWNLOAD TOOLBAR ============ -->
+    <form method="GET" action="{% url 'attendance_export' %}" class="ah-export" onsubmit="return validateFormat()">
+
+        <input type="hidden" name="search" value="{{ f.search }}">
+        <input type="hidden" name="from_date" value="{{ f.from_date }}">
+        <input type="hidden" name="to_date" value="{{ f.to_date }}">
+        <input type="hidden" name="course_name" value="{{ f.course_name }}">
+        <input type="hidden" name="trainer" value="{{ f.trainer }}">
+
+        <div class="ah-export-left">
+            Showing <b>{{ total_records }}</b> records
+            {% if f.from_date or f.to_date %}· {{ f.from_date }} to {{ f.to_date }}{% endif %}
+        </div>
+
+        <div class="ah-export-right">
+            <div>
+                <select name="format" id="format">
+                    <option value="">Select format</option>
+                    <option value="excel">Excel (.xlsx)</option>
+                    <option value="pdf">PDF</option>
+                </select>
+                <p id="error-msg"></p>
+            </div>
+            <button type="submit" class="ah-btn ah-btn-primary">
+                <i class="fa-solid fa-download"></i> Download
+            </button>
+        </div>
+
+    </form>
+
+    <!-- ============ REGISTER TABLE (one row = one batch, one day) ============ -->
+    <div class="ah-table">
+
+        <div class="ah-tr ah-th">
+            <div>Date</div>
+            <div>Batch</div>
+            <div>Trainer</div>
+            <div>Topic covered</div>
+            <div>P</div>
+            <div>L</div>
+            <div>A</div>
+            <div>Marked by</div>
+            <div></div>
+        </div>
+
+        {% for r in rows %}
+        <div class="ah-tr ah-row {% if r.fresh %}ah-fresh{% endif %}"
+             data-key="{{ r.key }}" data-batch="{{ r.batch_id }}" data-date="{{ r.date_iso }}">
+
+            <div>{{ r.date|date:"D, j M" }}</div>
+
+            <div class="ah-batch">
+                <b>{{ r.course }} - {{ r.batch_name }}{% if r.fresh %}<span class="ah-tag">Just saved</span>{% endif %}</b>
+                <small>{{ r.timing }} batch · {{ r.total }} students</small>
+            </div>
+
+            <div>{{ r.trainer }}</div>
+            <div class="ah-topic" title="{{ r.topic }}">{{ r.topic }}</div>
+
+            <div class="ah-n {% if r.present %}ah-nP{% else %}ah-n0{% endif %}">{{ r.present }}</div>
+            <div class="ah-n {% if r.late %}ah-nL{% else %}ah-n0{% endif %}">{{ r.late }}</div>
+            <div class="ah-n {% if r.absent %}ah-nA{% else %}ah-n0{% endif %}">{{ r.absent }}</div>
+
+            <div>
+                {{ r.marked_by }}{% if r.edited %}<span class="ah-edited">Edited</span>{% endif %}
+                <div class="ah-tiny">{{ r.marked_time }}</div>
+            </div>
+
+            <div class="ah-chev"><i class="fa-solid fa-chevron-down"></i></div>
+        </div>
+
+        <!-- expandable detail (loaded by AJAX on first click) -->
+        <div class="ah-xp" id="xp-{{ r.key }}" hidden></div>
+
+        {% empty %}
+        <div class="ah-empty">No attendance records match your filters.</div>
+        {% endfor %}
+
+    </div>
+
+    <!-- ============ PAGINATION: First | Prev | 2 numbers | Next | Last ============ -->
+    <div class="ah-pg">
+        <span>
+            Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ paginator.count }} records
+        </span>
+
+        <div class="ah-pg-btns">
+            {% if page_obj.has_previous %}
+            <a class="w" href="?{{ base_query }}{% if base_query %}&{% endif %}page=1">&laquo; First</a>
+            <a class="w" href="?{{ base_query }}{% if base_query %}&{% endif %}page={{ page_obj.previous_page_number }}">&lsaquo; Prev</a>
+            {% else %}
+            <span class="w off">&laquo; First</span>
+            <span class="w off">&lsaquo; Prev</span>
+            {% endif %}
+
+            {% for n in page_numbers %}
+            <a class="{% if n == page_obj.number %}on{% endif %}" href="?{{ base_query }}{% if base_query %}&{% endif %}page={{ n }}">{{ n }}</a>
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <a class="w" href="?{{ base_query }}{% if base_query %}&{% endif %}page={{ page_obj.next_page_number }}">Next &rsaquo;</a>
+            <a class="w" href="?{{ base_query }}{% if base_query %}&{% endif %}page={{ paginator.num_pages }}">Last &raquo;</a>
+            {% else %}
+            <span class="w off">Next &rsaquo;</span>
+            <span class="w off">Last &raquo;</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ============ STUDENT OVERALL ATTENDANCE DRAWER ============ -->
+    <div class="ah-overlay" id="drawerOverlay" hidden></div>
+    <aside class="ah-drawer" id="studentDrawer" hidden>
+        <div class="ah-drawer-top">
+            <span>Student attendance</span>
+            <button type="button" id="drawerClose">&times;</button>
+        </div>
+        <div id="drawerBody"></div>
+    </aside>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    window.AH = {
+        detailUrl: "/api/attendance-history/detail/",
+        studentUrl: "/api/student-attendance-summary/"
+    };
+</script>
+<script src="{% static 'js/attendance_js/attendance_history.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,619 @@
+/* ==========================================
+   STUDENT REGISTRATION FORM STYLES
+   (matches Add Staff form visual system)
+   ==========================================*/
+
+:root {
+    --csc-navy: #1e1b4b;
+    --csc-navy-light: #2c2870;
+    --csc-yellow: #ffc82c;
+    --csc-yellow-dark: #f0b400;
+    --csc-indigo: #4338ca;
+    --csc-bg: #f4f5fa;
+    --csc-white: #ffffff;
+    --csc-border: #e9eaf2;
+    --csc-text: #1f2142;
+    --csc-text-muted: #8b8da3;
+    --csc-purple-bg: #ede9fe;
+    --csc-purple-text: #6d4fc4;
+    --csc-red: #dc2626;
+    --csc-red-bg: #fee2e2;
+    --csc-radius-lg: 16px;
+    --csc-radius-md: 12px;
+    --csc-radius-sm: 8px;
+    --csc-shadow: 0 2px 10px rgba(30, 27, 75, 0.06);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    background: var(--csc-bg);
+}
+
+.student-mgmt-form-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 24px auto 30px;
+    padding: 0 16px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: var(--csc-text);
+}
+
+/* ===================================== FORM CARD ===================================== */
+
+.student-mgmt-form-card {
+    background: var(--csc-white);
+    border-radius: var(--csc-radius-lg);
+    box-shadow: var(--csc-shadow);
+    padding: 28px 32px 32px;
+}
+
+.student-mgmt-form-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    margin-bottom: 22px;
+    border-bottom: 1px solid var(--csc-border);
+}
+
+.form-header-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: var(--csc-purple-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.form-header-icon i {
+    font-size: 22px;
+    color: var(--csc-purple-text);
+}
+
+.student-mgmt-form-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--csc-navy);
+    margin: 0;
+    line-height: 1.3;
+}
+
+.student-mgmt-form-subtitle {
+    font-size: 13.5px;
+    color: var(--csc-text-muted);
+    margin: 6px 0 0;
+}
+
+/* =========================== SECTIONS ================================ */
+
+.student-mgmt-form-section {
+    border: none;
+    padding: 0;
+    margin: 0 0 28px;
+}
+
+.student-mgmt-form-section:last-of-type {
+    margin-bottom: 0;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--csc-navy);
+    padding: 0;
+    margin-bottom: 18px;
+}
+
+.section-bar {
+    width: 4px;
+    height: 18px;
+    border-radius: 4px;
+    background: var(--csc-indigo);
+}
+
+.section-title i {
+    color: var(--csc-indigo);
+    font-size: 15px;
+}
+
+/* ================================ FORM ROWS & FIELDS ================================ */
+
+.form-row {
+    display: grid;
+    gap: 18px;
+    margin-bottom: 18px;
+}
+
+.form-row.three-columns {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.form-row.two-columns {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.form-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--csc-text);
+    margin-bottom: 8px;
+}
+
+.required {
+    color: var(--csc-red);
+}
+
+.form-error {
+    font-size: 11.5px;
+    color: var(--csc-red);
+    margin-top: 4px;
+    display: block;
+    min-height: 14px;
+    font-weight: 500;
+}
+
+.custom-error {
+    font-size: 11.5px;
+    color: var(--csc-red);
+    margin-top: 4px;
+    font-weight: 500;
+    flex-basis: 100%;
+}
+
+/* ===== Input wrapper (icon inputs / selects) ===== */
+
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.input-wrapper input,
+.input-wrapper select {
+    width: 100%;
+}
+
+.input-wrapper i {
+    position: absolute;
+    right: 14px;
+    top: 20px;
+    transform: translateY(-50%);
+    color: var(--csc-text-muted);
+    font-size: 14px;
+    pointer-events: none;
+}
+
+/* Selects keep native arrow by default, which sits on top of our icon.
+   Hide it so our icon is the only right-side glyph, matching inputs. */
+.input-wrapper select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+/* Django-rendered inputs / selects / textarea */
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="tel"],
+.form-group input[type="date"],
+.form-group input[type="number"],
+.form-group input:not([type]),
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    height: 42px;
+    border: 1px solid var(--csc-border);
+    border-radius: var(--csc-radius-sm);
+    padding: 10px 40px 10px 14px;
+    font-size: 13.5px;
+    color: var(--csc-text);
+    background: var(--csc-white);
+    font-family: inherit;
+}
+
+.form-group textarea {
+    height: auto;
+    min-height: 80px;
+    resize: vertical;
+    padding: 10px 14px;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--csc-indigo);
+    box-shadow: 0 0 0 3px rgba(67, 56, 202, 0.12);
+}
+
+.form-group input[readonly] {
+    background: var(--csc-bg);
+    color: var(--csc-text-muted);
+}
+
+/* Date inputs show their own native calendar icon by default, on top of
+   our custom fa-calendar-alt icon. Hide the native one so only our icon
+   shows - clicking still works because register.js already listens for
+   click on the whole <input> and calls input.showPicker(). */
+.input-wrapper input[type="date"]::-webkit-calendar-picker-indicator {
+    display: none;
+}
+
+.input-wrapper input[type="date"] {
+    cursor: pointer;
+}
+
+/* Error state */
+.error-input {
+    border-color: var(--csc-red) !important;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1) !important;
+}
+
+/* ===== Phone field: separate "+91" box ===== */
+
+.phone-wrapper {
+    display: flex;
+    width: 100%;
+}
+
+.country-code {
+    width: 52px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--csc-bg);
+    border: 1px solid var(--csc-border);
+    border-right: none;
+    border-radius: var(--csc-radius-sm) 0 0 var(--csc-radius-sm);
+    font-size: 13.5px;
+    color: var(--csc-text-muted);
+    font-weight: 600;
+}
+
+.phone-wrapper .input-wrapper {
+    flex: 1;
+}
+
+.phone-wrapper .input-wrapper input {
+    border-radius: 0 var(--csc-radius-sm) var(--csc-radius-sm) 0;
+}
+
+/* =================================== ADMISSION STATUS PILLS =================================== */
+
+.admission-status {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+}
+
+.status-option input {
+    display: none;
+}
+
+.status {
+    display: inline-block;
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: 0.2s ease;
+}
+
+.status.enquiry {
+    background: #fff7cc;
+    color: #a68b00;
+}
+
+.status.confirmed {
+    background: var(--csc-purple-bg);
+    color: var(--csc-indigo);
+}
+
+.status.enrolled {
+    background: #d3f9d8;
+    color: #2b8a3e;
+}
+
+.status.dropped {
+    background: var(--csc-red-bg);
+    color: var(--csc-red);
+}
+
+.status-option input[value="enquiry"]:checked + .status {
+    border-color: #f0b400;
+}
+
+.status-option input[value="confirmed"]:checked + .status {
+    border-color: var(--csc-indigo);
+}
+
+.status-option input[value="enrolled"]:checked + .status {
+    border-color: #2b8a3e;
+}
+
+.status-option input[value="dropped"]:checked + .status {
+    border-color: var(--csc-red);
+}
+
+/* =================================== FILE UPLOAD =================================== */
+
+.file-upload-wrapper {
+    position: relative;
+}
+
+.upload-dropzone {
+    position: relative;
+    border: 1.5px dashed #c7c9f5;
+    border-radius: var(--csc-radius-md);
+    background: #fbfaff;
+    padding: 34px 16px;
+    text-align: center;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.upload-dropzone:hover {
+    border-color: var(--csc-indigo);
+    background: var(--csc-purple-bg);
+}
+
+.upload-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    background: var(--csc-purple-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 12px;
+    color: var(--csc-indigo);
+    font-size: 17px;
+}
+
+.upload-text {
+    font-size: 13px;
+    color: var(--csc-text);
+    margin: 0;
+}
+
+.upload-link {
+    color: var(--csc-indigo);
+    font-weight: 600;
+}
+
+.upload-hint {
+    font-size: 11.5px;
+    color: var(--csc-text-muted);
+    margin: 4px 0 0;
+}
+
+.upload-dropzone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.remove-file-btn {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: none;
+    background: var(--csc-red);
+    color: var(--csc-white);
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+.remove-file-btn:hover {
+    background: #b91c1c;
+}
+
+.upload-progress {
+    height: 5px;
+    border-radius: 4px;
+    background: var(--csc-border);
+    margin-top: 10px;
+    overflow: hidden;
+    display: none;
+}
+
+.progress-bar {
+    height: 100%;
+    width: 0%;
+    background: var(--csc-indigo);
+    transition: width 0.2s ease;
+}
+
+.upload-status {
+    display: block;
+    font-size: 11.5px;
+    color: var(--csc-text-muted);
+    margin-top: 6px;
+}
+
+.upload-dropzone.error-input {
+    border-color: var(--csc-red) !important;
+}
+
+/* =================================== SERVER ERROR BANNER =================================== */
+
+.server-error-banner {
+    background: var(--csc-red-bg);
+    border: 1px solid #fecaca;
+    color: var(--csc-red);
+    padding: 12px 16px;
+    border-radius: var(--csc-radius-sm);
+    font-size: 13px;
+    margin-bottom: 20px;
+}
+
+.server-error-banner p {
+    margin: 2px 0;
+}
+
+/* ================================== FORM ACTIONS ================================== */
+
+.form-actions {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 16px;
+    margin-top: 30px;
+    padding: 22px;
+    border-top: 1px solid var(--csc-border);
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-radius: var(--csc-radius-sm);
+    padding: 13px 20px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    text-decoration: none;
+    transition: opacity 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn-cancel {
+    background: var(--csc-bg);
+    color: var(--csc-text);
+    border: 1px solid var(--csc-border);
+}
+
+.btn-cancel:hover {
+    background: var(--csc-border);
+}
+
+.btn-primary {
+    background: var(--csc-yellow);
+    color: var(--csc-navy);
+}
+
+.btn-primary:hover {
+    background: var(--csc-yellow-dark);
+    box-shadow: 0 4px 10px rgba(255, 200, 44, 0.4);
+}
+
+.locked-field {
+    background: #F3F4F6 !important;
+    color: #6B7280;
+    cursor: not-allowed;
+}
+
+.locked-note {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #EEF0FE;
+    color: #4338CA;
+    border: 1px solid #E0E3FB;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    margin-bottom: 16px;
+}
+
+/* ================================= RESPONSIVE ================================= */
+
+@media (max-width: 1100px) {
+    .form-row.three-columns {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 968px) {
+    .form-row.three-columns,
+    .form-row.two-columns {
+        grid-template-columns: 1fr;
+    }
+
+    .student-mgmt-form-container {
+        padding: 0 12px;
+    }
+}
+
+@media (max-width: 700px) {
+    .student-mgmt-form-container {
+        padding: 0 10px;
+        margin: 16px auto 20px;
+    }
+
+    .student-mgmt-form-card {
+        padding: 18px;
+    }
+
+    .form-row.three-columns,
+    .form-row.two-columns {
+        grid-template-columns: 1fr;
+    }
+
+    .form-actions {
+        grid-template-columns: 1fr;
+        padding: 16px 0 0;
+    }
+
+    .student-mgmt-form-header {
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: left;
+        padding: 12px 0;
+    }
+
+    .admission-status {
+        gap: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .student-mgmt-form-title {
+        font-size: 19px;
+    }
+
+    .form-group input,
+    .form-group select {
+        font-size: 13px;
+        height: 40px;
+    }
+
+    .btn {
+        padding: 11px 16px;
+        font-size: 13.5px;
+    }
+}

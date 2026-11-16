@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Error{% endblock %} | CSC CRM</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: #f4f6fb;
+            font-family: 'Poppins', 'Segoe UI', Arial, sans-serif;
+            color: #1f2333;
+        }
+
+        .error-card {
+            width: 100%;
+            max-width: 480px;
+            background: #fff;
+            border: 1px solid #eef0f5;
+            border-radius: 16px;
+            padding: 44px 40px 36px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(30, 42, 120, .08);
+        }
+
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 28px;
+            font-weight: 700;
+            font-size: 15px;
+            color: rgb(30, 42, 120);
+        }
+
+        .brand span {
+            background: #FFD400;
+            color: rgb(30, 42, 120);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        .error-icon {
+            width: 72px;
+            height: 72px;
+            margin: 0 auto 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            background: {% block icon_bg %}#E0E7FF{% endblock %};
+        }
+
+        .error-code {
+            font-size: 56px;
+            font-weight: 700;
+            line-height: 1;
+            color: rgb(30, 42, 120);
+            letter-spacing: 2px;
+        }
+
+        h1 {
+            margin: 12px 0 8px;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .error-text {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #6b7280;
+            margin-bottom: 28px;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 11px 22px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: .2s;
+        }
+
+        .btn-primary { background: rgb(30, 42, 120); color: #fff; }
+        .btn-primary:hover { background: rgb(255, 202, 43); color: rgb(30, 42, 120); }
+
+        .btn-light { background: #fff; color: rgb(30, 42, 120); border-color: #d9dbef; }
+        .btn-light:hover { background: #f4f6fb; }
+
+        .error-foot {
+            margin-top: 28px;
+            padding-top: 18px;
+            border-top: 1px solid #eef0f5;
+            font-size: 12px;
+            color: #9aa0ac;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-card">
+
+        <div class="brand"><span>CSC</span> CSC CRM</div>
+
+        <div class="error-icon">{% block icon %}⚠️{% endblock %}</div>
+
+        <div class="error-code">{% block code %}Error{% endblock %}</div>
+        <h1>{% block heading %}Something went wrong{% endblock %}</h1>
+        <p class="error-text">{% block message %}{% endblock %}</p>
+
+        <div class="btn-row">
+            {% block buttons %}
+            <a href="javascript:history.back()" class="btn btn-light">Go Back</a>
+            <a href="{% url 'staff_dashboard' %}" class="btn btn-primary">Go to Dashboard</a>
+            {% endblock %}
+        </div>
+
+        <div class="error-foot">
+            If you think this is a mistake, please contact your administrator.
+        </div>
+
+    </div>
+</body>
+</html>

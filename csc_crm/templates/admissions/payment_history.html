@@ -1,0 +1,168 @@
+{% extends 'admissions/base.html' %}
+{% load static %}
+
+{% block title %}
+<title>Payment History</title>
+{% endblock title %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/admissions_css/fee_dashboard.css' %}">
+{% endblock extra_css %}
+
+{% block content %}
+
+<div class="fee-dashboard-container">
+
+    <!-- ============ SUMMARY ============ -->
+    <div class="ph-summary">
+        <div class="ph-stat">
+            <div class="ph-stat-icon ph-blue"><i class="fa-solid fa-receipt"></i></div>
+            <div>
+                <span>Total Payments</span>
+                <h3>{{ total_count }}</h3>
+            </div>
+        </div>
+
+        <div class="ph-stat">
+            <div class="ph-stat-icon ph-green"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+            <div>
+                <span>Total Amount</span>
+                <h3>₹{{ total_amount }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="history-wrapper mb-4">
+        <div class="history-card dashboard-box">
+
+            <!-- ============ HEADER ============ -->
+            <div class="section-header">
+                <div>
+                    <h4>
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                        All Payment History
+                    </h4>
+                    <p>Complete record of student fee payments.</p>
+                </div>
+
+                <div class="history-actions">
+                    <a href="{% url 'fee_dashboard' %}" class="view-all-btn">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        Back to Fee Dashboard
+                    </a>
+                    <a href="{% url 'fee_dashboard' %}?format=excel" class="export-btn">
+                        <i class="fa-solid fa-file-excel"></i>
+                        Export Excel
+                    </a>
+                </div>
+            </div>
+
+            <!-- ============ SEARCH TOOLBAR ============ -->
+            <form method="GET" class="ph-toolbar" id="phSearchForm">
+                <div class="ph-search">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" name="q" id="phSearchInput" value="{{ q }}"
+                        placeholder="Search by student name..." autocomplete="off">
+                </div>
+
+                {% if q %}
+                <a href="{% url 'payment_history_all' %}" class="ph-clear-btn">
+                    <i class="fa-solid fa-xmark"></i> Clear
+                </a>
+                {% endif %}
+
+                <span class="ph-result-count">
+                    {{ total_count }} record{{ total_count|pluralize }}
+                    {% if q %}found for "<strong>{{ q }}</strong>"{% endif %}
+                </span>
+            </form>
+
+            <!-- ============ TABLE ============ -->
+            <div class="table-responsive">
+                <table class="table payment-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>ID</th>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Payment Mode</th>
+                            <th class="text-center">Receipt</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in payments %}
+                        <tr>
+                            <td>
+                                <div class="student-info">
+                                    <div class="student-avatar">{% if p.student.photo %}<img src="{{ p.student.photo.url }}" alt="{{ p.student.first_name }}">{% else %}{{ p.student.first_name|slice:":1" }}{% endif %}</div>
+                                    <div><strong>{{ p.student.first_name }} {{ p.student.last_name }}</strong></div>
+                                </div>
+                            </td>
+                            <td>STU{{ p.student.id }}</td>
+                            <td>{{ p.date }}</td>
+                            <td><span class="amount-text">₹{{ p.amount }}</span></td>
+                            <td>
+                                {% if p.mode == "CASH" %}
+                                <span class="payment-badge cash">Cash</span>
+                                {% elif p.mode == "UPI" %}
+                                <span class="payment-badge upi">UPI</span>
+                                {% else %}
+                                <span class="payment-badge card">Card</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <div class="action-buttons">
+                                    <a href="{% url 'preview_receipt' p.id %}" class="preview-btn" target="_blank">
+                                        <i class="fa-solid fa-eye"></i> Preview
+                                    </a>
+                                    <a href="{% url 'generate_receipt' p.id %}" class="download-btn" target="_blank">
+                                        <i class="fa-solid fa-download"></i> PDF
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6">
+                                <div class="empty-state payment-empty">
+                                    <i class="fa-solid fa-receipt"></i>
+                                    <p>{% if q %}No payments found for "{{ q }}".{% else %}No payment history
+                                        available.{% endif %}</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("phSearchForm");
+    const input = document.getElementById("phSearchInput");
+    if (!form || !input) return;
+
+    let timer = null;
+
+    input.addEventListener("input", function () {
+        clearTimeout(timer);
+        timer = setTimeout(() => form.submit(), 400);   // 400ms type panna nirutha piragu search
+    });
+
+    // page reload aana piragu cursor search box la, text-oda kadaisila irukkum
+    if (input.value) {
+        input.focus();
+        input.setSelectionRange(input.value.length, input.value.length);
+    }
+});
+</script>
+{% endblock extra_js %}

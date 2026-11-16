@@ -1,0 +1,161 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CSC CRM{% endblock %}</title>
+    <script>if (localStorage.getItem("sidebarCollapsed") === "true") { document.documentElement.classList.add("sidebar-collapsed");}</script>
+
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+    <link rel="stylesheet" href="{% static 'css/contact_calls.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/lead_list.css' %}">
+
+    <link rel="stylesheet" href="{% static 'css/lead_details.css' %}">
+    <link rel="stylesheet" href="{% static 'css/call_log.css' %}">
+    <link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/followup.css' %}">
+    <link rel="stylesheet" href="{% static 'css/pipeline_view.css' %}">
+    <link rel="stylesheet" href="{% static 'css/conversion_report.css' %}">
+    <link rel="stylesheet" href="{% static 'css/target_assign_list.css' %}">
+    {% block extra_css %}{% endblock %}
+
+</head>
+<body>
+    <div class="sidebar-overlay"></div>
+    
+   <nav class="top-navbar">
+
+    <div class="nav-left">
+
+        <button class="menu-btn" id="menuToggle">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+
+        <div class="brand">
+            <div class="logo-box">CSC</div>
+
+            <div class="brand-text">
+                <h3>CSC CRM</h3>
+                <small>Institute Operations Suite</small>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ==================== USER INFO ==================== -->
+
+{% if request.user.is_authenticated and request.user.staff_profile %}
+<div class="sidebar-user-main">
+    <div class="sidebar-user">
+
+        <div class="sidebar-user-avatar">
+            {{ request.user.staff_profile.get_initials }}
+        </div>
+
+        <div class="sidebar-user-info">
+            <p class="sidebar-user-name">
+                {{ request.user.staff_profile.full_name }}
+            </p>
+
+            <p class="sidebar-user-role">
+                <small>{{ request.user.staff_profile.employee_id }}</small>
+                -
+                {{ request.user.staff_profile.role.get_role_name_display }}
+            </p>
+        </div>
+
+    </div>
+</div>
+{% endif %}
+
+</nav>
+
+    {% include "includes/sidebar.html" %}
+
+    <div class="main-wrapper">
+
+       
+
+
+        <!-- Leads Tabs -->
+      <div class="top-tabs">
+
+    {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" or request.user.staff_profile.role.role_name == "Sales Exec Lead" %}
+    <a href="{% url 'leads:lead_capture_list' %}"
+       class="{% if request.resolver_match.url_name == 'lead_capture_list' or request.resolver_match.url_name == 'lead_capture_create' %}active{% endif %}">
+        Lead Capture
+    </a>
+    {% endif %}
+    
+
+    {% if request.user.staff_profile.role.role_name != "Marketing Lead" and request.user.staff_profile.role.role_name != "Digital Marketing" and request.user.staff_profile.role.role_name != "Content Creator" %}
+    <a href="{% url 'leads:lead_pipeline_view' %}"
+       class="{% if request.resolver_match.url_name == 'lead_pipeline_view' %}active{% endif %}">
+        Pipeline View
+    </a>
+    {% endif %}
+
+    {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" or request.user.staff_profile.role.role_name == "Sales Exec Lead" or request.user.staff_profile.role.role_name == "Sales Exec" %}
+    <a href="{% url 'leads:call_logs' %}"
+       class="{% if request.resolver_match.url_name == 'call_logs' %}active{% endif %}">
+        Call Log
+    </a>
+    {% endif %}
+
+    {% if request.user.staff_profile.role.role_name != "Marketing Lead" and request.user.staff_profile.role.role_name != "Digital Marketing" and request.user.staff_profile.role.role_name != "Content Creator" %}
+    <a href="{% url 'leads:followup_shedule' %}"
+       class="{% if request.resolver_match.url_name == 'followup_shedule' %}active{% endif %}">
+        Follow Up
+    </a>
+    {% endif %}
+
+    {% if request.user.staff_profile.role.role_name != "Marketing Lead" and request.user.staff_profile.role.role_name != "Digital Marketing" and request.user.staff_profile.role.role_name != "Content Creator" %}
+    <a href="{% url 'leads:lead_conversion_report' %}"
+       class="{% if request.resolver_match.url_name == 'lead_conversion_report' %}active{% endif %}">
+        Conversion Report
+    </a>
+    {% endif %}
+
+    {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" or request.user.staff_profile.role.role_name == "HR" or request.user.staff_profile.role.role_name == "Marketing Lead" %}
+    <a href="{% url 'leads:lead_capture_target' %}"
+       class="{% if request.resolver_match.url_name == 'lead_capture_target' or request.resolver_match.url_name == 'lead_capture_target_assign' %}active{% endif %}">
+        Lead Capture Target
+    </a>
+    {% endif %}
+
+    {% if request.user.staff_profile.role.role_name == "Marketing Lead" or request.user.staff_profile.role.role_name == "Digital Marketing" or request.user.staff_profile.role.role_name == "Content Creator" %}
+    <a href="{% url 'leads:my_lead_capture_target' %}"
+       class="{% if request.resolver_match.url_name == 'my_lead_capture_target' %}active{% endif %}">
+        My Target
+    </a>
+    {% endif %}
+
+</div>
+        <!-- Content -->
+        <main class="page-content">
+            {% block content %}
+            {% endblock %}
+        </main>
+        
+
+        
+
+    </div>
+
+
+
+</body>
+
+<!-- Scripting Tags for JS -->
+<script src="{% static 'js/followup.js' %}"></script>
+<script src="{% static 'js/lead_capture.js' %}"></script>
+<script src="{% static 'js/call_logs.js' %}"></script>
+<script src="{% static 'js/base.js' %}"></script>
+<script src="{% static 'js/pipeline_view.js' %}"></script>
+<script src="{% static 'js/conversion_report.js' %}"></script>
+</html>

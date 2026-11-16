@@ -1,0 +1,326 @@
+{% extends 'admissions/base.html' %}
+{% load static %}
+
+{# Student List page: filterable, paginated table of students with excel/pdf export #}
+
+{% block title %}
+Student List
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/admissions_css/student_list.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="edit-container">
+
+    <!-- PAGE HEADER -->
+    <div class="sl-header">
+        {% if selected_batch %}
+        <a href="{% url 'batch_list' %}" class="back-link">
+            <i class="fa-solid fa-arrow-left"></i> All Batches
+        </a>
+        <h6 class="sl-title">{{ selected_batch.batch_name }}</h6>
+        <p class="sl-subtitle">{{ selected_batch.course.course_name }} · students of this batch</p>
+        {% else %}
+        <h6 class="sl-title">Student List</h6>
+        <p class="sl-subtitle">Manage and view all registered students</p>
+        {% endif %}
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="stat-cards">
+
+        <div class="stat-card">
+            <div class="stat-icon icon-blue"><i class="fa-solid fa-users"></i></div>
+            <div class="stat-info">
+                <!-- .total-count kept for student_list.js reset-button AJAX swap; do not rename/remove -->
+                <span class="stat-label">Total Students</span>
+                <span class="stat-value total-count">{{ total_students }}</span>
+                <span class="stat-sub">All Registered</span>
+            </div>
+        </div>
+        
+        {% if request.user.staff_profile.role.role_name in "Admin,Manager,HR" %}
+        <div class="stat-card">
+            <div class="stat-icon icon-orange"><i class="fa-solid fa-clock"></i></div>
+            <div class="stat-info">
+                <span class="stat-label">Pending Fees</span>
+                <span class="stat-value">{{ summary.pending_students }}</span>
+                <span class="stat-sub">Have Outstanding</span>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon icon-teal"><i class="fa-solid fa-wallet"></i></div>
+            <div class="stat-info">
+                <span class="stat-label">Total Collections</span>
+                <span class="stat-value">₹{{ summary.collected }}</span>
+                <span class="stat-sub">This Month</span>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon icon-red"><i class="fa-solid fa-circle-exclamation"></i></div>
+            <div class="stat-info">
+                <span class="stat-label">Total Outstanding</span>
+                <span class="stat-value">₹{{ summary.outstanding }}</span>
+                <span class="stat-sub">All Pending</span>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+
+    <!-- FILTER FORM -->
+    <div>
+        <form method="GET" class="top-bar" id="filterForm">
+
+        <input type="text" name="search" pattern="^[A-Za-z ]+$" value="{{ request.GET.search }}"
+            placeholder="Search name">
+
+        <input type="text" name="id" pattern="^\d{1,5}$" value="{{ request.GET.id }}" placeholder="Search ID">
+
+        {% if selected_batch %}
+
+        <input type="hidden" name="batch" value="{{ selected_batch.id }}">
+
+        {% else %}
+
+        {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" or request.user.staff_profile.role.role_name == "HR" %}
+        <select name="course_name">
+            <option value="">All Course</option>
+            {% for c in courses %}
+            <option value="{{ c.course_name }}" {% if request.GET.course_name == c.course_name %}selected{% endif %}>
+                {{ c.course_name }}
+            </option>
+            {% endfor %}
+        </select>
+        {% endif %}
+
+        <select name="batch">
+            <option value="">All Batch</option>
+            {% for batch in batches %}
+            <option value="{{ batch.id }}" {% if request.GET.batch == batch.id|stringformat:"s" %}selected{% endif %}>{{ batch.batch_name }} ({{ batch.course.course_name }})</option>
+            {% endfor %}
+        </select>
+
+        {% endif %}
+
+        <div class="filter">
+            <button type="button" class="clear-btn" id="resetBtn">
+                Reset
+            </button>
+            <button type="submit" id="filter">Search</button>
+        </div>
+
+        <p id="search-error"></p>
+
+    </form>
+    </div>
+
+    <!-- DOWNLOAD -->
+    <div class="table-container">
+
+       {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" %}
+        <div>
+        <a href="{% url 'student' %}{% if selected_batch %}?batch={{ selected_batch.id }}{% endif %}">
+            <button id="btn2" class="btn2">+ Add New Student</button>
+        </a>
+        </div>
+        {% endif %}
+
+        <div>
+        <form method="GET" id="downloadForm">
+
+    <!-- KEEP FILTER VALUES -->
+    <input type="hidden" name="search" value="{{ request.GET.search }}">
+    <input type="hidden" name="id" value="{{ request.GET.id }}">
+    <input type="hidden" name="course_name" value="{{ request.GET.course_name }}">
+    <input type="hidden" name="batch" value="{{ request.GET.batch }}">
+
+    <div id="btn1">
+
+        <div class="format-box">
+
+            <select name="format" id="format">
+
+                <option value="">Select format</option>
+                <option value="excel">Download Excel</option>
+                <option value="pdf">Download PDF</option>
+
+            </select>
+
+            <p id="error-msg"></p>
+
+        </div>
+
+        <button type="submit"
+                id="btn2"
+                class="down"
+                onclick="return validateFormat()">
+
+            <i class="fa-solid fa-download"></i> Download
+
+        </button>
+
+    </div>
+
+</form>
+        </div>
+    </div>
+
+    <!-- TABLE -->
+<div class="table-card">
+<div class="table-wrapper">
+    <table>
+        <tr>
+            <th>Student</th>
+            <th>Student ID</th>
+            <th>Course</th>
+            <th>Batch</th>
+            <th>Phone</th>
+            <th>Fee Status </th>
+            <th>Joined</th>
+            {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" %}
+            <th>Action</th>
+            {% endif %}
+            <th></th>
+        </tr>
+
+        {% for student in page_obj %}
+        {% for admission in student.admissions.all %}
+        {% with e=admission.enrollment %}
+        <tr>
+            <td>
+                <div class="student-cell">
+                    {% if student.photo %}
+                    <img class="avatar-img" src="{{ student.photo.url }}" alt="{{ student.first_name }}">
+                    {% else %}
+                    <span class="avatar-initial">{{ student.first_name|first|upper }}</span>
+                    {% endif %}
+                    <span class="student-name">{{ student.first_name }} {{ student.last_name }}</span>
+                </div>
+            </td>
+
+            <td>STU{{ student.id }}</td>
+
+            <td>{{ admission.course_name }}</td>
+
+            <td>
+                {% if e %}
+                {{ e.batch }}
+                {% else %}
+                -
+                {% endif %}
+            </td>
+
+            <td>{{ student.phone_no }}</td>
+
+            <td>
+                {% if student.pending_amount <= 0 %}
+                
+                <span class="badge paid">
+                    Paid
+                </span>
+
+                {% elif student.total_paid > 0 %}
+
+                <span class="badge partial">
+                    Partial
+                </span>
+
+                {% else %}
+
+                <span class="badge pending">
+                    Pending
+                </span>
+
+                {% endif %}
+
+            </td>
+
+            <td>
+                {% if e %}
+                <span>
+                    {{ e.start_date }}
+                </span>
+                {% else %}
+                -
+                {% endif %}
+            </td>
+
+
+            <!-- ACTION -->
+             {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" %}
+            <td class="dropdown">
+                <button class="dots" onclick="toggleDropdown(this)">⋮</button>
+
+                <div class="dropdown-content">
+                    <a href="{% url 'view_student' student.id %}" class="view-link"><i class="fa-solid fa-eye"></i> View</a>
+                    <a href="{% url 'edit_student' student.id %}"><i class="fa-solid fa-edit"></i> Edit</a>
+                    <a href="{% url 'delete_student' student.id %}" onclick="confirmDelete(event, this.href)"><i class="fa-solid fa-trash"></i> Delete</a>
+                </div>
+            </td>
+            {% endif %}
+        </tr>
+        {% endwith %}
+        {% empty %}
+        <tr>
+            <td>{% if student.photo %}<img src="{{ student.photo.url }}" alt="{{ student.first_name }}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:8px;">{% endif %}{{ student.first_name }} {{ student.last_name }}</td>
+            <td colspan="6">No admission</td>
+        </tr>
+        {% endfor %}
+        {% empty %}
+        <tr>
+            <td colspan="9">No students found</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+<div class="pagination-container">
+
+    <div class="pagination-info">
+        Showing {{ page_obj.start_index }} to {{ page_obj.end_index }}
+        of {{ page_obj.paginator.count }} students
+    </div>
+
+    <div class="pagination-right">
+
+        {% if page_obj.has_previous %}
+        <a href="?{% if selected_batch %}batch={{ selected_batch.id }}&{% endif %}page={{ page_obj.previous_page_number }}" class="page-btn">
+            <i class="fa-solid fa-chevron-left"></i>
+        </a>
+        {% else %}
+        <span class="page-btn disabled">
+            <i class="fa-solid fa-chevron-left"></i>
+        </span>
+        {% endif %}
+
+        <span class="page-number">{{ page_obj.number }}</span>
+
+        {% if page_obj.has_next %}
+        <a href="?{% if selected_batch %}batch={{ selected_batch.id }}&{% endif %}page={{ page_obj.next_page_number }}" class="page-btn">
+            <i class="fa-solid fa-chevron-right"></i>
+        </a>
+        {% else %}
+        <span class="page-btn disabled">
+            <i class="fa-solid fa-chevron-right"></i>
+        </span>
+        {% endif %}
+
+    </div>
+
+</div>
+</div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{% static 'js/admissions_js/student_list.js' %}"></script>
+{% endblock %}

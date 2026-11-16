@@ -1,0 +1,962 @@
+:root {
+    --ah-navy: rgb(30, 42, 120);
+    --ah-navy-dark: #1a2260;
+    --ah-gold: #FFC928;
+    --ah-bg: #f5f6fb;
+    --ah-border: #e7e9f3;
+    --ah-muted: #8b90a6;
+    --ah-soft: #eef0fd;
+    --ah-green: #1fa159;
+    --ah-green-bg: #e2f8ec;
+    --ah-red: #e0453f;
+    --ah-red-bg: #fde7e7;
+    --ah-amber: #d99a1e;
+    --ah-amber-bg: #fdf1de;
+    --ah-radius: 14px;
+}
+
+/* page wrapper: light padding on all sides */
+.ah-page {
+    padding: 18px 20px 40px;
+    box-sizing: border-box
+}
+
+.ah-card,
+.ah-table,
+.ah-head,
+.ah-export {
+    font-family: 'Segoe UI', sans-serif;
+    color: var(--ah-navy)
+}
+
+/* ============ JUST-SAVED BANNER ============ */
+.ah-toast {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--ah-green-bg);
+    border: 1px solid var(--ah-green);
+    border-radius: var(--ah-radius);
+    padding: 13px 18px;
+    margin-bottom: 16px;
+    animation: ahDrop .45s ease
+}
+
+@keyframes ahDrop {
+    from {
+        opacity: 0;
+        transform: translateY(-12px)
+    }
+
+    to {
+        opacity: 1;
+        transform: none
+    }
+}
+
+.ah-toast-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--ah-green);
+    color: #fff;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0
+}
+
+.ah-toast-text {
+    flex: 1;
+    font-size: 14px;
+    color: var(--ah-navy)
+}
+
+.ah-toast-text b {
+    display: block
+}
+
+.ah-toast-text span {
+    font-size: 12.5px;
+    color: var(--ah-muted)
+}
+
+.ah-toast-close {
+    border: 0;
+    background: none;
+    font-size: 22px;
+    color: var(--ah-muted);
+    cursor: pointer
+}
+
+/* ============ HEADER ============ */
+.ah-head {
+    background: #fff;
+    border: 1px solid var(--ah-border);
+    border-radius: var(--ah-radius);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 14px;
+    box-shadow: 0 2px 6px rgba(30, 42, 120, .04)
+}
+
+.ah-head-left {
+    display: flex;
+    align-items: center;
+    gap: 12px
+}
+
+.ah-head-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    background: #ece9ff;
+    color: var(--ah-navy);
+    display: grid;
+    place-items: center;
+    font-size: 17px
+}
+
+.ah-title {
+    font-size: 19px;
+    font-weight: 700;
+    margin: 0
+}
+
+.ah-sub {
+    margin: 2px 0 0;
+    font-size: 12px;
+    color: var(--ah-muted)
+}
+
+.ah-meta {
+    display: flex;
+    gap: 26px;
+    font-size: 12px;
+    color: var(--ah-muted)
+}
+
+.ah-meta b {
+    display: block;
+    font-size: 18px;
+    color: var(--ah-navy)
+}
+
+/* ============ FILTER CARD ============ */
+.ah-card {
+    background: #fff;
+    border: 1px solid var(--ah-border);
+    border-radius: var(--ah-radius);
+    padding: 16px 18px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 6px rgba(30, 42, 120, .04)
+}
+
+.ah-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 14px
+}
+
+.ah-label-title {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    color: #4f46e5
+}
+
+.ah-quick {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ah-muted)
+}
+
+.ah-chips {
+    display: flex;
+    background: var(--ah-soft);
+    border-radius: 10px;
+    padding: 3px
+}
+
+.ah-chips a {
+    color: var(--ah-muted);
+    font-weight: 600;
+    font-size: 13px;
+    padding: 7px 12px;
+    border-radius: 8px;
+    text-decoration: none;
+    white-space: nowrap
+}
+
+.ah-chips a.on {
+    background: var(--ah-navy);
+    color: #fff
+}
+
+.ah-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px 14px
+}
+
+.ah-field label {
+    display: block;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--ah-muted);
+    margin-bottom: 5px
+}
+
+.ah-field input,
+.ah-field select {
+    width: 100%;
+    height: 40px;
+    border: 1px solid #dbe2ef;
+    border-radius: 10px;
+    background: #fff;
+    padding: 0 11px;
+    font-size: 13px;
+    color: var(--ah-navy)
+}
+
+.ah-field input:focus,
+.ah-field select:focus {
+    outline: none;
+    border-color: #2b2f87;
+    box-shadow: 0 0 0 3px rgba(43, 47, 135, .10)
+}
+
+.ah-span2 {
+    grid-column: span 2
+}
+
+.ah-error {
+    margin: 10px 0 0;
+    color: var(--ah-red);
+    font-size: 13px;
+    font-weight: 600
+}
+
+.ah-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 40px;
+    padding: 0 16px;
+    border: 1px solid #dbe2ef;
+    border-radius: 10px;
+    background: #fff;
+    color: var(--ah-navy);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none
+}
+
+.ah-btn:hover {
+    background: var(--ah-bg)
+}
+
+.ah-btn-block {
+    width: 100%
+}
+
+.ah-btn-primary {
+    background: var(--ah-navy);
+    border-color: var(--ah-navy);
+    color: #fff
+}
+
+.ah-btn-primary:hover {
+    background: var(--ah-navy-dark)
+}
+
+/* ============ DOWNLOAD TOOLBAR ============ */
+.ah-export {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 12px
+}
+
+.ah-export-left {
+    font-size: 13px;
+    color: var(--ah-muted);
+    padding-top: 10px
+}
+
+.ah-export-left b {
+    color: var(--ah-navy)
+}
+
+.ah-export-right {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start
+}
+
+.ah-export-right select {
+    height: 40px;
+    min-width: 160px;
+    border: 1px solid #dbe2ef;
+    border-radius: 10px;
+    padding: 0 12px;
+    background: #fff;
+    color: var(--ah-navy);
+    font-size: 13px
+}
+
+#error-msg {
+    margin: 4px 0 0;
+    font-size: 12px
+}
+
+/* ============ REGISTER TABLE ============ */
+.ah-table {
+    background: #fff;
+    border: 1px solid var(--ah-border);
+    border-radius: var(--ah-radius);
+    overflow-x: auto;
+    box-shadow: 0 2px 6px rgba(30, 42, 120, .04)
+}
+
+.ah-tr {
+    display: grid;
+    grid-template-columns: 100px 1.8fr 1fr 1.6fr 46px 46px 46px 1.4fr 20px;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--ah-border);
+    min-width: 1000px;
+    font-size: 13.5px
+}
+
+.ah-th {
+    background: var(--ah-navy);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em
+}
+
+.ah-row {
+    cursor: pointer
+}
+
+.ah-row:hover {
+    background: #f7f8fd
+}
+
+.ah-row.open .ah-chev i {
+    transform: rotate(180deg)
+}
+
+.ah-chev i {
+    color: var(--ah-muted);
+    transition: .2s
+}
+
+.ah-fresh {
+    background: var(--ah-soft);
+    box-shadow: inset 4px 0 0 #4f46e5;
+    animation: ahFlash 2.4s ease
+}
+
+@keyframes ahFlash {
+
+    0%,
+    35% {
+        background: var(--ah-amber-bg)
+    }
+
+    100% {
+        background: var(--ah-soft)
+    }
+}
+
+.ah-batch b {
+    display: block;
+    font-weight: 600
+}
+
+.ah-batch small,
+.ah-tiny {
+    color: var(--ah-muted);
+    font-size: 12px
+}
+
+.ah-topic {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis
+}
+
+.ah-tag {
+    font-size: 10.5px;
+    font-weight: 700;
+    background: #4f46e5;
+    color: #fff;
+    padding: 3px 9px;
+    border-radius: 99px;
+    margin-left: 6px;
+    vertical-align: middle
+}
+
+.ah-edited {
+    font-size: 10.5px;
+    font-weight: 700;
+    background: var(--ah-amber-bg);
+    color: var(--ah-amber);
+    padding: 3px 9px;
+    border-radius: 99px;
+    margin-left: 6px
+}
+
+.ah-n {
+    text-align: center;
+    font-weight: 700;
+    border-radius: 8px;
+    padding: 5px 0
+}
+
+.ah-nP {
+    background: var(--ah-green-bg);
+    color: var(--ah-green)
+}
+
+.ah-nL {
+    background: var(--ah-amber-bg);
+    color: var(--ah-amber)
+}
+
+.ah-nA {
+    background: var(--ah-red-bg);
+    color: var(--ah-red)
+}
+
+.ah-n0 {
+    background: var(--ah-soft);
+    color: var(--ah-muted);
+    font-weight: 500
+}
+
+.ah-empty {
+    text-align: center;
+    color: var(--ah-muted);
+    padding: 40px
+}
+
+/* ============ EXPANDED DETAIL ============ */
+.ah-xp {
+    background: var(--ah-bg);
+    padding: 14px 18px 18px;
+    min-width: 1000px;
+    border-bottom: 1px solid var(--ah-border)
+}
+
+.ah-xp[hidden] {
+    display: none
+}
+
+.ah-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid var(--ah-border)
+}
+
+.ah-tabs button {
+    border: 0;
+    background: none;
+    color: var(--ah-muted);
+    font-weight: 700;
+    font-size: 13px;
+    padding: 8px 14px;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -1px
+}
+
+.ah-tabs button.on {
+    color: var(--ah-navy);
+    border-color: var(--ah-navy)
+}
+
+.ah-sgrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 8px
+}
+
+.ah-sc {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+    border: 1px solid var(--ah-border);
+    border-radius: 10px;
+    padding: 7px 10px;
+    font-size: 13px;
+    font-weight: 600
+}
+
+.ah-sc .nm {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap
+}
+
+.ah-sc small {
+    display: block;
+    color: var(--ah-muted);
+    font-weight: 500;
+    font-size: 11px;
+    overflow: hidden;
+    text-overflow: ellipsis
+}
+
+.ah-link {
+    cursor: pointer;
+    border-bottom: 1px dashed var(--ah-muted)
+}
+
+.ah-link:hover {
+    color: #4f46e5;
+    border-color: #4f46e5
+}
+
+.ah-av {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    color: #fff;
+    font-weight: 700;
+    font-size: 10px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0
+}
+
+.ah-pill {
+    padding: 3px 10px;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap
+}
+
+.ah-pPresent {
+    background: var(--ah-green-bg);
+    color: var(--ah-green)
+}
+
+.ah-pLate {
+    background: var(--ah-amber-bg);
+    color: var(--ah-amber)
+}
+
+.ah-pAbsent {
+    background: var(--ah-red-bg);
+    color: var(--ah-red)
+}
+
+.ah-cl {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px
+}
+
+.ah-cl div {
+    background: #fff;
+    border: 1px solid var(--ah-border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13.5px
+}
+
+.ah-cl small {
+    display: block;
+    color: var(--ah-muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    margin-bottom: 3px
+}
+
+.ah-tl {
+    border-left: 2px solid var(--ah-border);
+    margin-left: 6px;
+    padding-left: 18px
+}
+
+.ah-tl .e {
+    position: relative;
+    padding-bottom: 14px;
+    font-size: 13.5px
+}
+
+.ah-tl .e:last-child {
+    padding-bottom: 0
+}
+
+.ah-tl .e:before {
+    content: "";
+    position: absolute;
+    left: -25px;
+    top: 4px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #4f46e5;
+    border: 2px solid var(--ah-bg)
+}
+
+.ah-tl .e.edit:before {
+    background: var(--ah-amber)
+}
+
+.ah-tl .e small {
+    display: block;
+    color: var(--ah-muted);
+    font-size: 12px;
+    margin-top: 2px
+}
+
+.ah-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px
+}
+
+.ah-lock {
+    font-size: 12.5px;
+    color: var(--ah-muted)
+}
+
+.ah-actions a {
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 8px 14px;
+    border: 1px solid #dbe2ef;
+    border-radius: 9px;
+    background: #fff;
+    color: var(--ah-navy);
+    text-decoration: none
+}
+
+/* ============ PAGINATION ============ */
+.ah-pg {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 14px;
+    font-size: 13px;
+    color: var(--ah-muted)
+}
+
+.ah-pg-btns {
+    display: flex;
+    gap: 6px
+}
+
+.ah-pg-btns a,
+.ah-pg-btns span {
+    display: grid;
+    place-items: center;
+    min-width: 34px;
+    height: 34px;
+    border: 1px solid var(--ah-border);
+    background: #fff;
+    color: var(--ah-navy);
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    font-size: 13px
+}
+
+.ah-pg-btns .w {
+    padding: 0 14px
+}
+
+.ah-pg-btns a.on {
+    background: var(--ah-navy);
+    color: #fff;
+    border-color: var(--ah-navy)
+}
+
+.ah-pg-btns a:hover:not(.on) {
+    background: var(--ah-soft)
+}
+
+.ah-pg-btns .off {
+    opacity: .4;
+    cursor: not-allowed
+}
+
+/* ============ STUDENT DRAWER ============ */
+.ah-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 10, 40, .45);
+    z-index: 1050
+}
+
+.ah-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(580px, 100%);
+    background: #fff;
+    z-index: 1051;
+    overflow-y: auto;
+    padding: 22px 22px 30px;
+    box-shadow: -10px 0 30px rgba(0, 0, 0, .25);
+    animation: ahSlide .25s ease;
+    font-family: 'Segoe UI', sans-serif;
+    color: var(--ah-navy)
+}
+
+.ah-overlay[hidden],
+.ah-drawer[hidden] {
+    display: none
+}
+
+@keyframes ahSlide {
+    from {
+        transform: translateX(40px);
+        opacity: 0
+    }
+
+    to {
+        transform: none;
+        opacity: 1
+    }
+}
+
+.ah-drawer-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    color: #4f46e5
+}
+
+.ah-drawer-top button {
+    border: 0;
+    background: none;
+    font-size: 24px;
+    color: var(--ah-muted);
+    cursor: pointer
+}
+
+.ah-dp {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    margin-bottom: 16px
+}
+
+.ah-dp .big {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    color: #fff;
+    font-weight: 700;
+    font-size: 20px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    object-fit: cover
+}
+
+.ah-dp h3 {
+    margin: 0;
+    font-size: 19px
+}
+
+.ah-dp p {
+    margin: 3px 0 0;
+    font-size: 12.5px;
+    color: var(--ah-muted)
+}
+
+.ah-ms {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin-bottom: 16px
+}
+
+.ah-ms div {
+    background: var(--ah-bg);
+    border-radius: 10px;
+    padding: 9px 6px;
+    text-align: center
+}
+
+.ah-ms b {
+    display: block;
+    font-size: 19px
+}
+
+.ah-ms small {
+    font-size: 10.5px;
+    color: var(--ah-muted);
+    text-transform: uppercase
+}
+
+.ah-drawer h4 {
+    font-size: 13px;
+    margin: 16px 0 8px
+}
+
+.ah-mo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12.5px;
+    padding: 5px 0
+}
+
+.ah-mo span:first-child {
+    width: 74px;
+    font-weight: 600
+}
+
+.ah-mo .sk {
+    flex: 1;
+    height: 8px;
+    border-radius: 99px;
+    overflow: hidden;
+    display: flex;
+    background: var(--ah-border)
+}
+
+.ah-mo .sk i {
+    display: block
+}
+
+.ah-mo b {
+    width: 44px;
+    text-align: right
+}
+
+.sk .gP {
+    background: var(--ah-green)
+}
+
+.sk .gL {
+    background: var(--ah-amber)
+}
+
+.sk .gA {
+    background: var(--ah-red)
+}
+
+.ah-rl {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--ah-border);
+    font-size: 13px
+}
+
+.ah-rl .d {
+    width: 112px;
+    font-weight: 600
+}
+
+.ah-rl .rm {
+    flex: 1;
+    color: var(--ah-muted)
+}
+
+.ah-rl .ah-pill {
+    width: 74px;
+    text-align: center
+}
+
+.ah-mc {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 8px;
+    flex-wrap: wrap
+}
+
+.ah-mc button {
+    border: 1px solid var(--ah-border);
+    background: #fff;
+    color: var(--ah-navy);
+    border-radius: 99px;
+    padding: 5px 13px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer
+}
+
+.ah-mc button.on {
+    background: var(--ah-navy);
+    color: #fff;
+    border-color: var(--ah-navy)
+}
+
+.ah-more {
+    background: none;
+    border: 0;
+    color: #4f46e5;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    padding: 8px 0
+}
+
+/* ============ RESPONSIVE ============ */
+@media(max-width:992px) {
+    .ah-grid {
+        grid-template-columns: repeat(2, 1fr)
+    }
+}
+
+@media(max-width:576px) {
+    .ah-grid {
+        grid-template-columns: 1fr
+    }
+
+    .ah-span2 {
+        grid-column: span 1
+    }
+
+    .ah-ms {
+        grid-template-columns: repeat(3, 1fr)
+    }
+}
+
+@media(max-width:576px) {
+    .ah-page {
+        padding: 12px 10px 30px
+    }
+}

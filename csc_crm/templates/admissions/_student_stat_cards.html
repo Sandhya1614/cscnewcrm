@@ -1,0 +1,55 @@
+<div class="stat-cards">
+
+        <div class="stat-card">
+            <div class="stat-icon icon-blue"><i class="fa-solid fa-users"></i></div>
+            <div class="stat-info">
+                <!-- .total-count kept for student_list.js reset-button AJAX swap; do not rename/remove -->
+                <span class="stat-label">Total Students</span>
+                <span class="stat-value total-count">{{ total_students }}</span>
+                <span class="stat-sub">All Registered</span>
+            </div>
+        </div>
+        
+        {% if request.user.staff_profile.role.role_name in "Admin,Manager,HR" %}
+        <div class="stat-card">
+            <div class="stat-icon icon-orange"><i class="fa-solid fa-clock"></i></div>
+            <div class="stat-info">
+                <span class="stat-label">Pending Fees</span>
+                <span class="stat-value">{{ summary.pending_students }}</span>
+                <span class="stat-sub">Have Outstanding</span>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon icon-teal"><i class="fa-solid fa-wallet"></i></div>
+            <div class="stat-info">
+                <span class="stat-label">Total Collections</span>
+                <span class="stat-value">₹{{ summary.collected }}</span>
+                <span class="stat-sub">This Month</span>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon icon-red"><i class="fa-solid fa-circle-exclamation"></i></div>
+            <div class="stat-info">
+                <span class="stat-label">Total Outstanding</span>
+                <span class="stat-value">₹{{ summary.outstanding }}</span>
+                <span class="stat-sub">All Pending</span>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if show_courses %}
+        {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" or request.user.staff_profile.role.role_name == "HR" %}
+        <div class="stat-card">
+            <div class="stat-icon icon-purple"><i class="fa-solid fa-book"></i></div>
+            <div class="stat-info">
+                <span class="stat-label">Courses</span>
+                <span class="stat-value">{{ courses|length }}</span>
+                <span class="stat-sub">All Courses</span>
+            </div>
+        </div>
+        {% endif %}
+        {% endif %}
+
+    </div>

@@ -1,0 +1,30 @@
+{% if validation_errors %}
+
+<div class="alert alert-danger attendance-toast">
+    {% for error in validation_errors %}{{ error }}{% if not forloop.last %} {% endif %}{% endfor %}
+</div>
+
+{% endif %}
+
+{% if attendance_status == "not_started" %}
+
+<div class="alert alert-danger attendance-toast">
+    Today's attendance has not been started yet.
+</div>
+
+{% elif attendance_status == "in_progress" %}
+
+<div class="alert alert-warning attendance-toast">
+    Today's attendance is in progress.
+    {{ today_marked_count }} of {{ total_students }} students have been marked.
+    {{ pending_count }} students are pending.
+</div>
+
+{% else %}
+
+<div class="alert alert-success attendance-toast">
+    Today's attendance has been completed successfully.
+    Attendance records updated for all {{ total_students }} students.
+</div>
+
+{% endif %}

@@ -1,0 +1,509 @@
+{% extends 'attendance/base.html' %}
+
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/attendance_css/absent_tracker.css' %}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+{% endblock %}
+
+{% block content %}
+
+<!-- ============== TOP HEADER ============== -->
+<div class="main-content">
+
+    <!-- ================ PAGE HEADER (TITLE + LIVE SYNC INDICATOR) ================ -->
+    <div class="top-header">
+
+        <div>
+            <h1> Absence Management & Safety Tracking </h1>
+            <p> Monitor patterns of consecutive absences and coordinate notifications to parents or coordinators. </p>
+        </div>
+
+        <div class="top-right">
+
+            <span class="live-sync">
+                <span class="dot"></span>
+                Live Sync Active
+            </span>
+            <div class="notification-icon">
+                <i class="bi bi-bell"></i>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ============== TRACKER CARD =============== -->
+
+    <div class="tracker-container">
+
+        <!-- ================ TRACKER CARD HEADER (TITLE + ACTIVE ALERTS BADGE) ================ -->
+
+        <div class="tracker-header">
+
+            <div class="critical-title">
+
+                <i class="bi bi-exclamation-octagon-fill"></i>
+
+                <h3> Attendance Alerts Required (>3 Consecutive Absences) </h3>
+
+            </div>
+
+            <span class="alert-badge"> {{ active_alerts|default:0 }} Active Alerts</span>
+
+        </div>
+
+        <!-- ================ FILTER BAR (NAME, COURSE, BATCH, PHONE, EMAIL, STATUS) ================ -->
+        <div class="filter-container">
+
+            <input type="text" id="studentNameFilter" placeholder="Student Name" class="filter-input">
+
+            {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" or request.user.staff_profile.role.role_name == "HR" %}
+            <select id="courseFilter" class="filter-select">
+                <option value="">Course</option>
+
+                {% for course in courses %}
+                <option value="{{ course.course_name|lower }}">
+                    {{ course.course_name }}
+                </option>
+                {% endfor %}
+
+            </select>
+            {% endif %}
+
+            <select id="batchFilter" class="filter-select">
+                <option value="">Batch</option>
+
+                {% for batch in batches %}
+                <option value="{{ batch.id }}">
+                    {{ batch.batch_name }}
+                    ({{ batch.course.course_name }})
+                </option>
+                {% endfor %}
+
+            </select>
+
+            <input type="text" id="phoneFilter" placeholder="Phone Number" class="filter-input">
+
+            <input type="text" id="emailFilter" placeholder="Email ID" class="filter-input">
+
+            <select id="statusFilter" class="filter-select">
+
+                <option value="">
+                    Alert Status
+                </option>
+
+                <option value="critical">
+                    Critical
+                </option>
+
+                <option value="medium">
+                    Medium
+                </option>
+
+                <option value="low">
+                    Low
+                </option>
+
+            </select>
+            <button id="clearFilters" class="clear-btn">
+
+                <i class="bi bi-x-circle"></i>
+                Clear
+
+            </button>
+
+            <!-- <button id="showAllBtn" class="clear-btn">
+                Search All
+            </button> -->
+
+        </div>
+
+        <!-- ================ RESULTS COUNT / NO RESULTS MESSAGE ================ -->
+        <div id="resultsCount" class="results-count">
+            Showing {{ absent_students|length }} of {{ absent_students|length }} Students
+        </div>
+        <div id="noResultsMessage" style="display:none; text-align:center; padding:20px; font-weight:bold;">
+            No records found
+        </div>
+
+
+        <!-- ================ ABSENT STUDENTS TABLE ================ -->
+        <div class="table-responsive">
+
+            <table class="attendance-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th> Student Details</th>
+                        <th>Course</th>
+                        <th>Batch</th>
+                        <th>Attendance Status</th>
+                        <th> Consecutive Absences</th>
+                        <th>Absent Days</th>
+                        <th> Observation Notes</th>
+                        <th> Notification Status</th>
+                        <th> Action Panel</th>
+                        <th>Admin Notes</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    <!-- ================ TABLE ROW - PER STUDENT ================ -->
+
+                    {% for student in absent_students %}
+
+                    <tr class="student-row"
+                        data-name="{{ student.student.first_name|lower }} {{ student.student.last_name|lower }}"
+                        data-course="{{ student.course.course_name|lower }}" data-batch="{{ student.batch.id }}"
+                        data-phone="{{ student.student.phone_no|lower }}" data-email="{{ student.student.email|lower }}"
+                        data-status="{{ student.alert_level|lower }}">
+
+
+                        <!-- ================ STUDENT INFO CELL (NAME + PHONE) ================ -->
+                        <td>
+
+                            <div class="student-info">
+                                <div class="student-avatar" style="overflow:hidden;">
+                                    {% if student.student.photo %}<img src="{{ student.student.photo.url }}" alt="{{ student.student.first_name }}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;">{% else %}<i class="bi bi-person"></i>{% endif %}
+                                </div>
+
+                                <div>
+
+                                    <h6>{{ student.student.first_name }} {{ student.student.last_name }}</h6>
+                                    <small>
+                                        Ph:
+                                        {{ student.student.phone_no }}
+                                    </small>
+
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- ================ COURSE & BATCH CELLS ================ -->
+                        <td>
+                            <span class="batch-pill">{{ student.course.course_name }} </span>
+                        </td>
+                        <td>
+                            <span class="batch-pill"> {{ student.batch.batch_name }} </span>
+                        </td>
+
+                        <!-- ================ ATTENDANCE STATUS CELL (COMPLETE/INCOMPLETE) ================ -->
+                        <td>
+
+                            {% if student.attendance_status == "Complete" %}
+                            <span class="status-badge dispatched"> Complete </span>
+                            {% else %}
+                            <span class="status-badge pending"> Incomplete </span>
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- ================ CONSECUTIVE & TOTAL ABSENCE CELLS ================ -->
+                        <td>
+                            <span class="absence-pill">{{ student.consecutive_absences }} Days </span>
+                        </td>
+                        <td>
+                            <span class="days-badge total-days"> {{ student.total_absences }} Days</span>
+                        </td>
+
+                        <!-- ================ OBSERVATION NOTE CELL (STABLE/FOLLOWUP/WARNING/CRITICAL) ================ -->
+
+                        <td>
+                            {% if student.total_absences == 1 %}
+                            <span class="obs-badge stable"
+                                title="Student attendance remains consistent and within acceptable limits.">
+                                🟢 Stable
+                            </span>
+
+                            {% elif student.total_absences == 2 %}
+
+                            <span class="obs-badge followup"
+                                title="Attendance has shown a slight decline. Follow-up with the student is recommended.">
+                                🟡 Follow-up
+                            </span>
+
+                            {% elif student.total_absences <= 5 %}
+
+                            <span class="obs-badge parent-pending"
+                                title="Parent/Guardian communication is recommended due to increasing absences.">
+                                🟠 Warning
+                            </span>
+
+                            {% else %}
+
+                            <span class="obs-badge critical-risk"
+                                title="Attendance level is critically low and requires immediate intervention.">
+                                🔴 Critical Risk
+                            </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <!-- ================ NOTIFICATION STATUS CELL (DISPATCHED/PENDING) ================ -->
+                        <td class="notification-cell">
+
+                            {% if student.notification_sent %}
+
+                            <span class="status-badge dispatched">
+
+                                <i class="bi bi-check-circle-fill"></i>
+
+                                Dispatched
+
+                            </span>
+
+                            {% else %}
+
+                            <span class="status-badge pending">
+
+                                <i class="bi bi-hourglass-split"></i>
+
+                                SMS Pending
+
+                            </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <!-- ================ NOTIFY/RE-NOTIFY ACTION BUTTON CELL ================ -->
+                        <td>
+                            {% if student.notification_sent %}
+                            <button class="renotify-btn notify-action-btn" data-id="{{ student.id }}">
+                                <i class="bi bi-arrow-repeat"></i>
+                                Re-notify
+                            </button>
+
+                            {% else %}
+
+                            <button class="notify-btn notify-action-btn" data-id="{{ student.id }}">
+                                <i class="bi bi-chat-left-text"></i>
+                                Notify Student
+                            </button>
+
+                            {% endif %}
+
+                        </td>
+
+                        <!-- ================ ACTION MENU CELL (VIEW / EDIT ADMIN NOTES) ================ -->
+                        <td class="action-menu-cell">
+
+                            <div class="action-menu">
+
+                                <button type="button" class="action-dots-btn" onclick="toggleActionMenu(this)">
+                                    <i class="bi bi-three-dots-vertical"></i>
+                                </button>
+
+                                <div class="action-dropdown">
+
+                                    {# NOTE: each {{ }} must stay on ONE line, and no space after "(" - JS selector depends on this exact format #}
+                                    <button type="button" onclick="openViewModal('{{ student.tracker_id }}', '{{ student.admin_notes|default_if_none:''|escapejs }}')">
+                                        <i class="bi bi-eye"></i>
+                                        View
+                                    </button>
+
+                                    {% if request.user.staff_profile.role.role_name in "Admin,Manager,Trainer" %}
+                                    <button type="button" onclick="openEditModal('{{ student.tracker_id }}', '{{ student.admin_notes|default_if_none:''|escapejs }}')">
+                                        <i class="bi bi-pencil-square"></i>
+                                        Edit
+                                    </button>
+                                    {% endif %}
+
+                                </div>
+
+                            </div>
+
+                        </td>
+                    </tr>
+
+                    <!-- ================ EMPTY STATE (NO CRITICAL ALERTS) ================ -->
+                    {% empty %}
+
+                    <tr>
+                        <td colspan="10">
+                            <div class="empty-state">
+                                <i class="bi bi-check-circle-fill"></i>
+                                <h5>
+                                    No Critical Alerts Found
+                                </h5>
+                            </div>
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        <!-- ================ TOAST CONTAINER ================ -->
+        <div id="toastContainer" class="toast-container"></div>
+
+        <!-- ================ ADMIN NOTES MODAL ================ -->
+
+
+        <div id="adminNoteModal" class="custom-modal">
+
+            <div class="custom-modal-content">
+
+                <div class="modal-header">
+
+                    <h5 id="adminNoteTitle">Admin Notes</h5>
+
+                    <span onclick="closeAdminModal()">
+                        &times;
+                    </span>
+
+                </div>
+
+                <input type="hidden" id="trackerId">
+
+                <textarea id="adminNoteText" class="form-control" rows="6"></textarea>
+
+                <button id="saveNoteBtn" class="notify-btn mt-3" onclick="saveAdminNotes()">
+
+                    Save Notes
+
+                </button>
+
+                <button type="button" id="editNoteBtn" class="notify-btn mt-3" onclick="enableEditMode()">
+
+                    Edit Notes
+
+                </button>
+
+            </div>
+
+        </div>
+
+        <!-- ================ ATTENTION PERCENTAGE PROGRESS BAR ================ -->
+        <div class="attention-progress">
+            <div class="progress-header">
+                <span>
+                    {{ attention_students|default:0 }}
+                    of
+                    {{ total_students|default:0 }}
+                    students require attention
+                </span>
+
+                <strong>
+                    {{ attention_percentage|default:0 }}%
+                </strong>
+
+            </div>
+
+            <div class="progress-track">
+
+                <div class="progress-fill" style="width: {{ attention_percentage|default:0 }}%;">
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ================ SUMMARY CARDS (ALERTS, TOTAL, MAX CONSECUTIVE, AT-RISK) ================ -->
+    <div class="tracker-summary">
+
+        <!-- ================ ACTIVE ALERTS ================ -->
+
+        <div class="summary-card">
+
+            <div class="summary-icon danger-icon">
+                <i class="bi bi-bell"></i>
+            </div>
+
+            <div class="summary-content">
+
+                <strong> {{ active_alerts|default:0 }} </strong>
+
+                <span> Active Alerts</span>
+
+                <small> Students need attention </small>
+
+            </div>
+
+        </div>
+
+
+        <!-- ================ TOTAL STUDENTS ================ -->
+
+        <div class="summary-card">
+
+            <div class="summary-icon purple-icon">
+                <i class="bi bi-people"></i>
+            </div>
+
+            <div class="summary-content">
+
+                <strong> {{ total_students|default:0 }} </strong>
+
+                <span> Total Students</span>
+
+                <small> Matching current filters </small>
+
+            </div>
+
+        </div>
+
+
+        <!-- ================ MAX CONSECUTIVE ABSENCE ================ -->
+
+        <div class="summary-card">
+
+            <div class="summary-icon orange-icon">
+                <i class="bi bi-calendar-event"></i>
+            </div>
+
+            <div class="summary-content">
+
+                <strong> {{ max_consecutive_absence|default:0 }}</strong>
+
+                <span> Max Consecutive Absence </span>
+
+                <small> Highest in current list</small>
+
+            </div>
+
+        </div>
+
+
+        <!-- ================ AT RISK STUDENTS ================ -->
+
+        <div class="summary-card">
+
+            <div class="summary-icon green-icon">
+                <i class="bi bi-graph-up-arrow"></i>
+            </div>
+
+            <div class="summary-content">
+
+                <strong> {{ at_risk_percentage|default:0 }}%</strong>
+
+                <span> At Risk Students </span>
+
+                <small> Require immediate follow-up</small>
+
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'js/attendance_js/absent_tracker.js' %}"></script>
+{% endblock %}

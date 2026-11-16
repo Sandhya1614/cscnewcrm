@@ -1,0 +1,100 @@
+{% extends 'admissions/base.html' %}
+{% load static %}
+
+{% block title %}
+Student List
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/admissions_css/student_list.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="edit-container">
+
+    <div class="sl-header">
+        <h6 class="sl-title">Student List</h6>
+        <p class="sl-subtitle">{{ subtitle }}</p>
+    </div>
+
+    {% if show_cards %}
+    {% include 'admissions/_student_stat_cards.html' with show_courses=True %}
+    {% endif %}
+
+        <form method="GET" class="top-bar" id="filterForm">
+
+        <input type="text" name="q" value="{{ q }}" placeholder="Search batch name">
+
+        {% if request.user.staff_profile.role.role_name in "Admin,Manager,HR" %}
+        <select name="course">
+            <option value="">All Course</option>
+            {% for c in courses %}
+            <option value="{{ c.id }}" {% if selected_course == c.id|stringformat:"s" %}selected{% endif %}>
+                {{ c.course_name }}
+            </option>
+            {% endfor %}
+        </select>
+        {% endif %}
+
+        <div class="filter">
+            <button type="button" class="clear-btn" id="resetBtn">Reset</button>
+            <button type="submit" id="filter">Search</button>
+        </div>
+
+        <p id="search-error" class="filter-error"></p>
+
+    </form>
+
+    {% if show_add %}
+    {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" %}
+    <div class="table-container">
+        <div>
+            <a href="{% url 'student' %}">
+                <button type="button" class="btn2">+ Add New Student</button>
+            </a>
+        </div>
+    </div>
+    {% endif %}
+    {% endif %}
+
+    <div class="table-card">
+        <div class="table-wrapper">
+            <table>
+                <tr>
+                    <th>S.No</th>
+                    <th>Batch Name</th>
+                    <th>Course</th>
+                    <th>Total Students</th>
+                    <th>Action</th>
+                </tr>
+
+                {% for row in batch_rows %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td><span class="student-name">{{ row.batch.batch_name }}</span></td>
+                    <td>{{ row.batch.course.course_name }}</td>
+                    <td>{{ row.total_students }}</td>
+                    <td>
+                        <a href="{% url overview_url %}?batch={{ row.batch.id }}" class="overview-btn">
+                            Overview
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5">No batches found</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{% static 'js/admissions_js/student_list.js' %}"></script>
+{% endblock %}

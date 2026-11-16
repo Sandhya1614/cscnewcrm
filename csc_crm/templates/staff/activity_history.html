@@ -1,0 +1,50 @@
+{% extends 'staff/base.html' %}
+{% load static %}
+{% block content %}
+
+<!-- ======================================== PAGE HEADER =========================================== -->
+<div class="sp-header">
+  <div>
+    <div class="sp-back-row">
+      <a href="{% url 'staff_profile' staff.id %}" class="sp-back-btn"><i class="fa fa-arrow-left"></i> Back to My Profile</a>
+    </div>
+    <h1 class="sp-title">Recent Activity History</h1>
+    <p class="sp-subtitle">
+      {{ staff.first_name }} {{ staff.last_name }} &middot;
+      {{ start_date|date:"d M Y" }} (joining date) to {{ end_date|date:"d M Y" }} (today)
+    </p>
+  </div>
+  <div class="sp-hist-count">
+    <span>{{ total_events }}</span> activities
+  </div>
+</div>
+
+<!-- ======================================== TIMELINE =========================================== -->
+<div class="sp-hist-wrap">
+  {% for group in groups %}
+  <section class="sp-hist-day">
+    <h2 class="sp-hist-date">
+      <i class="fa fa-calendar-day"></i> {{ group.day|date:"l, d M Y" }}
+      <small>{{ group.items|length }} item{{ group.items|length|pluralize }}</small>
+    </h2>
+    <div class="sp-hist-card">
+      {% for item in group.items %}
+      <div class="sp-activity-item sp-act-{{ item.color }}">
+        <div class="sp-act-icon"><i class="fa {{ item.icon }}"></i></div>
+        <div class="sp-act-body">
+          <div class="sp-act-title">{{ item.title }}</div>
+          <div class="sp-act-sub">{{ item.detail }}</div>
+        </div>
+        <div class="sp-act-when">{{ item.when }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% empty %}
+  <div class="sp-hist-card">
+    <div class="sp-empty"><i class="fa fa-clock" style="margin-right:6px;color:#d1d5db;"></i>No activity recorded between the joining date and today.</div>
+  </div>
+  {% endfor %}
+</div>
+
+{% endblock %}

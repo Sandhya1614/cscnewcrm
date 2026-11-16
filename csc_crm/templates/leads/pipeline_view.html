@@ -1,0 +1,437 @@
+{% extends 'leads/base.html' %}
+
+{% block content %}
+
+    <div class="pipeline-container">
+
+        <header class="header">
+            <div class="header-content">
+                <h2 class="page-title">Pipeline View</h2>
+                <p class="page-subtitle">Manage leads across different stages</p>
+            </div>
+        </header>
+
+        <section class="filter-section">
+            <form method="GET" id="filterForm" class="search-form">
+                <div class="filter-item">
+
+                    {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" or request.user.staff_profile.role.role_name == "HR" or request.user.staff_profile.role.role_name == "Sales Exec Lead" or request.user.staff_profile.role.role_name == "Marketing Lead" %}
+                    <label>Filter by Staff</label>
+
+                    <select name="assigned_to" class="filter-select" id="staffSelect">
+                        <option value="">All Staff</option>
+                        {% for staff in staffs %}
+                        <option value="{{ staff.id }}"
+                            {% if assigned_to == staff.id|stringformat:"s" %}selected{% endif %}>
+                            {{ staff.full_name }} ({{ staff.employee_id }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                    {% endif %}
+
+                    <input type="text"
+                           name="search"
+                           value="{{ search_query|default:'' }}"
+                           placeholder="Search lead Course..."
+                           class="search-input"
+                           id="searchInput">
+
+                    <button type="button" id="searchBtn" class="search-btn">Search</button>
+                    <button type="button" id="clearBtn" class="clear-btn">Clear</button>
+                </div>
+            </form>
+
+            <a href="{% url 'leads:export_leads_csv' %}" data-url="{% url 'leads:export_leads_csv' %}" class="download-btn" id="exportBtn">
+                <i class="fa-solid fa-download"></i> Export
+            </a>
+        </section>
+
+        <div id="pipelineData">
+        {% if not no_results %}
+
+            <!-- Funnel Summary -->
+            <section class="funnel-summary">
+                
+                 <h3 class="summary-title">Lead Funnel — {% now "F Y" %}</h3>
+                <div class="funnel-container">
+                    {% for item in funnel_data %}
+                        <div class="funnel-item">
+                            <div class="funnel-top">
+                                <span class="funnel-icon {{ item.status|lower }}">
+                                    {% if item.status == "New" %}<i class="fa-solid fa-user-plus"></i>
+                                    {% elif item.status == "Contacted" %}<i class="fa-solid fa-phone"></i>
+                                    {% elif item.status == "Interested" %}<i class="fa-solid fa-star"></i>
+                                    {% elif item.status == "Demo_Scheduled" %}<i class="fa-solid fa-calendar-check"></i>
+                                    {% elif item.status == "Enrolled" %}<i class="fa-solid fa-graduation-cap"></i>
+                                    {% elif item.status == "Lost" %}<i class="fa-solid fa-xmark"></i>
+                                    {% endif %}
+                                </span>
+                                <span class="funnel-status">{{ item.status }}</span>
+                            </div>
+                            <div class="funnel-mid">
+                                <span class="funnel-count">{{ item.count }}</span>
+                                <span class="funnel-percentage">{{ item.percentage }}%</span>
+                            </div>
+                            <div class="funnel-bar">
+                                <div class="funnel-bar-fill {{ item.status|lower }}" style="width: {{ item.percentage }}%"></div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="funnel-total">
+                    <p>Total Leads: <strong>{{ total_leads }}</strong></p>
+                </div>
+            </section>
+
+            
+<!-- Pipeline Kanban Board -->
+<section class="pipeline-board">
+    <h3 class="board-title">Pipeline Stages</h3>
+
+    <div class="pipeline-wrapper">
+
+        <div class="kanban-container" id="kanbanContainer">
+
+            <!-- New Stage -->
+            <div class="kanban-column">
+                <div class="column-header new">
+                    <h4 class="column-title">New</h4>
+                    <span class="column-count">
+                        {% if leads_by_status.New %}{{ leads_by_status.New|length }}{% else %}0{% endif %}
+                    </span>
+                     
+                </div>
+                <div class="column-cards">
+                    {% if leads_by_status.New %}
+                        {% for lead in leads_by_status.New %}
+                            <div class="lead-card">
+                                <div class="card-header">
+                                    <h5 class="card-title">{{ lead.lead_name }}</h5>
+                                    <span class="card-id">{{ lead.lead_id }}</span>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-course">{{ lead.course_interested }}</p>
+                                    <p class="card-assigned">{{ lead.assigned_to|default:"Unassigned" }}</p>
+                                </div>
+                                <div class="card-footer">
+                                    <span class="card-date">{{ lead.created_at|date:"d M" }}</span>
+                                    <a href="{% url 'leads:lead_capture_details' lead.id %}" class="card-link">→</a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-column">No leads</div>
+                    {% endif %}
+                    
+                    {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" or request.user.staff_profile.role.role_name == "Sales Exec Lead" %}
+                    <a href="{% url 'leads:lead_capture_create' %}" class="add-lead-link">+ Add Lead</a>
+                    {% endif %}
+                </div>
+                <button type="button" class="scroll-nav-btn scroll-up-btn">▲</button>
+                    <button type="button" class="scroll-nav-btn scroll-down-btn">▼</button>
+            </div>
+
+            <!-- Contacted Stage -->
+            <div class="kanban-column">
+                <div class="column-header contacted">
+                    <h4 class="column-title">Contacted</h4>
+                    <span class="column-count">
+                        {% if leads_by_status.Contacted %}{{ leads_by_status.Contacted|length }}{% else %}0{% endif %}
+                    </span>
+                </div>
+                <div class="column-cards">
+                    {% if leads_by_status.Contacted %}
+                        {% for lead in leads_by_status.Contacted %}
+                            <div class="lead-card">
+                                <div class="card-header">
+                                    <h5 class="card-title">{{ lead.lead_name }}</h5>
+                                    <span class="card-id">{{ lead.lead_id }}</span>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-course">{{ lead.course_interested }}</p>
+                                    <p class="card-assigned">{{ lead.assigned_to|default:"Unassigned" }}</p>
+                                </div>
+                                <div class="card-footer">
+                                    <span class="card-date">{{ lead.created_at|date:"d M" }}</span>
+                                    <a href="{% url 'leads:lead_capture_details' lead.id %}" class="card-link">→</a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-column">No leads</div>
+                    {% endif %}
+
+                    {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" or request.user.staff_profile.role.role_name == "Sales Exec Lead" %}
+                    <a href="{% url 'leads:lead_capture_create' %}" class="add-lead-link">+ Add Lead</a>
+                    {% endif %}
+
+                </div>
+                <button type="button" class="scroll-nav-btn scroll-up-btn">▲</button>
+                    <button type="button" class="scroll-nav-btn scroll-down-btn">▼</button>
+            </div>
+
+            <!-- Interested Stage -->
+            <div class="kanban-column">
+                <div class="column-header interested">
+                    <h4 class="column-title">Interested</h4>
+                    <span class="column-count">
+                        {% if leads_by_status.Interested %}{{ leads_by_status.Interested|length }}{% else %}0{% endif %}
+                    </span>
+                </div>
+                <div class="column-cards">
+                    {% if leads_by_status.Interested %}
+                        {% for lead in leads_by_status.Interested %}
+                            <div class="lead-card">
+                                <div class="card-header">
+                                    <h5 class="card-title">{{ lead.lead_name }}</h5>
+                                    <span class="card-id">{{ lead.lead_id }}</span>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-course">{{ lead.course_interested }}</p>
+                                    <p class="card-assigned">{{ lead.assigned_to|default:"Unassigned" }}</p>
+                                </div>
+                                <div class="card-footer">
+                                    <span class="card-date">{{ lead.created_at|date:"d M" }}</span>
+                                    <a href="{% url 'leads:lead_capture_details' lead.id %}" class="card-link">→</a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-column">No leads</div>
+                    {% endif %}
+                    
+                    {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" or request.user.staff_profile.role.role_name == "Sales Exec Lead" %}
+                    <a href="{% url 'leads:lead_capture_create' %}" class="add-lead-link">+ Add Lead</a>
+                    {% endif %}
+
+                </div>
+                <button type="button" class="scroll-nav-btn scroll-up-btn">▲</button>
+                    <button type="button" class="scroll-nav-btn scroll-down-btn">▼</button>
+            </div>
+
+            <!-- Demo Scheduled Stage -->
+            <div class="kanban-column">
+                <div class="column-header demo-scheduled">
+                    <h4 class="column-title">Demo Scheduled</h4>
+                    <span class="column-count">
+                        {% if leads_by_status.Demo_Scheduled %}{{ leads_by_status.Demo_Scheduled|length }}{% else %}0{% endif %}
+                    </span>
+                </div>
+                <div class="column-cards">
+                    {% if leads_by_status.Demo_Scheduled %}
+                        {% for lead in leads_by_status.Demo_Scheduled %}
+                            <div class="lead-card">
+                                <div class="card-header">
+                                    <h5 class="card-title">{{ lead.lead_name }}</h5>
+                                    <span class="card-id">{{ lead.lead_id }}</span>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-course">{{ lead.course_interested }}</p>
+                                    <p class="card-assigned">{{ lead.assigned_to|default:"Unassigned" }}</p>
+                                </div>
+                                <div class="card-footer">
+                                    <span class="card-date">{{ lead.created_at|date:"d M" }}</span>
+                                    <a href="{% url 'leads:lead_capture_details' lead.id %}" class="card-link">→</a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-column">No leads</div>
+                    {% endif %}
+
+                    {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" or request.user.staff_profile.role.role_name == "Sales Exec Lead" %}
+                    <a href="{% url 'leads:lead_capture_create' %}" class="add-lead-link">+ Add Lead</a>
+                    {% endif %}
+
+                </div>
+                <button type="button" class="scroll-nav-btn scroll-up-btn">▲</button>
+                <button type="button" class="scroll-nav-btn scroll-down-btn">▼</button>
+            </div>
+
+            <!-- Enrolled Stage -->
+            <div class="kanban-column">
+                <div class="column-header enrolled">
+                    <h4 class="column-title">Enrolled</h4>
+                    <span class="column-count">
+                        {% if leads_by_status.Enrolled %}{{ leads_by_status.Enrolled|length }}{% else %}0{% endif %}
+                    </span>
+                     
+                </div>
+                <div class="column-cards">
+                    {% if leads_by_status.Enrolled %}
+                        {% for lead in leads_by_status.Enrolled %}
+                            <div class="lead-card card-success">
+                                <div class="card-header">
+                                    <h5 class="card-title">{{ lead.lead_name }}</h5>
+                                    <span class="card-id">{{ lead.lead_id }}</span>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-course">{{ lead.course_interested }}</p>
+                                    <p class="card-assigned">{{ lead.assigned_to|default:"Unassigned" }}</p>
+                                </div>
+                                <div class="card-footer">
+                                    <span class="card-date">{{ lead.created_at|date:"d M" }}</span>
+                                    <a href="{% url 'leads:lead_capture_details' lead.id %}" class="card-link">→</a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-column">No leads</div>
+                    {% endif %}
+                    
+                    {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" or request.user.staff_profile.role.role_name == "Sales Exec Lead" %}
+                    <a href="{% url 'leads:lead_capture_create' %}" class="add-lead-link">+ Add Lead</a>
+                    {% endif %}
+
+                </div>
+                <button type="button" class="scroll-nav-btn scroll-up-btn">▲</button>
+                <button type="button" class="scroll-nav-btn scroll-down-btn">▼</button>
+            </div>
+
+            <!-- Lost Stage -->
+            <div class="kanban-column">
+                <div class="column-header lost">
+                    <h4 class="column-title">Lost</h4>
+                    <span class="column-count">
+                        {% if leads_by_status.Lost %}{{ leads_by_status.Lost|length }}{% else %}0{% endif %}
+                    </span>
+                </div>
+                <div class="column-cards">
+                    {% if leads_by_status.Lost %}
+                        {% for lead in leads_by_status.Lost %}
+                            <div class="lead-card card-lost">
+                                <div class="card-header">
+                                    <h5 class="card-title">{{ lead.lead_name }}</h5>
+                                    <span class="card-id">{{ lead.lead_id }}</span>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-course">{{ lead.course_interested }}</p>
+                                    <p class="card-assigned">{{ lead.assigned_to|default:"Unassigned" }}</p>
+                                </div>
+                                <div class="card-footer">
+                                    <span class="card-date">{{ lead.created_at|date:"d M" }}</span>
+                                    <a href="{% url 'leads:lead_capture_details' lead.id %}" class="card-link">→</a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-column">No leads</div>
+                    {% endif %}
+                    
+                    {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" or request.user.staff_profile.role.role_name == "Sales Exec Lead" %}
+                    <a href="{% url 'leads:lead_capture_create' %}" class="add-lead-link">+ Add Lead</a>
+                    {% endif %}
+                </div>
+                <button type="button" class="scroll-nav-btn scroll-up-btn">▲</button>
+                <button type="button" class="scroll-nav-btn scroll-down-btn">▼</button>
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+            <!-- All Leads -->
+            <section class="all-leads-pipe-section">
+                <div class="content-card-pipe">
+                    <div class="card-header">
+                        <h2 class="all-card-title-pipe">All Leads <strong>({{ total_leads }})</strong></h2>
+                    </div>
+
+                    <div class="table-wrapper-pipe">
+                        <table class="data-table-pipe">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Source</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for lead in leads %}
+                                <tr>
+                                    <td>{{ lead.lead_id }}</td>
+                                    <td>{{ lead.lead_name }}</td>
+                                    <td>{{ lead.email }}</td>
+                                    <td>{{ lead.phone_no }}</td>
+                                    <td>{{ lead.lead_source }}</td>
+                                    <td><span class="status-badge {{ lead.initial_status|lower }}">{{ lead.initial_status|title }}</span></td>
+                                    <td>
+                                        <a href="{% url 'leads:lead_capture_details' lead.id %}" class="btn-view">View</a>
+
+                                        {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" or request.user.staff_profile.role.role_name == "Sales Exec Lead" %}
+                                        <a href="{% url 'leads:lead_capture_update' lead.id %}" class="btn-edit">Edit</a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <div class="table-footer-pipe">
+
+    <div class="table-info-pipe">
+        Showing
+        {{ leads.start_index }}
+        to
+        {{ leads.end_index }}
+        of
+        {{ leads.paginator.count }}
+        entries
+    </div>
+
+    <div class="table-pagination-pipe">
+
+        <div class="pagination">
+
+            {% if leads.has_previous %}
+            <a href="?page={{ leads.previous_page_number }}&search={{ search_query }}&assigned_to={{ assigned_to }}&page_size={{ page_size }}"
+               class="pagination-link ajax-page">
+                <i class="fa-solid fa-angle-left"></i>
+            </a>
+            {% endif %}
+
+            {% for num in leads.paginator.page_range %}
+            <a href="?page={{ num }}&search={{ search_query }}&assigned_to={{ assigned_to }}&page_size={{ page_size }}"
+               class="pagination-link ajax-page {% if num == leads.number %}active{% endif %}">
+                {{ num }}
+            </a>
+            {% endfor %}
+
+            {% if leads.has_next %}
+            <a href="?page={{ leads.next_page_number }}&search={{ search_query }}&assigned_to={{ assigned_to }}&page_size={{ page_size }}"
+               class="pagination-link ajax-page">
+                <i class="fa-solid fa-angle-right"></i>
+            </a>
+            {% endif %}
+
+        </div>
+
+        <div class="page-size-pipe">
+            <select id="pageSizeSelect">
+                <option value="10" {% if page_size == '10' %}selected{% endif %}>10 / page</option>
+                <option value="25" {% if page_size == '25' %}selected{% endif %}>25 / page</option>
+                <option value="50" {% if page_size == '50' %}selected{% endif %}>50 / page</option>
+                <option value="100" {% if page_size == '100' %}selected{% endif %}>100 / page</option>
+            </select>
+        </div>
+
+    </div>
+
+</div>
+
+        {% else %}
+            <div class="no-search-results">No leads available for this filter.</div>
+        {% endif %}
+        </div>
+
+    </div>
+
+{% endblock %}

@@ -1,0 +1,1255 @@
+{% extends 'staff/base.html' %}
+{% load static %}
+
+
+{% block content %}
+{% include 'partials/toast_messages.html' %}
+<div class="dash-container">
+
+    <!-- ============================= PAGE HEADER ============================== -->
+<div class="dash-page-header">
+
+    <div>
+        <h1>CSC-CRM Dashboard</h1>
+        <p>Overview of Staff, Leads, Attendance and Business Performance</p>
+    </div>
+
+    <div class="dash-header-right">
+
+        {% if request.user.staff_profile and request.user.staff_profile.role.role_name != "Admin" and request.user.staff_profile.status != "terminated" %}
+            {% if today_status_for_me == 'Leave' %}
+                <a class="staff-disabled-btn">On Leave</a>
+            {% elif today_status_for_me == 'Absent' and today_attendance and today_attendance.status == 'Absent' %}
+                <a class="staff-disabled-btn">Absent</a>
+            {% elif show_checkout_for_me %}
+                <button type="button" class="staff-checkout-btn" onclick="openAttendancePopup()">Staff Check-Out</button>
+            {% else %}
+                <button type="button" class="staff-checkin-btn" onclick="openAttendancePopup()">Staff Check-In</button>
+            {% endif %}
+        {% endif %}
+
+        <div class="dash-breadcrumb">
+            <span>Home</span> /
+            <a href="{% url 'staff_profile' request.user.staff_profile.id %}" style="text-decoration: none;color:blue;">Staff</a> /
+            <span>Dashboard</span>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Popup modal-->
+<div id="attendancePopup" class="attendance-modal">
+    <div class="attendance-modal-box">
+        <button class="close-popup" onclick="closeAttendancePopup()">✕</button>
+        {% include "staff/staff_checkin.html" with staff=request.user.staff_profile is_checkin_done=is_checkin_done_for_me is_checkout_done=is_checkout_done_for_me is_leave_or_absent=is_leave_or_absent_for_me is_checkout_closed=is_checkout_closed_for_me active_attendance=active_attendance_for_me %}
+    </div>
+</div>
+
+
+
+    <!-- ========================== STAF SUMMARY CARD Admin,Manager,HR========================== -->
+
+    <div class="dash-stats-row">
+
+        {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" or request.user.staff_profile.role.role_name == "HR" %}
+        <div class="dash-stat-card">
+            <div class="dash-stat-icon icon-indigo">
+                <i class="fa-solid fa-user"></i>
+            </div>
+            <div class="dash-stat-body">
+                <span>Total Staff</span>
+                <h2>{{ total_staff }}</h2>
+                <small>All Departments</small>
+            </div>
+        </div>
+
+        <div class="dash-stat-card">
+            <div class="dash-stat-icon icon-green">
+                <i class="fa-solid fa-user-check"></i>
+            </div>
+            <div class="dash-stat-body">
+                <span>Active Staff</span>
+                <h2>{{ active_staff }}</h2>
+                <small>Currently active</small>
+            </div>
+        </div>
+
+        <div class="dash-stat-card">
+            <div class="dash-stat-icon icon-amber">
+                <i class="fa-regular fa-clock"></i>
+            </div>
+            <div class="dash-stat-body">
+                <span>On Leave</span>
+                <h2>{{ on_leave }}</h2>
+                <small>Currently On Leave</small>
+            </div>
+        </div>
+
+        <div class="dash-stat-card">
+            <div class="dash-stat-icon icon-gray">
+                <i class="fa-solid fa-user-slash"></i>
+            </div>
+            <div class="dash-stat-body">
+                <span>Inactive</span>
+                <h2>{{ inactive }}</h2>
+                <small>Not Active</small>
+            </div>
+        </div>
+
+        <div class="dash-stat-card">
+            <div class="dash-stat-icon icon-red">
+                <i class="fa-solid fa-power-off"></i>
+            </div>
+            <div class="dash-stat-body">
+                <span>Terminated</span>
+                <h2>{{ terminated }}</h2>
+                <small>This Month</small>
+            </div>
+        </div>
+
+        <div class="dash-stat-card">
+            <div class="dash-stat-icon icon-blue">
+                <i class="fa-solid fa-star"></i>
+            </div>
+            <div class="dash-stat-body">
+                <span>Average Rating</span>
+                <h2>{{ average_rating }}</h2>
+                <small>Out of 5</small>
+            </div>
+        </div>
+         {% endif %}
+<!--=================== Trainer =======================-->
+        {% if request.user.staff_profile.role.role_name == "Trainer" %}
+       
+        <div class="dash-stat-card">
+            <div class="dash-stat-icon icon-indigo">
+                <i class="fa-solid fa-user"></i>
+            </div>
+            <div class="dash-stat-body">
+                <span>My Students</span>
+                <h2>{{ trainer_total_students }}</h2>
+                <small>Assigned Batches</small>
+            </div>
+        </div>
+
+        <div class="dash-stat-card">
+            <div class="dash-stat-icon icon-green">
+                <i class="fa-solid fa-user-check"></i>
+            </div>
+            <div class="dash-stat-body">
+                <span>Active Students</span>
+                <h2>{{ trainer_active_students }}</h2>
+                <small>Currently active</small>
+            </div>
+        </div>
+
+        <div class="dash-stat-card">
+            <div class="dash-stat-icon icon-blue">
+                <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+            <div class="dash-stat-body">
+                <span>Completed</span>
+                <h2>{{ trainer_completed_students }}</h2>
+                <small>Course completed</small>
+            </div>
+        </div>
+
+        <div class="dash-stat-card">
+            <div class="dash-stat-icon icon-red">
+                <i class="fa-solid fa-user-xmark"></i>
+            </div>
+            <div class="dash-stat-body">
+                <span>Absent</span>
+                <h2>{{ trainer_long_absent_students }}</h2>
+                <small>Absent {{ LONG_ABSENT_DAYS }}+ days in a row</small>
+            </div>
+        </div>
+
+        <div class="dash-stat-card">
+            <div class="dash-stat-icon icon-amber">
+                <i class="fa-solid fa-layer-group"></i>
+            </div>
+            <div class="dash-stat-body">
+                <span>My Batches</span>
+                <h2>{{ trainer_total_batches }}</h2>
+                <small>Total Assigned</small>
+            </div>
+        </div>
+
+        <div class="dash-stat-card">
+            <div class="dash-stat-icon icon-blue">
+                <i class="fa-solid fa-star"></i>
+            </div>
+            <div class="dash-stat-body">
+                <span>My Rating</span>
+                <h2>{{ request.user.staff_profile.performance_rating|default:0 }}/5</h2>
+                <small>Performance Score</small>
+            </div>
+        </div>
+         
+         {% endif %}
+
+         <!--=================== KPI Cards Sales Exec Lead =====================-->
+         {% if request.user.staff_profile.role.role_name == "Sales Exec Lead" %}
+        <div class="dash-stat-card">
+            <div class="dash-stat-icon icon-indigo">
+                <i class="fa-solid fa-user-plus"></i>
+            </div>
+            <div class="dash-stat-body">
+                <span>Total Leads</span>
+                <h2>{{ total_leads }}</h2>
+                <small>All Sources</small>
+            </div>
+        </div>
+
+        <div class="dash-stat-card">
+            <div class="dash-stat-icon icon-green">
+                <i class="fa-solid fa-user-check"></i>
+            </div>
+            <div class="dash-stat-body">
+                <span>Enrolled Leads</span>
+                <h2>{{ enrolled_leads }}</h2>
+                <small>Converted</small>
+            </div>
+        </div>
+
+        <div class="dash-stat-card">
+            <div class="dash-stat-icon icon-amber">
+                <i class="fa-regular fa-clock"></i>
+            </div>
+            <div class="dash-stat-body">
+                <span>Pending Follow-ups</span>
+                <h2>{{ due_today }}</h2>
+                <small>Due Today</small>
+            </div>
+        </div>
+
+        <div class="dash-stat-card">
+            <div class="dash-stat-icon icon-gray">
+                <i class="fa-solid fa-user-slash"></i>
+            </div>
+            <div class="dash-stat-body">
+                <span>Overdue</span>
+                <h2>{{ overdue_count }}</h2>
+                <small>Not Followed Up</small>
+            </div>
+        </div>
+
+        <div class="dash-stat-card">
+            <div class="dash-stat-icon icon-red">
+                <i class="fa-solid fa-user-xmark"></i>
+            </div>
+            <div class="dash-stat-body">
+                <span>Lost Leads</span>
+                <h2>{{ lost_leads }}</h2>
+                <small>This Month</small>
+            </div>
+        </div>
+
+        <div class="dash-stat-card">
+            <div class="dash-stat-icon icon-blue">
+                <i class="fa-solid fa-chart-line"></i>
+            </div>
+            <div class="dash-stat-body">
+                <span>Conversion Rate</span>
+                <h2>{{ conversion_rate }}%</h2>
+                <small>Leads to Enrollment</small>
+            </div>
+        </div>
+         {% endif %}
+
+         <!--======================= KPI Cards Sales Exec ============================-->
+         {% if request.user.staff_profile.role.role_name == "Sales Exec" %}
+        <div class="dash-stat-card">
+            <div class="dash-stat-icon icon-indigo">
+                <i class="fa-solid fa-user-plus"></i>
+            </div>
+            <div class="dash-stat-body">
+                <span>My Leads</span>
+                <h2>{{ my_total_leads }}</h2>
+                <small>All Sources</small>
+            </div>
+        </div>
+
+        <div class="dash-stat-card">
+            <div class="dash-stat-icon icon-green">
+                <i class="fa-solid fa-user-check"></i>
+            </div>
+            <div class="dash-stat-body">
+                <span>Enrolled Leads</span>
+                <h2>{{ my_enrolled_leads }}</h2>
+                <small>Converted</small>
+            </div>
+        </div>
+
+        <div class="dash-stat-card">
+            <div class="dash-stat-icon icon-amber">
+                <i class="fa-regular fa-clock"></i>
+            </div>
+            <div class="dash-stat-body">
+                <span>Pending Follow-ups</span>
+                <h2>{{ my_due_today }}</h2>
+                <small>Due Today</small>
+            </div>
+        </div>
+
+        <div class="dash-stat-card">
+            <div class="dash-stat-icon icon-gray">
+                <i class="fa-solid fa-user-slash"></i>
+            </div>
+            <div class="dash-stat-body">
+                <span>Overdue</span>
+                <h2>{{ my_overdue_count }}</h2>
+                <small>Not Followed Up</small>
+            </div>
+        </div>
+
+        <div class="dash-stat-card">
+            <div class="dash-stat-icon icon-red">
+                <i class="fa-solid fa-user-xmark"></i>
+            </div>
+            <div class="dash-stat-body">
+                <span>Lost Leads</span>
+                <h2>{{ my_lost_leads }}</h2>
+                <small>This Month</small>
+            </div>
+        </div>
+
+        <div class="dash-stat-card">
+            <div class="dash-stat-icon icon-blue">
+                <i class="fa-solid fa-chart-line"></i>
+            </div>
+            <div class="dash-stat-body">
+                <span>Conversion Rate</span>
+                <h2>{{ my_conversion_rate }}%</h2>
+                <small>Leads to Enrollment</small>
+            </div>
+        </div>
+         {% endif %}
+
+         <!--======================= KPI Cards Marketing Lead / Digital Marketing (target counts only) ============================-->
+         {% if request.user.staff_profile.role.role_name == "Digital Marketing" %}
+        <div class="dash-stat-card">
+            <div class="dash-stat-icon icon-indigo">
+                <i class="fa-solid fa-bullseye"></i>
+            </div>
+            <div class="dash-stat-body">
+                <span>My Total Targets</span>
+                <h2>{{ my_targets_total }}</h2>
+                <small>All Time</small>
+            </div>
+        </div>
+
+        <div class="dash-stat-card">
+            <div class="dash-stat-icon icon-green">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <div class="dash-stat-body">
+                <span>Completed</span>
+                <h2>{{ my_targets_completed }}</h2>
+                <small>Targets achieved</small>
+            </div>
+        </div>
+
+        <div class="dash-stat-card">
+            <div class="dash-stat-icon icon-amber">
+                <i class="fa-regular fa-clock"></i>
+            </div>
+            <div class="dash-stat-body">
+                <span>Active</span>
+                <h2>{{ my_targets_active }}</h2>
+                <small>In progress</small>
+            </div>
+        </div>
+
+        <div class="dash-stat-card">
+            <div class="dash-stat-icon icon-red">
+                <i class="fa-solid fa-hourglass-end"></i>
+            </div>
+            <div class="dash-stat-body">
+                <span>Expired</span>
+                <h2>{{ my_targets_expired }}</h2>
+                <small>Not completed in time</small>
+            </div>
+        </div>
+
+        {% if my_capture_target %}
+        <div class="dash-stat-card">
+            <div class="dash-stat-icon icon-gray">
+                <i class="fa-solid fa-chart-line"></i>
+            </div>
+            <div class="dash-stat-body">
+                <span>Current Target Progress</span>
+                <h2>{{ my_capture_target.achieved_count }}/{{ my_capture_target.target_count }}</h2>
+                <small>{{ my_capture_target.progress_percent }}% complete</small>
+            </div>
+        </div>
+        {% endif %}
+
+       <div class="dash-stat-card">
+            <div class="dash-stat-icon icon-blue">
+                <i class="fa-solid fa-star"></i>
+            </div>
+            <div class="dash-stat-body">
+                <span>My Rating</span>
+                <h2>{{ request.user.staff_profile.performance_rating|default:0 }}/5</h2>
+                <small>Performance Score</small>
+            </div>
+        </div>
+
+        
+         {% endif %}
+
+         <!--======================= KPI Cards Marketing Lead (whole team target counts) ============================-->
+         {% if request.user.staff_profile.role.role_name == "Marketing Lead" %}
+        <div class="dash-stat-card">
+            <div class="dash-stat-icon icon-indigo">
+                <i class="fa-solid fa-people-group"></i>
+            </div>
+            <div class="dash-stat-body">
+                <span>Team Total Targets</span>
+                <h2>{{ marketing_team_targets_total }}</h2>
+                <small>Whole Marketing Team</small>
+            </div>
+        </div>
+
+        <div class="dash-stat-card">
+            <div class="dash-stat-icon icon-green">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <div class="dash-stat-body">
+                <span>Team Completed</span>
+                <h2>{{ marketing_team_targets_completed }}</h2>
+                <small>Targets achieved</small>
+            </div>
+        </div>
+
+        <div class="dash-stat-card">
+            <div class="dash-stat-icon icon-amber">
+                <i class="fa-regular fa-clock"></i>
+            </div>
+            <div class="dash-stat-body">
+                <span>Team Active</span>
+                <h2>{{ marketing_team_targets_active }}</h2>
+                <small>In progress</small>
+            </div>
+        </div>
+
+        <div class="dash-stat-card">
+            <div class="dash-stat-icon icon-red">
+                <i class="fa-solid fa-hourglass-end"></i>
+            </div>
+            <div class="dash-stat-body">
+                <span>Team Expired</span>
+                <h2>{{ marketing_team_targets_expired }}</h2>
+                <small>Not completed in time</small>
+            </div>
+        </div>
+        {% if my_capture_target %}
+        <div class="dash-stat-card">
+    <div class="dash-stat-icon icon-gray">
+        <i class="fa-solid fa-chart-line"></i>
+    </div>
+    <div class="dash-stat-body">
+        <span>Team Current Target Progress</span>
+        <h2>{{ marketing_team_achieved_count }}/{{ marketing_team_target_count }}</h2>
+        <small>{{ marketing_team_progress_percent }}% complete</small>
+    </div>
+</div>
+        {% endif %}
+
+       <div class="dash-stat-card">
+            <div class="dash-stat-icon icon-blue">
+                <i class="fa-solid fa-star"></i>
+            </div>
+            <div class="dash-stat-body">
+                <span>My Rating</span>
+                <h2>{{ request.user.staff_profile.performance_rating|default:0 }}/5</h2>
+                <small>Performance Score</small>
+            </div>
+        </div>
+         {% endif %}
+
+    </div>
+
+    <!-- =================== OVERVIEW ROW: LEADS / STUDENTS / ATTENDANCE / DEPARTMENTS  ================== -->
+
+    <div class="dash-overview-grid">
+
+        <!-- ========= LEAD OVERVIEW Sales Exec Lead========= -->
+        {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" or request.user.staff_profile.role.role_name == "HR" or request.user.staff_profile.role.role_name == "Sales Exec Lead" %}
+
+        <div class="dash-panel">
+
+            <div class="dash-panel-header">
+                <h3>Leads Overview</h3>
+                <a href="{% url 'leads:lead_pipeline_view' %}">View Details <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+
+            <div class="dash-donut-row">
+
+                <div class="dash-donut" style="--donut-gradient: conic-gradient(
+                        #fffb11 0deg {{ new_leads_deg|default:0 }}deg,
+                        #f59e0b {{ new_leads_deg|default:0 }}deg {{ contacted_leads_deg|default:0 }}deg,
+                        #8b5cf6 {{ contacted_leads_deg|default:0 }}deg {{ interested_leads_deg|default:0 }}deg,
+                        #06b6d4 {{ interested_leads_deg|default:0 }}deg {{ demo_leads_deg|default:0 }}deg,
+                        #16a34a {{ demo_leads_deg|default:0 }}deg {{ enrolled_leads_deg|default:0 }}deg,
+                        #ef4444 {{ enrolled_leads_deg|default:0 }}deg 360deg
+                    );">
+                    <div class="dash-donut-center">
+                        <h2>{{ total_leads }}</h2>
+                        <span>Total Leads</span>
+                    </div>
+                </div>
+
+                <ul class="dash-legend">
+                    <li><i class="dash-dot" style="background:#fffb11;"></i>New <b>{{ new_leads }}</b> <small>({{ new_leads_pct|default:0 }}%)</small></li>
+                    <li><i class="dash-dot" style="background:#f59e0b;"></i>Contacted <b>{{ contacted_leads }}</b><small>({{ contacted_leads_pct|default:0 }}%)</small></li>
+                    <li><i class="dash-dot" style="background:#8b5cf6;"></i>Interested <b>{{ interested_leads }}</b><small>({{ interested_leads_pct|default:0 }}%)</small></li>
+                    <li><i class="dash-dot" style="background:#06b6d4;"></i>Demo Scheduled <b>{{ demo_leads }}</b><small>({{ demo_leads_pct|default:0 }}%)</small></li>
+                    <li><i class="dash-dot" style="background:#16a34a;"></i>Enrolled <b>{{ enrolled_leads }}</b><small>({{ enrolled_leads_pct|default:0 }}%)</small></li>
+                    <li><i class="dash-dot" style="background:#ef4444;"></i>Lost <b>{{ lost_leads }}</b><small>({{ lost_leads_pct|default:0 }}%)</small></li>
+                </ul>
+
+            </div>
+
+        </div>
+        {% endif %}
+
+        <!-- ========= LEAD OVERVIEW Sales Exec========= -->
+        {% if request.user.staff_profile.role.role_name == "Sales Exec" %}
+        <div class="dash-panel">
+
+            <div class="dash-panel-header">
+                <h3>My Leads Overview</h3>
+                <a href="{% url 'leads:lead_pipeline_view' %}">View Details <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+
+            <div class="dash-donut-row">
+
+                <div class="dash-donut" style="--donut-gradient: conic-gradient(
+                        #fffb11 0deg {{ my_new_leads_deg|default:0 }}deg,
+                        #f59e0b {{ my_new_leads_deg|default:0 }}deg {{ my_contacted_leads_deg|default:0 }}deg,
+                        #8b5cf6 {{ my_contacted_leads_deg|default:0 }}deg {{ my_interested_leads_deg|default:0 }}deg,
+                        #06b6d4 {{ my_interested_leads_deg|default:0 }}deg {{ my_demo_leads_deg|default:0 }}deg,
+                        #16a34a {{ my_demo_leads_deg|default:0 }}deg {{ my_enrolled_leads_deg|default:0 }}deg,
+                        #ef4444 {{ my_enrolled_leads_deg|default:0 }}deg 360deg
+                    );">
+                    <div class="dash-donut-center">
+                        <h2>{{ my_total_leads }}</h2>
+                        <span>My Leads</span>
+                    </div>
+                </div>
+
+                <ul class="dash-legend">
+                    <li><i class="dash-dot" style="background:#fffb11;"></i>New <b>{{ my_new_leads }}</b> <small>({{ my_new_leads_pct|default:0 }}%)</small></li>
+                    <li><i class="dash-dot" style="background:#f59e0b;"></i>Contacted <b>{{ my_contacted_leads }}</b><small>({{ my_contacted_leads_pct|default:0 }}%)</small></li>
+                    <li><i class="dash-dot" style="background:#8b5cf6;"></i>Interested <b>{{ my_interested_leads }}</b><small>({{ my_interested_leads_pct|default:0 }}%)</small></li>
+                    <li><i class="dash-dot" style="background:#06b6d4;"></i>Demo Scheduled <b>{{ my_demo_leads }}</b><small>({{ my_demo_leads_pct|default:0 }}%)</small></li>
+                    <li><i class="dash-dot" style="background:#16a34a;"></i>Enrolled <b>{{ my_enrolled_leads }}</b><small>({{ my_enrolled_leads_pct|default:0 }}%)</small></li>
+                    <li><i class="dash-dot" style="background:#ef4444;"></i>Lost <b>{{ my_lost_leads }}</b><small>({{ my_lost_leads_pct|default:0 }}%)</small></li>
+                </ul>
+
+            </div>
+
+        </div>
+        {% endif %}
+
+        <!-- ============== STUDENT OVERVIEW ============== -->
+        {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" or request.user.staff_profile.role.role_name == "HR" %}
+
+         <div class="dash-panel">
+
+            <div class="dash-panel-header">
+                <h3>Student Overview</h3>
+                <a href="{% url 'search_students' %}">View Details <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+
+            <div class="dash-donut-row">
+
+                <div class="dash-donut" style="--donut-gradient: conic-gradient(
+                        #22c55e 0deg {{ active_students_deg|default:0 }}deg,
+                        #2563eb {{ active_students_deg|default:0 }}deg {{ completed_students_deg|default:0 }}deg,
+                        #ef4444 {{ completed_students_deg|default:0 }}deg {{ long_absent_students_deg|default:0 }}deg,
+                        #e5e7eb {{ long_absent_students_deg|default:0 }}deg 360deg
+                    );">
+                    <div class="dash-donut-center">
+                        <h2>{{ total_students }}</h2>
+                        <span>Total Students</span>
+                    </div>
+                </div>
+
+                <ul class="dash-legend">
+                    <li><i class="dash-dot" style="background:#22c55e;"></i>Active <b>{{ active_students }}</b><small>({{ active_students_pct|default:0 }}%)</small></li>
+                    <li><i class="dash-dot" style="background:#2563eb;"></i>Completed <b>{{ completed_students }}</b><small>({{ completed_students_pct|default:0 }}%)</small></li>
+                    <li><i class="dash-dot" style="background:#ef4444;"></i>Absent <b>{{ long_absent_students }}</b><small>({{ long_absent_students_pct|default:0 }}%)</small></li>
+                    <li class="dash-legend-total">Total Students <b>{{ total_students }}</b></li>
+                </ul>
+
+                {% if long_absent_list %}
+                <div class="dash-longabsent-list" style="margin-top:10px; font-size:12px;">
+                    <strong>Absent students</strong>
+                    <ul style="margin:6px 0 0 16px; padding:0;">
+                        {% for item in long_absent_list %}
+                        <li>{{ item.name }} <small>({{ item.batch }} &bull; {{ item.days }} days)</small></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+            </div>
+
+         </div>
+         {% endif %}
+
+         
+
+<!-- ============== STUDENT OVERVIEW (Trainer - own students only) ============== -->
+
+         {% if request.user.staff_profile.role.role_name == "Trainer" %}
+
+         <div class="dash-panel">
+
+            <div class="dash-panel-header">
+                <h3>My Student Overview</h3>
+                <a href="{% url 'search_students' %}">View Details <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+
+            <div class="dash-donut-row">
+
+                <div class="dash-donut" style="--donut-gradient: conic-gradient(
+                        #22c55e 0deg {{ trainer_active_students_deg|default:0 }}deg,
+                        #2563eb {{ trainer_active_students_deg|default:0 }}deg {{ trainer_completed_students_deg|default:0 }}deg,
+                        #ef4444 {{ trainer_completed_students_deg|default:0 }}deg {{ trainer_long_absent_students_deg|default:0 }}deg,
+                        #e5e7eb {{ trainer_long_absent_students_deg|default:0 }}deg 360deg
+                    );">
+                    <div class="dash-donut-center">
+                        <h2>{{ trainer_total_students }}</h2>
+                        <span>My Students</span>
+                    </div>
+                </div>
+
+                <ul class="dash-legend">
+                    <li><i class="dash-dot" style="background:#22c55e;"></i>Active <b>{{ trainer_active_students }}</b><small>({{ trainer_active_students_pct|default:0 }}%)</small></li>
+                    <li><i class="dash-dot" style="background:#2563eb;"></i>Completed <b>{{ trainer_completed_students }}</b><small>({{ trainer_completed_students_pct|default:0 }}%)</small></li>
+                    <li><i class="dash-dot" style="background:#ef4444;"></i>Absent <b>{{ trainer_long_absent_students }}</b><small>({{ trainer_long_absent_students_pct|default:0 }}%)</small></li>
+                    <li class="dash-legend-total">Total Students <b>{{ trainer_total_students }}</b></li>
+                </ul>
+
+            </div>
+
+         </div>
+         {% endif %}
+
+<!-- ============================= ATTENDANCE SUMMARY ========================== -->
+
+ {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" or request.user.staff_profile.role.role_name == "HR" %}
+        <div class="dash-panel">
+
+            <div class="dash-panel-header">
+                <h3>Attendance Summary</h3>
+                <small>Staff Attendance</small>
+            </div>
+
+            <div class="dash-mini-grid">
+
+                <div class="dash-mini-card mini-indigo">
+                    <div class="dash-mini-icon"><i class="fa-solid fa-user-check"></i></div>
+                    <h2>{{ present }}</h2>
+                    <span>Present Today</span>
+                </div>
+
+                <div class="dash-mini-card mini-amber">
+                    <div class="dash-mini-icon"><i class="fa-regular fa-clock"></i></div>
+                    <h2>{{ late }}</h2>
+                    <span>Late Today</span>
+                </div>
+
+                <div class="dash-mini-card mini-red">
+                    <div class="dash-mini-icon"><i class="fa-solid fa-user-xmark"></i></div>
+                    <h2>{{ absent }}</h2>
+                    <span>Absent Today</span>
+                </div>
+
+                <div class="dash-mini-card mini-blue">
+                    <div class="dash-mini-icon"><i class="fa-solid fa-person-walking-arrow-right"></i></div>
+                    <h2>{{ leave }}</h2>
+                    <span>On Leave Today</span>
+                </div>
+
+            </div>
+
+            <div class="dash-attendance-progress">
+                <div class="dash-progress-top">
+                    <span>Today's Attendance</span>
+                    <strong>{{ attendance_percentage }}%</strong>
+                </div>
+                <div class="dash-progress-bar">
+                    <div class="dash-progress-fill" style="width: {{ attendance_percentage|default:0 }}%;"></div>
+                </div>
+            </div>
+
+        </div>
+        {% endif %}
+
+        <!-- Attendance Summary Sales Department (Sales Exec Lead / Marketing Lead) -->
+
+ {% if request.user.staff_profile.role.role_name == "Sales Exec Lead" or request.user.staff_profile.role.role_name == "Marketing Lead" %}
+       
+<div class="dash-panel dash-attendance-half">
+
+    <div class="dash-panel-header">
+        <h3>Attendance Summary</h3>
+        <small>{{ my_department_name }}</small>
+    </div>
+
+    <div class="dash-mini-grid">
+
+        <div class="dash-mini-card mini-indigo">
+            <div class="dash-mini-icon"><i class="fa-solid fa-user-check"></i></div>
+            <h2>{{ my_dept_present }}</h2>
+            <span>Present Today</span>
+        </div>
+
+        <div class="dash-mini-card mini-amber">
+            <div class="dash-mini-icon"><i class="fa-regular fa-clock"></i></div>
+            <h2>{{ my_dept_late }}</h2>
+            <span>Late Today</span>
+        </div>
+
+        <div class="dash-mini-card mini-red">
+            <div class="dash-mini-icon"><i class="fa-solid fa-user-xmark"></i></div>
+            <h2>{{ my_dept_absent }}</h2>
+            <span>Absent Today</span>
+        </div>
+
+        <div class="dash-mini-card mini-blue">
+            <div class="dash-mini-icon"><i class="fa-solid fa-person-walking-arrow-right"></i></div>
+            <h2>{{ my_dept_leave }}</h2>
+            <span>On Leave Today</span>
+        </div>
+
+    </div>
+
+    <div class="dash-attendance-progress">
+        <div class="dash-progress-top">
+            <span>Today's Attendance</span>
+            <strong>{{ my_dept_attendance_percentage }}%</strong>
+        </div>
+        <div class="dash-progress-bar">
+            <div class="dash-progress-fill" style="width: {{ my_dept_attendance_percentage|default:0 }}%;"></div>
+        </div>
+    </div>
+
+</div>
+{% endif %}
+        
+
+
+        <!-- ============================= MY ATTENDANCE (Trainer / Sales Exec Lead / Sales Exec / Marketing Lead / Digital Marketing) ========================== -->
+{% if request.user.staff_profile.role.role_name == "Trainer" or request.user.staff_profile.role.role_name == "Sales Exec Lead" or request.user.staff_profile.role.role_name == "Sales Exec" or request.user.staff_profile.role.role_name == "Marketing Lead" or request.user.staff_profile.role.role_name == "Digital Marketing" %}
+        <div class="dash-panel dash-attendance-half">
+
+            <div class="dash-panel-header">
+                <h3>Attendance Summary</h3>
+                <small>My Attendance &middot; {{ my_attendance_period }}</small>
+            </div>
+
+            <div class="dash-mini-grid">
+
+                <div class="dash-mini-card mini-indigo">
+                    <div class="dash-mini-icon"><i class="fa-solid fa-user-check"></i></div>
+                    <h2>{{ my_present_days }}</h2>
+                    <span>Present Days</span>
+                </div>
+
+                <div class="dash-mini-card mini-amber">
+                    <div class="dash-mini-icon"><i class="fa-regular fa-clock"></i></div>
+                    <h2>{{ my_late_days }}</h2>
+                    <span>Late Days</span>
+                </div>
+
+                <div class="dash-mini-card mini-red">
+                    <div class="dash-mini-icon"><i class="fa-solid fa-user-xmark"></i></div>
+                    <h2>{{ my_absent_days }}</h2>
+                    <span>Absent Days</span>
+                </div>
+
+                <div class="dash-mini-card mini-blue">
+                    <div class="dash-mini-icon"><i class="fa-solid fa-person-walking-arrow-right"></i></div>
+                    <h2>{{ my_leave_days }}</h2>
+                    <span>Leave Days</span>
+                </div>
+
+            </div>
+
+            <div class="dash-attendance-progress">
+                <div class="dash-progress-top">
+                    <span>My Attendance</span>
+                    <strong>{{ my_attendance_percentage }}%</strong>
+                </div>
+                <div class="dash-progress-bar">
+                    <div class="dash-progress-fill" style="width: {{ my_attendance_percentage|default:0 }}%;"></div>
+                </div>
+            </div>
+
+        </div>
+        {% endif %}
+
+
+        <!-- =========================DEPARTMENT OVERVIEW ========================= -->
+
+         {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" or request.user.staff_profile.role.role_name == "HR" %}
+        <div class="dash-panel">
+
+            <div class="dash-panel-header">
+                <h3>Department Overview</h3>
+                <small>All Department</small>
+            </div>
+
+            <ul class="dash-department-list">
+                {% for dept in departments %}
+                <li>
+                    <span><i class="fa-solid fa-building"></i> {{ dept.dept_name }}</span>
+                    <strong>{{ dept.total_staff }}</strong>
+                </li>
+                {% endfor %}
+            </ul>
+
+            <div class="dash-department-total">
+                <span>Total Departments</span>
+                <strong>{{ departments|length }}</strong>
+            </div>
+
+        </div>
+        {% endif %}
+
+    </div>
+
+    <!-- =============  RECENT STAFF / RECENT LEADS / RECENT STUDENTS / BATCH STRENGTH  ================= -->
+    <div class="dash-lists-grid">
+
+        <!-- ==================== RECENT STAFF =================== -->
+        {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" or request.user.staff_profile.role.role_name == "HR" %}
+        <div class="dash-panel">
+
+            <div class="dash-panel-header">
+                <h3>Recent Staff</h3>
+                <a href="{% url 'staff_management' %}">View All <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+
+            <div class="dash-person-list">
+                {% for staff in recent_staff %}
+                <div class="dash-person-item">
+
+                    <div class="dash-person-avatar">
+                        {% if staff.profile_photo %}
+                        <img src="{{ staff.profile_photo.url }}" alt="{{ staff.first_name }} {{ staff.last_name }}">
+                        {% else %}
+                        {{ staff.first_name|slice:":1" }}{{ staff.last_name|slice:":1" }}
+                        {% endif %}
+                    </div>
+
+                    <div class="dash-person-body">
+                        <h5>{{ staff.first_name }} {{ staff.last_name }}</h5>
+                        <div class="dash-person-meta">
+                            <span><i class="fa-solid fa-briefcase"></i> {{ staff.role.role_name }}</span>
+                            <span><i class="fa-solid fa-building"></i> {{ staff.department.dept_name }}</span>
+                            <span><i class="fa-solid fa-calendar-days"></i> {{ staff.date_of_joining|date:"d M Y" }}</span>
+                        </div>
+                    </div>
+
+                    <button class="dash-person-menu"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+
+                </div>
+                {% empty %}
+                <p class="dash-empty">No staff found.</p>
+                {% endfor %}
+            </div>
+
+        </div>
+        {% endif %}
+
+
+        <!-- ==================== RECENT LEADS Sales Exec Lead=================== -->
+         {% if request.user.staff_profile.role.role_name == "Sales Exec Lead" %}
+        <div class="dash-panel">
+
+            <div class="dash-panel-header">
+                <h3>Recent Leads</h3>
+                <a href="{% url 'leads:lead_capture_list' %}">View All <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+
+            <div class="dash-person-list">
+                {% for lead in recent_leads %}
+                <div class="dash-person-item">
+
+                    <div class="dash-person-avatar">
+                        {{ lead.lead_name|slice:":1" }}
+                    </div>
+
+                    <div class="dash-person-body">
+                        <h5>{{ lead.lead_name }}</h5>
+                        <div class="dash-person-meta">
+                            <span><i class="fa-solid fa-book"></i> {{ lead.get_course_interested_display }}</span>
+                            <span>{% if lead.assigned_to.profile_photo %}<img src="{{ lead.assigned_to.profile_photo.url }}" alt="{{ lead.assigned_to.full_name }}" style="width:20px;height:20px;border-radius:50%;object-fit:cover;vertical-align:middle;">{% else %}<i class="fa-solid fa-user"></i>{% endif %} {{ lead.assigned_to.full_name|default:"Unassigned" }}</span>
+                            <span><i class="fa-solid fa-calendar-days"></i> {{ lead.created_at|date:"d M Y" }}</span>
+                        </div>
+                    </div>
+
+                </div>
+                {% empty %}
+                <p class="dash-empty">No leads found.</p>
+                {% endfor %}
+            </div>
+
+        </div>
+        {% endif %}
+
+        <!-- ==================== RECENT LEADS Sales Exec =================== -->
+         {% if request.user.staff_profile.role.role_name == "Sales Exec" %}
+        <div class="dash-panel">
+
+            <div class="dash-panel-header">
+                <h3>Recent Leads</h3>
+                <a href="{% url 'leads:lead_pipeline_view' %}">View All <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+
+            <div class="dash-person-list">
+                {% for lead in recent_leads %}
+                <div class="dash-person-item">
+
+                    <div class="dash-person-avatar">
+                        {{ lead.lead_name|slice:":1" }}
+                    </div>
+
+                    <div class="dash-person-body">
+                        <h5>{{ lead.lead_name }}</h5>
+                        <div class="dash-person-meta">
+                            <span><i class="fa-solid fa-book"></i> {{ lead.get_course_interested_display }}</span>
+                            <span>{% if lead.assigned_to.profile_photo %}<img src="{{ lead.assigned_to.profile_photo.url }}" alt="{{ lead.assigned_to.full_name }}" style="width:20px;height:20px;border-radius:50%;object-fit:cover;vertical-align:middle;">{% else %}<i class="fa-solid fa-user"></i>{% endif %} {{ lead.assigned_to.full_name|default:"Unassigned" }}</span>
+                            <span><i class="fa-solid fa-calendar-days"></i> {{ lead.created_at|date:"d M Y" }}</span>
+                        </div>
+                    </div>
+
+                </div>
+                {% empty %}
+                <p class="dash-empty">No leads found.</p>
+                {% endfor %}
+            </div>
+
+        </div>
+        {% endif %}
+
+        <!-- ==================== TEAM CAPTURE TARGETS Marketing Lead =================== -->
+         {% if request.user.staff_profile.role.role_name == "Marketing Lead" %}
+        <div class="dash-panel">
+
+            <div class="dash-panel-header">
+                <h3>Marketing Team Target Status</h3>
+                <a href="{% url 'leads:lead_capture_target' %}">View All <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+
+            <ul class="dash-legend">
+                <li><i class="dash-dot" style="background:#2563eb;"></i>Total Targets <b>{{ marketing_team_targets_total }}</b></li>
+                <li><i class="dash-dot" style="background:#16a34a;"></i>Completed <b>{{ marketing_team_targets_completed }}</b></li>
+                <li><i class="dash-dot" style="background:#f59e0b;"></i>Active <b>{{ marketing_team_targets_active }}</b></li>
+                <li><i class="dash-dot" style="background:#ef4444;"></i>Expired <b>{{ marketing_team_targets_expired }}</b></li>
+            </ul>
+
+        </div>
+        {% endif %}
+
+
+        <!-- ============================ RECENT STUDENTS ============================= -->
+         {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" or request.user.staff_profile.role.role_name == "HR" %}
+
+        <div class="dash-panel">
+
+            <div class="dash-panel-header">
+                <h3>Recent Students</h3>
+                <a href="{% url 'student_list' %}">View All <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+
+            <div class="dash-person-list">
+                {% for student in recent_students %}
+                <div class="dash-person-item">
+
+                    <div class="dash-person-avatar avatar-alt">
+                        {% if student.photo %}
+                        <img src="{{ student.photo.url }}" alt="{{ student.first_name }} {{ student.last_name }}">
+                        {% else %}
+                        {{ student.first_name|slice:":1" }}{{ student.last_name|slice:":1" }}
+                        {% endif %}
+                    </div>
+
+                    <div class="dash-person-body">
+                        <h5>{{ student.first_name }} {{ student.last_name }}</h5>
+                        <div class="dash-person-meta">
+                            <span><i class="fa-solid fa-phone"></i> {{ student.phone_no }}</span>
+                            <span><i class="fa-solid fa-envelope"></i> {{ student.email }}</span>
+                        </div>
+                    </div>
+
+                    {% if student.pending_amount <= 0 %}
+                    <span class="dash-pay-badge pay-paid">Paid</span>
+                    {% elif student.total_paid > 0 %}
+                    <span class="dash-pay-badge pay-partial">Partial</span>
+                    {% else %}
+                    <span class="dash-pay-badge pay-pending">Pending</span>
+                    {% endif %}
+
+                </div>
+                {% empty %}
+                <p class="dash-empty">No students found.</p>
+                {% endfor %}
+            </div>
+
+        </div>
+        {% endif %}
+
+
+        <!-- ============================ MY RECENT STUDENTS (Trainer) ============================= -->
+         {% if request.user.staff_profile.role.role_name == "Trainer" %}
+
+        <div class="dash-panel">
+
+            <div class="dash-panel-header">
+                <h3>My Recent Students</h3>
+                <a href="{% url 'student_list' %}">View All <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+
+            <div class="dash-person-list">
+                {% for student in trainer_recent_students %}
+                <div class="dash-person-item">
+
+                    <div class="dash-person-avatar avatar-alt">
+                        {% if student.photo %}
+                        <img src="{{ student.photo.url }}" alt="{{ student.first_name }} {{ student.last_name }}">
+                        {% else %}
+                        {{ student.first_name|slice:":1" }}{{ student.last_name|slice:":1" }}
+                        {% endif %}
+                    </div>
+
+                    <div class="dash-person-body">
+                        <h5>{{ student.first_name }} {{ student.last_name }}</h5>
+                        <div class="dash-person-meta">
+                            <span><i class="fa-solid fa-phone"></i> {{ student.phone_no }}</span>
+                            <span><i class="fa-solid fa-envelope"></i> {{ student.email }}</span>
+                        </div>
+                    </div>
+
+                    {% if student.pending_amount <= 0 %}
+                    <span class="dash-pay-badge pay-paid">Paid</span>
+                    {% elif student.total_paid > 0 %}
+                    <span class="dash-pay-badge pay-partial">Partial</span>
+                    {% else %}
+                    <span class="dash-pay-badge pay-pending">Pending</span>
+                    {% endif %}
+
+                </div>
+                {% empty %}
+                <p class="dash-empty">No students found.</p>
+                {% endfor %}
+            </div>
+
+        </div>
+        {% endif %}
+
+        <!-- =================== BATCH STRENGTH ====================-->
+         {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" or request.user.staff_profile.role.role_name == "HR" %}
+
+        <div class="dash-panel">
+
+            <div class="dash-panel-header">
+                <h3>Batch Strength</h3>
+                <a href="{% url 'batches_page' %}">View All <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+
+            <div class="dash-batch-chips">
+                <span>Total <b>{{ total_batches }}</b></span>
+                <span>Ongoing <b>{{ ongoing_batches }}</b></span>
+                <span>Upcoming <b>{{ upcoming_batches }}</b></span>
+                <span>Completed <b>{{ completed_batches }}</b></span>
+            </div>
+
+            <div class="dash-batch-list">
+                {% for batch in batch_summary %}
+                <div class="dash-batch-item">
+
+                    <div class="dash-batch-top">
+                        <div>
+                            <h5>{{ batch.batch_name }}</h5>
+                            <span>{{ batch.course.course_name }}</span>
+                            <em class="dash-batch-status dash-batch-status-{{ batch.dash_status|lower }}">{{ batch.dash_status }}</em>
+                        </div>
+                        <strong>{{ batch.enrolled_students }}/{{ batch.strength_total }}</strong>
+                    </div>
+
+                    <div class="dash-progress-bar">
+                        <div class="dash-progress-fill" style="width:{{ batch.occupancy_percentage }}%;"></div>
+                    </div>
+
+                </div>
+                {% empty %}
+                <p class="dash-empty">No batches available.</p>
+                {% endfor %}
+            </div>
+
+        </div>
+        {% endif %}
+
+        <!-- =================== MY BATCH STRENGTH (Trainer) ====================-->
+         {% if request.user.staff_profile.role.role_name == "Trainer" %}
+
+        <div class="dash-panel">
+
+            <div class="dash-panel-header">
+                <h3>My Batch Strength</h3>
+            </div>
+
+            <div class="dash-batch-chips">
+                <span>Total <b>{{ trainer_total_batches }}</b></span>
+                <span>Ongoing <b>{{ trainer_ongoing_batches }}</b></span>
+                <span>Upcoming <b>{{ trainer_upcoming_batches }}</b></span>
+                <span>Completed <b>{{ trainer_completed_batches }}</b></span>
+            </div>
+
+            <div class="dash-batch-list">
+                {% for batch in trainer_batch_summary %}
+                <div class="dash-batch-item">
+
+                    <div class="dash-batch-top">
+                        <div>
+                            <h5>{{ batch.batch_name }}</h5>
+                            <span>{{ batch.course.course_name }}</span>
+                        </div>
+                        <strong>{{ batch.enrolled_students }}/{{ batch.strength_total }}</strong>
+                    </div>
+
+                    <div class="dash-progress-bar">
+                        <div class="dash-progress-fill" style="width:{{ batch.occupancy_percentage }}%;"></div>
+                    </div>
+
+                </div>
+                {% empty %}
+                <p class="dash-empty">No batches assigned.</p>
+                {% endfor %}
+            </div>
+
+        </div>
+        {% endif %}
+
+    </div>
+
+    <!-- ================== QUICK ACTIONS ===================== -->
+
+    <div class="dash-panel dash-quick-actions-panel">
+
+        <h3>Quick Actions</h3>
+
+
+        <div class="dash-quick-actions-row">
+
+           {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" or request.user.staff_profile.role.role_name == "HR" or request.user.staff_profile.role.role_name == "Sales Exec Lead" or request.user.staff_profile.role.role_name == "Marketing Lead" %}
+            <a href="{% url 'staff_management' %}" class="dash-action-btn action-green">
+                <span><i class="fa-solid fa-user-group"></i> Staff Management</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </a>
+            {% endif %}
+
+            {% if request.user.staff_profile.role.role_name == "Admin" or request.user.staff_profile.role.role_name == "Manager" %}
+            <a href="{% url 'add_staff' %}" class="dash-action-btn action-indigo">
+                <span><i class="fa-solid fa-user-plus"></i> Add New Staff</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </a>
+            {% endif%}
+
+
+            <!--=== Trainer ====-->
+            {% if request.user.staff_profile.role.role_name == "Trainer" %}
+            <a href="{% url 'student_list' %}" class="dash-action-btn action-green">
+                <span><i class="fa-solid fa-user-group"></i>Search & Filter</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </a>
+            
+            <a href="{% url 'attendance_history' %}" class="dash-action-btn action-indigo">
+                <span><i class="fa-solid fa-user-plus"></i> Attendance History</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </a>
+            {% endif %}
+
+            <!--=============== HR =============-->
+            {% if request.user.staff_profile.role.role_name == "HR" %}
+            <a href="{% url 'attendance_history' %}" class="dash-action-btn action-indigo">
+                <span><i class="fa-solid fa-user-plus"></i> Attendance History</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </a>
+            {% endif %}
+
+            <!--=============== Sales Exec Lead =============-->
+         {% if request.user.staff_profile.role.role_name == "Sales Exec Lead" %}
+            <a href="{% url 'leads:lead_capture_list' %}" class="dash-action-btn action-indigo">
+                <span><i class="fa-solid fa-user-plus"></i> Lead Capture</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </a>
+            {% endif %}
+
+               <!--=============== Sales Exec =============-->
+         {% if request.user.staff_profile.role.role_name == "Sales Exec" %}
+         <a href="{% url 'leads:call_logs' %}" class="dash-action-btn action-green">
+                <span><i class="fa-solid fa-user-group"></i>Call Log</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </a>
+         
+            <a href="{% url 'student' %}" class="dash-action-btn action-indigo">
+                <span><i class="fa-solid fa-user-plus"></i>Student Register</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </a>
+            {% endif %}
+
+            <!--=============== Marketing Lead =============-->
+         {% if request.user.staff_profile.role.role_name == "Marketing Lead" %}
+            <a href="{% url 'leads:lead_capture_target' %}" class="dash-action-btn action-indigo">
+                <span><i class="fa-solid fa-user-plus"></i> Lead Capture Target</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </a>
+            {% endif %}
+
+            <!--=============== Digital Marketing =============-->
+         {% if request.user.staff_profile.role.role_name == "Digital Marketing" %}
+            <a href="{% url 'leads:my_lead_capture_target' %}" class="dash-action-btn action-indigo">
+                <span><i class="fa-solid fa-user-plus"></i> My Target</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </a>
+            {% endif %}
+            
+
+        </div>
+    </div>
+
+
+</div>
+
+<!-- checkin-btn -->
+
+<script>
+function openAttendancePopup(){
+    document.getElementById("attendancePopup").classList.add("show");
+}
+
+function closeAttendancePopup(){
+    document.getElementById("attendancePopup").classList.remove("show");
+    window.location.href = "{% url 'staff_dashboard' %}";
+}
+
+window.onclick = function(e){
+    let popup = document.getElementById("attendancePopup");
+    if(e.target == popup){
+        popup.classList.remove("show");
+        window.location.href = "{% url 'staff_dashboard' %}";
+    }
+}
+</script>
+{% endblock %}
